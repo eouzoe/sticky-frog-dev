@@ -3,6 +3,13 @@
   "wait": 2500
  },
  {
+  "wait": 10
+ },
+ {
+  "assert": "(() => { const f = document.querySelector('#logo .b').getBoundingClientRect(), p = document.getElementById('playBtn').getBoundingClientRect(); return f.bottom <= p.top + 4; })()",
+  "msg": "手機選單：FROG 字不被 PLAY 鈕壓到"
+ },
+ {
   "assert": "window.__game.state === 'menu'",
   "msg": "手機開機進選單"
  },
@@ -114,6 +121,10 @@
   "shot": "m04-result"
  },
  {
+  "assert": "['resMenu','resRetry','resNext'].every((id) => { const r = document.getElementById(id).getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth && r.height >= 56; })",
+  "msg": "手機結算：MENU／RETRY／NEXT 不捲動就全部可見、高度 ≥ 56px"
+ },
+ {
   "click": "#resMenu"
  },
  {
@@ -127,5 +138,9 @@
  },
  {
   "shot": "m05-shop"
+ },
+ {
+  "assert": "(() => { const b = document.querySelector('#shop .back').getBoundingClientRect(), t = document.querySelector('#shop .tab').getBoundingClientRect(), cards = [...document.querySelectorAll('#cards .card')], last = cards[cards.length - 1].getBoundingClientRect(); return b.bottom <= t.top && last.bottom <= innerHeight && cards.length === 9; })()",
+  "msg": "手機商店：BACK 不壓分頁鈕、9 張卡最後一張完整可見"
  }
 ]

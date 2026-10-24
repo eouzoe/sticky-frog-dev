@@ -139,6 +139,10 @@
   "shot": "05-result"
  },
  {
+  "assert": "['resMenu','resRetry','resNext'].every((id) => { const r = document.getElementById(id).getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth && r.height >= 56; })",
+  "msg": "桌機結算：三顆按鈕完整可見"
+ },
+ {
   "key": "Enter"
  },
  {
