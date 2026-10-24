@@ -13,7 +13,7 @@
   "click": "#playBtn"
  },
  {
-  "wait": 500
+  "wait": 600
  },
  {
   "assert": "window.__game.state === 'playing'",
@@ -23,115 +23,96 @@
   "shot": "02-early"
  },
  {
-  "key": "Space",
-  "hold": 1100
- },
- {
-  "wait": 250
- },
- {
-  "key": "Space",
-  "hold": 500
- },
- {
-  "wait": 250
- },
- {
   "down": "Space"
  },
  {
-  "wait": 300
- },
- {
-  "shot": "03-swing"
- },
- {
-  "wait": 150
+  "wait": 1520
  },
  {
   "up": "Space"
  },
  {
-  "wait": 250
+  "wait": 270
  },
  {
-  "key": "Space",
-  "hold": 500
+  "down": "Space"
  },
  {
-  "wait": 250
+  "wait": 640
  },
  {
-  "key": "Space",
-  "hold": 500
+  "up": "Space"
  },
  {
-  "wait": 120
+  "wait": 470
+ },
+ {
+  "down": "Space"
+ },
+ {
+  "wait": 570
+ },
+ {
+  "up": "Space"
+ },
+ {
+  "wait": 450
+ },
+ {
+  "down": "Space"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "up": "Space"
+ },
+ {
+  "wait": 620
  },
  {
   "shot": "04-signature"
  },
  {
-  "wait": 130
+  "wait": 200
  },
  {
-  "key": "Space",
-  "hold": 500
+  "shot": "04b-signature"
  },
  {
-  "wait": 250
- },
- {
-  "key": "Space",
-  "hold": 500
- },
- {
-  "wait": 250
- },
- {
-  "key": "Space",
-  "hold": 500
- },
- {
-  "wait": 250
- },
- {
-  "eval": "({att: window.__game.attachesTotal, maxX: window.__game.maxX, score: window.__game.score, deaths: window.__game.deaths, flips: window.__game.flips, fps: window.__game.fps, q: window.__game.quality, dc: window.__game.drawCalls})"
+  "eval": "({att: window.__game.attachesTotal, maxX: window.__game.maxX, score: window.__game.score, deaths: window.__game.deaths, flips: window.__game.flips, bestFlip: window.__game.bestFlip, mode: window.__game.mode, fps: window.__game.fps, q: window.__game.quality, dc: window.__game.drawCalls})"
  },
  {
   "assert": "window.__game.attachesTotal >= 3",
-  "msg": "舌頭真的黏上過至少 3 次"
+  "msg": "真實按住／放開：舌頭黏上過至少 3 次"
  },
  {
   "assert": "window.__game.maxX > 15",
-  "msg": "有往前進"
+  "msg": "真實輸入讓青蛙前進"
  },
  {
   "assert": "window.__game.score > 0",
   "msg": "分數 > 0"
  },
  {
-  "eval": "window.__game.forceWin()"
+  "wait": 1500
  },
  {
-  "wait": 900
+  "eval": "(window.__game.state === 'playing' && window.__game.mode !== 'won') ? (window.__game.forceWin(), 'forced') : 'natural:' + window.__game.state"
  },
  {
-  "shot": "05-landing"
- },
- {
-  "wait": 2600
+  "wait": 3200
  },
  {
   "assert": "window.__game.state === 'over'",
   "msg": "走到結算"
  },
  {
-  "assert": "window.__game.result.score > 0",
-  "msg": "結算分數 > 0"
+  "assert": "window.__game.result.score > 0 && window.__game.result.stars >= 1",
+  "msg": "結算分數 > 0、至少 1 星"
  },
  {
-  "shot": "06-result"
+  "shot": "05-result"
  },
  {
   "key": "Enter"
@@ -143,30 +124,50 @@
   "eval": "window.__game.state"
  },
  {
-  "wait": 3500
+  "wait": 7500
  },
  {
   "assert": "window.__game.state === 'playing' && window.__game.level === 2",
   "msg": "再一局（下一關）"
  },
  {
-  "key": "Space",
-  "hold": 1000
+  "down": "Space"
+ },
+ {
+  "wait": 1100
+ },
+ {
+  "up": "Space"
+ },
+ {
+  "wait": 250
+ },
+ {
+  "down": "Space"
+ },
+ {
+  "wait": 450
+ },
+ {
+  "shot": "03-swing"
+ },
+ {
+  "wait": 100
+ },
+ {
+  "up": "Space"
  },
  {
   "wait": 300
  },
  {
-  "key": "Space",
-  "hold": 600
+  "shot": "06-level2"
  },
  {
-  "wait": 200
+  "assert": "window.__game.attachesTotal >= 4",
+  "msg": "第 2 關也黏得上"
  },
  {
-  "shot": "07-level2"
- },
- {
-  "eval": "({att: window.__game.attachesTotal, fps: window.__game.fps, q: window.__game.quality, dc: window.__game.drawCalls})"
+  "eval": "({att: window.__game.attachesTotal, fps: window.__game.fps, q: window.__game.quality, dc: window.__game.drawCalls, coins: window.__game.coins})"
  }
 ]

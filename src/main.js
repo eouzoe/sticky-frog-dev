@@ -35,6 +35,7 @@ window.__game = {
   get deaths() { return G.deaths; }, get wins() { return G.wins; }, get coins() { return save.coins; }, get quality() { return G.quality; },
   get fps() { return G.fps; }, get timeScale() { return G.timeScale; }, get result() { return G.lastResult; }, get hold() { return G.hold; },
   get drawCalls() { return view.info.render.calls; }, get length() { return G.lv?.length ?? 0; },
+  start(n) { startLevel(n); },
   // 測試用：把青蛙放到終點上方，讓它自然落在荷葉上完成關卡
   forceWin() { const s = G.sim, g = G.lv.goal; if (!s) return; s.tongue.state = 'idle'; s.mode = 'air'; s.x = g.x; s.y = g.y + 4; s.vx = 0; s.vy = -4; },
 };
@@ -68,6 +69,7 @@ function startLevel(n) {
   save.last = n; persist();
   G.state = 'playing'; G.hold = false; UI.show(null); UI.hint(null);
   G.cam.x = G.sim.x + 6; G.cam.y = T.CAM_MIN_Y;
+  UI.popup((n - 1) % 15 === 0 ? `${WORLDS[G.lv.world].name}  ${levelLabel(n)}` : `LEVEL ${levelLabel(n)}`, innerWidth / 2, innerHeight * 0.3, 'big');
   cg.gameplayStart();
 }
 
@@ -149,6 +151,11 @@ function onEvent(e) {
       break;
     }
     case 'fan': sfx('fan'); fx.burst(s.x, s.y - 0.5, 6, { colors: ['#ffffff'], speed: 6, dir: Math.PI / 2, spread: 0.6, size: 0.18, grav: -6, shape: 2 }); break;
+    case 'close': {
+      const pts = addScore(50); addCombo(); sfx('ring');
+      pop(`CLOSE CALL! +${pts}`, e.x, e.y + 2, 'gold'); slowmo(0.35); frog.jiggle(6);
+      break;
+    }
     case 'wall': sfx('wall'); fx.addTrauma(0.22); frog.squash(0.6, Math.PI / 2); break;
     case 'die': {
       const water = e.cause === 'water';
@@ -394,7 +401,7 @@ function render(realDt, dt) {
   // 鏡頭：平滑跟隨 + 速度前瞻 + 隨速度拉遠 + FOV 衝擊 + 慢動作推近
   const cam = view.camera, c = G.cam;
   let tx, ty, td;
-  if (G.state === 'menu' || G.state === 'levels' || G.state === 'shop') { tx = s.x + 3.2; ty = 5.6; td = 14; }
+  if (G.state === 'menu' || G.state === 'levels' || G.state === 'shop') { tx = s.x - (G.state === 'shop' ? 5.2 : 5.8); ty = 5.4; td = G.state === 'shop' ? 10 : 12; menuIdle(realDt); }
   else {
     const lx = Math.max(-6, Math.min(9, s.vx * T.CAM_LOOKAHEAD)), ly = Math.max(-4, Math.min(4, s.vy * T.CAM_LOOKAHEAD * 0.6));
     tx = s.x + 3 + lx; ty = Math.max(T.CAM_MIN_Y, s.y + ly - 0.5);
@@ -410,6 +417,13 @@ function render(realDt, dt) {
   cam.rotation.set(-0.05, 0, fx.shake.roll);
   view.update(tReal, c.x, Math.max(4, s.y));
   view.render();
+}
+
+// 選單裡的青蛙偶爾舔一下空氣（世界是活的）
+let menuLickT = 2;
+function menuIdle(dt) {
+  menuLickT -= dt;
+  if (menuLickT < 0) { menuLickT = 2.5 + Math.random() * 2.5; G.lick.x = G.sim.x + 1.6 + Math.random() * 1.5; G.lick.y = G.sim.y + 1.2 + Math.random() * 1.5; G.lick.t = 0.16; G.tongueWob = 0.4; frog.jiggle(3); }
 }
 
 // ---------- 開機 ----------

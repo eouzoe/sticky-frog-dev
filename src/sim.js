@@ -30,7 +30,7 @@ export function createSim(level) {
     airRot: 0, airFlips: 0, airTime: 0,
     flies: level.flies.map(() => false), rings: level.rings.map(() => false),
     fliesGot: 0, attaches: 0, flipsTotal: 0, bounces: 0, maxX: level.start.x,
-    fanIn: -1, cause: null,
+    fanIn: -1, cause: null, near: new Uint8Array(level.spikes.length + level.saws.length),
     events: [],
   };
 }
@@ -218,14 +218,15 @@ export function step(s, dt, hold) {
       s.x = m.x + nx * rr; s.y = m.y + ny * rr;
     }
   }
-  for (const sp2 of lv.spikes) {
-    const dx = s.x - sp2.x, dy = s.y - sp2.y, rr = sp2.r + R * 0.8;
-    if (dx * dx + dy * dy < rr * rr) return die(s, 'spike');
-  }
-  for (const sw of lv.saws) {
-    movePos(sw, s.t, tmp);
-    const dx = s.x - tmp.x, dy = s.y - tmp.y, rr = sw.r + R * 0.8;
-    if (dx * dx + dy * dy < rr * rr) return die(s, 'saw');
+  // 危險物：碰到就死；擦身而過（進入 1 單位內又離開）＝ CLOSE CALL
+  const nS = lv.spikes.length;
+  for (let i = 0; i < nS + lv.saws.length; i++) {
+    const h = i < nS ? lv.spikes[i] : movePos(lv.saws[i - nS], s.t, tmp);
+    const r = i < nS ? lv.spikes[i].r : lv.saws[i - nS].r;
+    const d = Math.hypot(s.x - h.x, s.y - h.y), rr = r + R * 0.8;
+    if (d < rr) return die(s, i < nS ? 'spike' : 'saw');
+    if (d < rr + 1.1) s.near[i] = 1;
+    else if (s.near[i] === 1 && d > rr + 2) { s.near[i] = 2; s.events.push({ type: 'close', x: s.x, y: s.y }); }
   }
   for (let i = 0; i < lv.rings.length; i++) {
     if (s.rings[i]) continue;

@@ -5,6 +5,7 @@ export const TUNE = {
   AIR_DRAG: 0.04,
   MAX_SPEED: 36,
   FROG_R: 0.55,
+  FROG_VIS: 1.5, // 青蛙外觀放大倍率（碰撞半徑不變，對尖刺比較寬容）
   JUMP_V: [6.5, 13], // 從起點木樁跳起的速度
   JUMP_DELAY: 0.07, // 起跳前蹲下（預備動作）
   TONGUE_RANGE: 16, // 舌頭能黏到的最遠距離
@@ -17,9 +18,9 @@ export const TUNE = {
   SWING_ASSIST: 5, // 擺盪時沿切線的助推（讓擺盪越擺越有力）
   RELEASE_BOOST: 1.07, // 放開時速度倍率
   RELEASE_UP: 2.2, // 放開時若往上飛，額外加的上升速度
-  SPIN_PER_SPEED: 0.52, // 放開後翻滾角速度＝速度 × 這個值
-  SPIN_DAMP: 0.2,
-  SPIN_MAX: 17,
+  SPIN_PER_SPEED: 0.85, // 放開後翻滾角速度＝速度 × 這個值（15 單位/秒 ≈ 每秒 2 圈）
+  SPIN_DAMP: 0.1,
+  SPIN_MAX: 22,
   FLIP_TOLERANCE: 0.26, // 差 15° 內也算轉滿一圈
   FLY_EAT_R: 2.6, // 蒼蠅進入這個距離就自動舔掉
   RING_R: 1.9,
@@ -35,11 +36,11 @@ export const TUNE = {
   SCORE_GRAB: 10,
   // 鏡頭
   CAM_FOV: 50,
-  CAM_DIST: 24,
-  CAM_DIST_SPEED: 0.42,
-  CAM_DIST_MAX: 35,
+  CAM_DIST: 19,
+  CAM_DIST_SPEED: 0.38,
+  CAM_DIST_MAX: 30,
   CAM_LOOKAHEAD: 0.33,
-  CAM_MIN_Y: 7.2,
+  CAM_MIN_Y: 6.6,
   // 招牌時刻
   SLOWMO_SCALE: 0.28,
   SLOWMO_TIME: 0.8, // 真實秒

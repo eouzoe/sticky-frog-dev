@@ -7,6 +7,7 @@ const screens = ['menu', 'levels', 'shop', 'result', 'pause', 'block'];
 
 export function show(name) {
   for (const s of screens) $(s).classList.toggle('on', s === name);
+  if (name) dieText(null);
   $('hud').classList.toggle('on', name === null || name === 'pause' || name === 'block');
   if (name === 'result') { const p = $('resultPanel'); p.classList.remove('pop'); void p.offsetWidth; p.classList.add('pop'); }
 }
@@ -40,6 +41,7 @@ const pool = [];
 export function popup(text, x, y, cls = '') {
   let el = pool.find((e) => !e.busy);
   if (!el) { el = { node: document.createElement('div'), busy: false }; $('popups').appendChild(el.node); pool.push(el); el.node.addEventListener('animationend', () => { el.busy = false; el.node.style.display = 'none'; }); }
+  if (cls.includes('big')) for (const o of pool) if (o.busy && o.node.classList.contains('big')) { o.busy = false; o.node.style.display = 'none'; }
   el.busy = true;
   const n = el.node;
   n.className = `pp stroke ${cls}`; n.textContent = text;

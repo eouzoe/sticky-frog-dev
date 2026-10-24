@@ -3,17 +3,24 @@
   "wait": 2500
  },
  {
+  "assert": "window.__game.state === 'menu'",
+  "msg": "手機開機進選單"
+ },
+ {
   "shot": "m01-menu"
  },
  {
   "click": "#playBtn"
  },
  {
-  "wait": 500
+  "wait": 600
  },
  {
   "assert": "window.__game.state === 'playing'",
   "msg": "手機按 PLAY 進遊戲"
+ },
+ {
+  "shot": "m02-early"
  },
  {
   "drag": [
@@ -61,10 +68,10 @@
   "ms": 500
  },
  {
-  "wait": 120
+  "wait": 150
  },
  {
-  "shot": "m02-play"
+  "shot": "m03-play"
  },
  {
   "drag": [
@@ -83,17 +90,42 @@
   "wait": 250
  },
  {
-  "eval": "({att: window.__game.attachesTotal, maxX: window.__game.maxX, fps: window.__game.fps})"
+  "eval": "({att: window.__game.attachesTotal, maxX: window.__game.maxX, fps: window.__game.fps, q: window.__game.quality})"
  },
  {
-  "assert": "window.__game.attachesTotal >= 1",
-  "msg": "觸控按住真的讓舌頭黏上"
+  "assert": "window.__game.attachesTotal >= 2",
+  "msg": "觸控按住真的讓舌頭黏上（≥2 次）"
  },
  {
-  "assert": "window.__game.maxX > 5",
+  "assert": "window.__game.maxX > 8",
   "msg": "觸控操作讓青蛙前進"
  },
  {
-  "shot": "m03-play"
+  "eval": "window.__game.state === 'playing' && window.__game.forceWin()"
+ },
+ {
+  "wait": 3600
+ },
+ {
+  "assert": "window.__game.state === 'over'",
+  "msg": "手機走到結算"
+ },
+ {
+  "shot": "m04-result"
+ },
+ {
+  "click": "#resMenu"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "click": "#shopBtn"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "shot": "m05-shop"
  }
 ]

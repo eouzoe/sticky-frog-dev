@@ -1,0 +1,258 @@
+[
+ {
+  "wait": 2500
+ },
+ {
+  "shot": "w0-menu"
+ },
+ {
+  "eval": "window.__game.start(16)"
+ },
+ {
+  "wait": 400
+ },
+ {
+  "key": "Space",
+  "hold": 1000
+ },
+ {
+  "wait": 250
+ },
+ {
+  "key": "Space",
+  "hold": 550
+ },
+ {
+  "wait": 150
+ },
+ {
+  "shot": "w-candy-a"
+ },
+ {
+  "wait": 100
+ },
+ {
+  "key": "Space",
+  "hold": 550
+ },
+ {
+  "wait": 250
+ },
+ {
+  "down": "Space"
+ },
+ {
+  "wait": 350
+ },
+ {
+  "shot": "w-candy-b"
+ },
+ {
+  "up": "Space"
+ },
+ {
+  "wait": 200
+ },
+ {
+  "eval": "window.__game.start(31)"
+ },
+ {
+  "wait": 400
+ },
+ {
+  "key": "Space",
+  "hold": 1000
+ },
+ {
+  "wait": 250
+ },
+ {
+  "key": "Space",
+  "hold": 550
+ },
+ {
+  "wait": 150
+ },
+ {
+  "shot": "w-neon-a"
+ },
+ {
+  "wait": 100
+ },
+ {
+  "key": "Space",
+  "hold": 550
+ },
+ {
+  "wait": 250
+ },
+ {
+  "down": "Space"
+ },
+ {
+  "wait": 350
+ },
+ {
+  "shot": "w-neon-b"
+ },
+ {
+  "up": "Space"
+ },
+ {
+  "wait": 200
+ },
+ {
+  "eval": "window.__game.start(46)"
+ },
+ {
+  "wait": 400
+ },
+ {
+  "key": "Space",
+  "hold": 1000
+ },
+ {
+  "wait": 250
+ },
+ {
+  "key": "Space",
+  "hold": 550
+ },
+ {
+  "wait": 150
+ },
+ {
+  "shot": "w-volcano-a"
+ },
+ {
+  "wait": 100
+ },
+ {
+  "key": "Space",
+  "hold": 550
+ },
+ {
+  "wait": 250
+ },
+ {
+  "down": "Space"
+ },
+ {
+  "wait": 350
+ },
+ {
+  "shot": "w-volcano-b"
+ },
+ {
+  "up": "Space"
+ },
+ {
+  "wait": 200
+ },
+ {
+  "eval": "window.__game.start(8)"
+ },
+ {
+  "wait": 400
+ },
+ {
+  "key": "Space",
+  "hold": 1000
+ },
+ {
+  "wait": 250
+ },
+ {
+  "key": "Space",
+  "hold": 550
+ },
+ {
+  "wait": 150
+ },
+ {
+  "shot": "w-jungle8-a"
+ },
+ {
+  "wait": 100
+ },
+ {
+  "key": "Space",
+  "hold": 550
+ },
+ {
+  "wait": 250
+ },
+ {
+  "down": "Space"
+ },
+ {
+  "wait": 350
+ },
+ {
+  "shot": "w-jungle8-b"
+ },
+ {
+  "up": "Space"
+ },
+ {
+  "wait": 200
+ },
+ {
+  "eval": "window.__game.start(3)"
+ },
+ {
+  "wait": 400
+ },
+ {
+  "key": "Space",
+  "hold": 300
+ },
+ {
+  "wait": 700
+ },
+ {
+  "shot": "w-fall"
+ },
+ {
+  "wait": 250
+ },
+ {
+  "shot": "w-dead"
+ },
+ {
+  "eval": "({d: window.__game.deaths, fps: window.__game.fps, dc: window.__game.drawCalls, q: window.__game.quality})"
+ },
+ {
+  "click": "#pauseBtn"
+ },
+ {
+  "wait": 400
+ },
+ {
+  "shot": "w-pause"
+ },
+ {
+  "click": "#pLevels"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "shot": "w-levels"
+ },
+ {
+  "click": ".back"
+ },
+ {
+  "wait": 300
+ },
+ {
+  "click": "#shopBtn"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "shot": "w-shop"
+ }
+]

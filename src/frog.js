@@ -1,5 +1,6 @@
 // 青蛙模型（程式產生 low-poly）＋擠壓伸展、晃動大眼睛、眨眼、舌頭彈性緞帶。
 import * as THREE from 'three';
+import { TUNE } from './config.js';
 
 const lam = (color, extra = {}) => new THREE.MeshLambertMaterial({ color, flatShading: true, ...extra });
 const ico = (r, d = 1) => new THREE.IcosahedronGeometry(r, d);
@@ -10,6 +11,8 @@ export function createFrog(scene) {
   const pivA = new THREE.Group(), pivB = new THREE.Group(), pivC = new THREE.Group(), model = new THREE.Group();
   root.add(pivA); pivA.add(pivB); pivB.add(pivC); pivC.add(model);
   scene.add(root);
+  const VIS = TUNE.FROG_VIS;
+  root.scale.setScalar(VIS);
 
   const mats = { body: lam('#2ecc71'), belly: lam('#d4f7a8'), eye: lam('#ffffff'), iris: lam('#ff3b3b'), pupil: lam('#111111'), cheek: new THREE.MeshBasicMaterial({ color: '#ff8fb5' }), mouth: new THREE.MeshBasicMaterial({ color: '#4a1020' }) };
   const add = (geo, mat, x, y, z, sx = 1, sy = 1, sz = 1, parent = model) => {
@@ -24,9 +27,9 @@ export function createFrog(scene) {
     const eg = new THREE.Group(); eg.position.set(sx * 0.29, 0.44, 0.2); model.add(eg);
     add(new THREE.SphereGeometry(0.23, 10, 8), mats.eye, 0, 0, 0, 1, 1, 1, eg);
     const pg = new THREE.Group(); eg.add(pg);
-    add(new THREE.SphereGeometry(0.13, 8, 6), mats.iris, 0, 0, 0.13, 1, 1, 0.6, pg);
-    add(new THREE.SphereGeometry(0.075, 8, 6), mats.pupil, 0, 0, 0.2, 0.6, 1.2, 0.5, pg);
-    add(new THREE.SphereGeometry(0.035, 6, 4), mats.eye, 0.04, 0.05, 0.24, 1, 1, 1, pg); // 反光點
+    add(new THREE.SphereGeometry(0.135, 8, 6), mats.iris, 0, 0, 0.165, 1, 1, 0.6, pg);
+    add(new THREE.SphereGeometry(0.075, 8, 6), mats.pupil, 0, 0, 0.235, 0.6, 1.2, 0.5, pg);
+    add(new THREE.SphereGeometry(0.035, 6, 4), mats.eye, 0.045, 0.055, 0.27, 1, 1, 1, pg); // 反光點
     eyes.push({ g: eg, p: pg });
   }
   for (const sx of [-1, 1]) { const c = add(new THREE.CircleGeometry(0.09, 8), mats.cheek, sx * 0.4, 0.05, 0.53); c.castShadow = false; }
@@ -91,7 +94,7 @@ export function createFrog(scene) {
   const mouthW = { x: 0, y: 0, z: 0 };
   function mouthWorld(s, out) {
     const c = Math.cos(s.angle), sn = Math.sin(s.angle);
-    out.x = s.x - sn * 0.06; out.y = s.y + c * 0.06; out.z = 0.55; return out;
+    out.x = s.x - sn * 0.06 * VIS; out.y = s.y + c * 0.06 * VIS; out.z = 0.55 * VIS; return out;
   }
 
   // s＝sim；tx/ty＝舌尖世界座標（null＝收起）
@@ -155,7 +158,7 @@ export function createFrog(scene) {
         const u = i / N;
         const w = 0.14 * (1 - u * 0.35);
         const off = Math.sin(u * Math.PI) * Math.sin(u * 9 - t * 38) * amp;
-        const cx = mouthW.x + dx * u + px * off, cy = mouthW.y + dy * u + py * off, cz = 0.55 - 0.45 * u;
+        const cx = mouthW.x + dx * u + px * off, cy = mouthW.y + dy * u + py * off, cz = mouthW.z * (1 - u) + 0.1 * u;
         const o = i * 6;
         tPos[o] = cx + px * w; tPos[o + 1] = cy + py * w; tPos[o + 2] = cz;
         tPos[o + 3] = cx - px * w; tPos[o + 4] = cy - py * w; tPos[o + 5] = cz;

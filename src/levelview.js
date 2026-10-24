@@ -71,8 +71,8 @@ const GEO = {
   blade: bladeGeo(),
   column: new THREE.BoxGeometry(1, 1, 0.1),
   ring: new THREE.TorusGeometry(1.9, 0.2, 6, 22),
-  flyBody: new THREE.IcosahedronGeometry(0.2, 0),
-  wing: (() => { const g = new THREE.CircleGeometry(0.22, 6); g.scale(1, 0.55, 1); return g; })(),
+  flyBody: new THREE.IcosahedronGeometry(0.3, 0),
+  wing: (() => { const g = new THREE.CircleGeometry(0.32, 6); g.scale(1, 0.55, 1); return g; })(),
   pad: new THREE.CylinderGeometry(1, 1, 0.45, 22, 1, false, 0.35, TAU - 0.7),
   ripple: new THREE.TorusGeometry(1.25, 0.08, 4, 24),
 };
@@ -153,8 +153,12 @@ export function createLevelView(scene) {
     const flower = new THREE.Group(); flower.position.set(g.x + g.w * 0.3, g.y + 0.2, -1.2); group.add(flower);
     for (let i = 0; i < 6; i++) { const p = new THREE.Mesh(GEO.petal, mats.petal); p.scale.set(0.9, 0.5, 1.3); p.rotation.set(-0.9, (i / 6) * TAU, 0); p.position.set(Math.sin((i / 6) * TAU) * 0.6, 0.3, Math.cos((i / 6) * TAU) * 0.6); flower.add(p); }
     const fc = new THREE.Mesh(GEO.bud, mats.bud); fc.position.y = 0.6; flower.add(fc);
-    const wall = new THREE.Mesh(new THREE.DodecahedronGeometry(1, 0), lam({ color: w.vine })); wall.scale.set(1.6, 16, 6); wall.position.set(g.wall + 1.2, 8, -1.5);
-    wall.castShadow = wall.receiveShadow = true; group.add(wall);
+    // 終點後面的一叢大葉子（擋住飛過頭的青蛙）
+    const leafA = lam({ color: w.vine }), leafB = lam({ color: w.pad });
+    [[0.2, 2, 3.2, leafA], [0.8, 7.5, 3.4, leafB], [0.3, 13, 3, leafA], [0.9, 18, 2.6, leafB]].forEach(([dx, y, r, m], i) => {
+      const b = new THREE.Mesh(new THREE.IcosahedronGeometry(r, 0), m); b.position.set(g.wall + r + dx, y, -2.6 - (i % 2) * 0.8); b.rotation.set(i, i * 2, 0);
+      b.castShadow = b.receiveShadow = true; group.add(b);
+    });
     // 旗子
     const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 6, 5), lam({ color: '#ffffff' })); pole.position.set(g.x - 1.5, g.y + 3, -1.6); group.add(pole);
     const flag = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 1.4, 4, 1), new THREE.MeshLambertMaterial({ color: '#ff6fb5', side: THREE.DoubleSide })); flag.position.set(g.x - 0.4, g.y + 5.2, -1.6); group.add(flag); st.flag = flag;
@@ -206,8 +210,8 @@ export function createLevelView(scene) {
       }
       set(M.fly, i, x, y, 0.3, 0, 0, Math.sin(t * 10 + i) * 0.3, k, k * 0.85, k);
       const flap = Math.abs(Math.sin(t * 60 + i)) * k;
-      set(M.wing, i * 2, x - 0.12, y + 0.17, 0.3, 0, 0, 0.6, flap, k, 1);
-      set(M.wing, i * 2 + 1, x + 0.12, y + 0.17, 0.3, 0, 0, -0.6, flap, k, 1);
+      set(M.wing, i * 2, x - 0.18, y + 0.25, 0.3, 0, 0, 0.6, flap, k, 1);
+      set(M.wing, i * 2 + 1, x + 0.18, y + 0.25, 0.3, 0, 0, -0.6, flap, k, 1);
     });
     if (lv.flies.length) { M.fly.instanceMatrix.needsUpdate = true; M.wing.instanceMatrix.needsUpdate = true; }
     // 目標高亮

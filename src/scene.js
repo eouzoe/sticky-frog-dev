@@ -25,7 +25,7 @@ const at = (g, x, y, z, rx = 0, ry = 0, rz = 0, sx = 1, sy = 1, sz = 1) => {
 function propGeo(kind) {
   if (kind === 'jungle') return [
     mergeGeometries([tint(at(new THREE.CylinderGeometry(0.45, 0.8, 12, 6), 0, 6, 0), '#7a4a26', 0.2), tint(at(new THREE.IcosahedronGeometry(3.6, 0), 0, 12.5, 0, 0, 0, 0, 1, 0.8, 1), '#27ae60', 0.25), tint(at(new THREE.IcosahedronGeometry(2.6, 0), 1.8, 14.6, 0.5), '#2ecc71', 0.25), tint(at(new THREE.IcosahedronGeometry(2.2, 0), -2, 13.8, -0.5), '#1e8f4e', 0.25)]),
-    mergeGeometries([tint(at(new THREE.IcosahedronGeometry(2, 0), 0, 0.8, 0, 0, 0, 0, 1.4, 0.8, 1), '#2f9e5a', 0.3), tint(at(new THREE.ConeGeometry(0.25, 1, 4), 0.6, 2.3, 0.6), '#ff6fb5'), tint(at(new THREE.IcosahedronGeometry(0.4, 0), 0.6, 2.9, 0.6), '#ff6fb5')]),
+    mergeGeometries([tint(at(new THREE.CylinderGeometry(2.2, 2.2, 0.25, 10, 1, false, 0.3, 5.7), 0, 0.25, 0), '#3fbf6a', 0.2), tint(at(new THREE.ConeGeometry(0.45, 0.7, 5), 0.6, 0.7, 0.4, Math.PI), '#ff6fb5', 0.15), tint(at(new THREE.IcosahedronGeometry(0.22, 0), 0.6, 0.55, 0.4), '#ffd23f')]),
   ];
   if (kind === 'candy') {
     const disc = tint(at(new THREE.CylinderGeometry(3, 3, 0.7, 12), 0, 11, 0, Math.PI / 2), '#ff6fb5', 0);
@@ -37,7 +37,7 @@ function propGeo(kind) {
   }
   if (kind === 'city') return [
     mergeGeometries([tint(at(new THREE.BoxGeometry(5, 18, 5), 0, 9, 0), '#2a1a50', 0.2), tint(at(new THREE.BoxGeometry(5.2, 0.4, 5.2), 0, 18, 0), '#ff2bd6'), tint(at(new THREE.BoxGeometry(0.15, 3, 0.15), 1.5, 19.5, 0), '#00f0ff')]),
-    mergeGeometries([tint(at(new THREE.BoxGeometry(4, 9, 4), 0, 4.5, 0), '#3d2470', 0.2), tint(at(new THREE.BoxGeometry(4.2, 0.3, 4.2), 0, 9, 0), '#00f0ff')]),
+    mergeGeometries([tint(at(new THREE.CylinderGeometry(0.15, 0.2, 5, 5), 0, 2.5, 0), '#3d2470', 0.2), tint(at(new THREE.BoxGeometry(1.4, 0.25, 0.4), 0.5, 5, 0), '#3d2470'), tint(at(new THREE.IcosahedronGeometry(0.35, 0), 1.1, 4.8, 0), '#fff36b'), tint(at(new THREE.BoxGeometry(2.6, 0.6, 0.6), 0, 0.2, 0), '#ff2bd6')]),
   ];
   return [
     mergeGeometries([tint(at(new THREE.ConeGeometry(2.4, 12, 5), 0, 6, 0), '#3b2420', 0.35), tint(at(new THREE.ConeGeometry(0.8, 3, 5), 0.6, 10.5, 0.5), '#ff7a1f')]),
@@ -68,21 +68,21 @@ export function createView(canvas) {
   const skyCv = document.createElement('canvas'); skyCv.width = 4; skyCv.height = 256;
   const skyTex = new THREE.CanvasTexture(skyCv); skyTex.colorSpace = THREE.SRGBColorSpace;
   scene.background = skyTex;
-  scene.fog = new THREE.Fog('#d6f2d8', 45, 150);
+  scene.fog = new THREE.Fog('#d6f2d8', 30, 125);
 
   // 水面（CPU 頂點波浪，flatShading 不必重算法線）
-  const waterGeo = new THREE.PlaneGeometry(170, 46, 56, 12); waterGeo.rotateX(-Math.PI / 2);
+  const waterGeo = new THREE.PlaneGeometry(170, 92, 56, 15); waterGeo.rotateX(-Math.PI / 2);
   const waterBase = Float32Array.from(waterGeo.attributes.position.array);
   const waterMat = lam({ color: '#2ec4c4', transparent: true, opacity: 0.93 });
   const water = new THREE.Mesh(waterGeo, waterMat);
-  water.position.z = -14; water.receiveShadow = true; scene.add(water);
+  water.position.z = -6; water.receiveShadow = true; scene.add(water);
 
   // 背景視差層
   const bg = new THREE.Group(); scene.add(bg);
   const propMat = lam({ vertexColors: true });
   const hillGeo = new THREE.IcosahedronGeometry(1, 1);
   const hillMat = lam({ color: '#ffffff' });
-  const cloudGeo = new THREE.IcosahedronGeometry(1, 0);
+  const cloudGeo = mergeGeometries([at(new THREE.IcosahedronGeometry(1, 1), 0, 0, 0), at(new THREE.IcosahedronGeometry(0.75, 1), 0.95, -0.15, 0.1), at(new THREE.IcosahedronGeometry(0.7, 1), -0.95, -0.2, -0.1), at(new THREE.IcosahedronGeometry(0.55, 1), 0.4, 0.45, 0.3)]);
   const cloudMat = lam({ color: '#ffffff', emissive: '#bbbbbb' });
   let bgMeshes = [];
   const dummy = new THREE.Object3D();
@@ -121,8 +121,8 @@ export function createView(canvas) {
     if (w.props === 'jungle' || w.props === 'candy') {
       const C = new THREE.InstancedMesh(cloudGeo, cloudMat, nC);
       for (let i = 0; i < nC; i++) {
-        dummy.position.set(-50 + (i / nC) * span + rnd() * 8, 24 + rnd() * 10, -45 - rnd() * 15); dummy.rotation.set(rnd(), rnd(), rnd());
-        dummy.scale.set(4 + rnd() * 4, 1.6 + rnd(), 2.5); dummy.updateMatrix(); C.setMatrixAt(i, dummy.matrix);
+        dummy.position.set(-50 + (i / nC) * span + rnd() * 8, 24 + rnd() * 10, -45 - rnd() * 15); dummy.rotation.set(0, rnd() * 0.6, 0);
+        dummy.scale.set(3 + rnd() * 2.5, 1.8 + rnd() * 0.8, 2); dummy.updateMatrix(); C.setMatrixAt(i, dummy.matrix);
       }
       bgMeshes.push(C);
     }

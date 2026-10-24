@@ -33,9 +33,7 @@ canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: n
 #logo .a, #logo .b { display: block; font-size: min(15vw, 120px); letter-spacing: 2px; paint-order: stroke; -webkit-text-stroke: 10px var(--ink); }
 #logo .a { color: var(--yellow); transform: rotate(-4deg); }
 #logo .b { color: var(--green); transform: rotate(3deg) translateX(18px); }
-#logo .tongue { position: absolute; left: 50%; top: 44%; width: 46%; height: 18px; border-radius: 9px; background: #ff4f7a; transform-origin: left center; border: 4px solid var(--ink); animation: lick 2.4s ease-in-out infinite; }
 @keyframes bob { 50% { transform: translateY(-8px) rotate(1deg); } }
-@keyframes lick { 0%, 60%, 100% { transform: scaleX(.05) rotate(-12deg); } 70% { transform: scaleX(1.05) rotate(-12deg); } 80% { transform: scaleX(.9) rotate(-12deg); } }
 #menu .col { display: flex; flex-direction: column; gap: 18px; align-items: center; margin-top: 3vh; }
 #menu .row { display: flex; gap: 16px; }
 #menuTip { margin-top: 2vh; font-size: 18px; opacity: .95; }
@@ -56,6 +54,8 @@ canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: n
 .lvl.locked { background: #9aa8b5; cursor: default; color: #dde3ea; }
 .lvl .st { position: absolute; bottom: 4px; left: 0; right: 0; font-size: 14px; letter-spacing: 1px; }
 .on-star { color: var(--yellow); } .off-star { color: rgba(0,0,0,.25); }
+#shop { align-items: flex-start; padding-left: 3vw; } #shop .tabs { margin-left: 0; }
+#shop .cards { max-width: min(600px, 66vw); padding: 0 0 16px; }
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; padding: 0 16px 16px; max-width: 900px; width: 100%; overflow: auto; }
 .card { background: #fff; color: var(--ink); border: 4px solid var(--ink); border-radius: 20px; padding: 10px; text-align: center; cursor: pointer; transition: transform .12s cubic-bezier(.3,1.8,.5,1); min-height: 56px; font-family: var(--font); }
 .card:hover { transform: translateY(-4px) scale(1.04); }
@@ -125,7 +125,7 @@ canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: n
 
 <div id="menu" class="screen">
   <div class="coins stroke"><span class="coin"></span><span class="coinN">0</span></div>
-  <div id="logo"><span class="a">STICKY</span><span class="b">FROG</span><span class="tongue"></span></div>
+  <div id="logo"><span class="a">STICKY</span><span class="b">FROG</span></div>
   <div class="col">
     <button id="playBtn" class="btn big green">PLAY</button>
     <div class="row"><button id="levelsBtn" class="btn">LEVELS</button><button id="shopBtn" class="btn">FROGS</button></div>
