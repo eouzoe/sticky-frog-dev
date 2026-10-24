@@ -155,8 +155,8 @@ export function createLevelView(scene) {
     const fc = new THREE.Mesh(GEO.bud, mats.bud); fc.position.y = 0.6; flower.add(fc);
     // 終點後面的一叢大葉子（擋住飛過頭的青蛙）
     const leafA = lam({ color: w.vine }), leafB = lam({ color: w.pad });
-    [[0.2, 2, 3.2, leafA], [0.8, 7.5, 3.4, leafB], [0.3, 13, 3, leafA], [0.9, 18, 2.6, leafB]].forEach(([dx, y, r, m], i) => {
-      const b = new THREE.Mesh(new THREE.IcosahedronGeometry(r, 0), m); b.position.set(g.wall + r + dx, y, -2.6 - (i % 2) * 0.8); b.rotation.set(i, i * 2, 0);
+    [[0.2, 2, 2.8, leafA], [0.6, 7, 3, leafB], [0.3, 12, 2.7, leafA], [0.7, 16.5, 2.4, leafB], [0.4, 20.5, 2.1, leafA]].forEach(([dx, y, r, m], i) => {
+      const b = new THREE.Mesh(new THREE.IcosahedronGeometry(r, 0), m); b.position.set(g.wall + r * 0.8 + dx, y, -3.4 - (i % 2) * 0.8); b.rotation.set(i, i * 2, 0);
       b.castShadow = b.receiveShadow = true; group.add(b);
     });
     // 旗子

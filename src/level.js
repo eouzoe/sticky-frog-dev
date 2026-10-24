@@ -17,7 +17,7 @@ function mulberry32(a) {
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 // 部分關卡換種子（tests/sim-check.mjs 的自動玩家破不了或太難的）
-export const SALT = { 16: 1, 29: 1, 33: 1, 36: 2, 38: 3, 40: 1, 46: 2, 47: 1, 51: 1, 55: 1, 57: 1 };
+export const SALT = { 23: 1, 37: 1, 38: 1, 47: 1, 50: 1 };
 
 export function generateLevel(n, salt = SALT[n] ?? 0) {
   const r = mulberry32(n * 7919 + 1013 + salt * 100003);
@@ -103,7 +103,7 @@ export function generateLevel(n, salt = SALT[n] ?? 0) {
   }
 
   const gx = x + 12;
-  L.goal = { x: gx, y: 1.3, w: 12, wall: gx + 7.5 }; // 荷葉後面有一面大葉子牆把飛過頭的青蛙擋回來
+  L.goal = { x: gx, y: 1.3, w: 12, wall: gx + 6.2 }; // 荷葉後面有一面大葉子牆把飛過頭的青蛙擋回來
   fly(gx - 4, 6);
   L.length = gx;
   L.par = Math.round(L.length / TUNE.PAR_SPEED + 3);

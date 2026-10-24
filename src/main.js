@@ -37,6 +37,8 @@ window.__game = {
   get fps() { return G.fps; }, get timeScale() { return G.timeScale; }, get result() { return G.lastResult; }, get hold() { return G.hold; },
   get drawCalls() { return view.info.render.calls; }, get length() { return G.lv?.length ?? 0; },
   start(n) { startLevel(n); },
+  // 測試用：直接換造型／拖尾（不改存檔）
+  look(skin, trail) { frog.setSkin(SKINS.find((k) => k.id === skin) ?? SKINS[0]); fx.setTrail(TRAILS.find((k) => k.id === trail) ?? TRAILS[0]); },
   autoplay: null, // 巡覽截圖用：設成 [rel, grabVy] 讓自動玩家操作
 
   // 測試用：把青蛙放到終點上方，讓它自然落在荷葉上完成關卡

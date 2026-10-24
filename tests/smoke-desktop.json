@@ -32,49 +32,73 @@
   "up": "Space"
  },
  {
-  "wait": 270
+  "wait": 170
  },
  {
   "down": "Space"
  },
  {
-  "wait": 640
+  "wait": 880
  },
  {
   "up": "Space"
  },
  {
-  "wait": 470
+  "wait": 250
  },
  {
   "down": "Space"
  },
  {
-  "wait": 570
+  "wait": 600
  },
  {
   "up": "Space"
  },
  {
-  "wait": 450
+  "wait": 170
  },
  {
   "down": "Space"
  },
  {
-  "wait": 500
+  "wait": 970
  },
  {
   "up": "Space"
  },
  {
-  "wait": 620
+  "wait": 340
+ },
+ {
+  "down": "Space"
+ },
+ {
+  "wait": 440
+ },
+ {
+  "up": "Space"
+ },
+ {
+  "wait": 110
+ },
+ {
+  "down": "Space"
+ },
+ {
+  "wait": 1010
+ },
+ {
+  "up": "Space"
+ },
+ {
+  "wait": 880
  },
  {
   "shot": "04-signature"
  },
  {
-  "wait": 200
+  "wait": 230
  },
  {
   "shot": "04b-signature"

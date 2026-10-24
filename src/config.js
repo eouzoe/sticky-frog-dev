@@ -1,7 +1,7 @@
 // 所有調參常數集中在這裡（README 有說明）。單位：世界單位（青蛙半徑 ≈ 0.55）、秒。
 export const TUNE = {
   DT: 1 / 120, // 物理固定步長
-  GRAVITY: 30,
+  GRAVITY: 36, // 30 → 36：擺盪週期從 3.3 秒縮到約 2.9 秒，手感比較脆
   AIR_DRAG: 0.04,
   MAX_SPEED: 36,
   FROG_R: 0.55,
@@ -12,7 +12,7 @@ export const TUNE = {
   TONGUE_SPEED: 150, // 舌頭射出速度（越快越跟手）
   ROPE_MIN: 2.6,
   ROPE_MAX: 19,
-  ROPE_REST: 8.5, // 黏上後舌頭會像橡皮筋一樣縮回這個長度（遠距離黏上＝被拉過去）
+  ROPE_REST: 7.5, // 黏上後舌頭會像橡皮筋一樣縮回這個長度（遠距離黏上＝被拉過去）
   ELASTIC_RATE: 16, // 縮回速度（單位/秒）
   PUMP_RATE: 1.4, // 按住時舌頭收短的速度（打氣加速，角動量守恆）
   SWING_ASSIST: 5, // 擺盪時沿切線的助推（讓擺盪越擺越有力）
@@ -40,7 +40,7 @@ export const TUNE = {
   CAM_DIST_SPEED: 0.38,
   CAM_DIST_MAX: 30,
   CAM_LOOKAHEAD: 0.33,
-  CAM_MIN_Y: 8.2, // 鏡頭最低高度：讓鉤點上方的圈圈、鋸片也在畫面內
+  CAM_MIN_Y: 7.8, // 鏡頭最低高度：讓鉤點上方的圈圈、鋸片也在畫面內
   // 招牌時刻
   SLOWMO_SCALE: 0.28,
   SLOWMO_TIME: 0.8, // 真實秒
