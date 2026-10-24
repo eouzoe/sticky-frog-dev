@@ -26,7 +26,7 @@ const G = {
   state: 'boot', level: 1, lv: null, sim: null, builtLevel: 0, world: -1,
   score: 0, combo: 0, comboT: 0, comboPulse: 0, deaths: 0, restartT: 0, winT: 0, winAnim: 0,
   timeScale: 1, slowT: 0, slowAmt: 0, hitStop: 0, fovKick: 0, acc: 0, hold: false,
-  attachesTotal: 0, flipsTotal: 0, wins: 0, tongueWob: 0, tipPop: 1, lick: { x: 0, y: 0, t: 0 },
+  attachesTotal: 0, flipsTotal: 0, bestProg: 0, wins: 0, tongueWob: 0, tipPop: 1, lick: { x: 0, y: 0, t: 0 },
   cam: { x: 0, y: 7, d: T.CAM_DIST }, resultAt: 0, adBreak: false, lastResult: null, quality: 'high', fps: 60, bestFlip: 0,
 };
 window.__game = {
@@ -54,6 +54,7 @@ const sfx = (n, o) => A.play(n, o);
 
 // ---------- 關卡 ----------
 function loadLevel(n) {
+  if (G.level !== n) G.bestProg = 0;
   G.level = n; G.lv = generateLevel(n);
   const w = WORLDS[G.lv.world];
   if (G.builtLevel !== n) {
@@ -177,6 +178,9 @@ function onEvent(e) {
         fx.shock(e.x, e.y, 3.5, '#ff5a5a', 0.35);
       }
       UI.dieText(water ? w.die : 'OUCH!');
+      const prog = Math.min(1, s.maxX / G.lv.goal.x);
+      if (prog > 0.6) UI.popup(`SO CLOSE! ${Math.round(prog * 100)}%`, innerWidth / 2, innerHeight * 0.52, 'gold');
+      G.bestProg = Math.max(G.bestProg, prog);
       A.duckMusic(0.4, 0.4); vibrate([30, 40, 30]);
       G.combo = 0; G.restartT = T.RESTART_DELAY; cg.gameplayStop();
       break;
@@ -365,7 +369,7 @@ function updatePlaying(realDt, dt) {
   G.comboPulse = Math.max(0, G.comboPulse - realDt * 5);
   if (G.restartT > 0) { G.restartT -= realDt; if (G.restartT <= 0) { resetRun(); cg.gameplayStart(); } }
   if (G.winT > 0) { G.winT -= realDt; if (G.winT <= 0) finishLevel(); }
-  UI.hud({ level: G.level, score: G.score, flies: s.fliesGot, fliesTotal: G.lv.flies.length, time: s.time, combo: G.combo, comboLeft: Math.max(0, G.comboT / T.COMBO_WINDOW), comboPulse: G.comboPulse });
+  UI.hud({ level: G.level, score: G.score, flies: s.fliesGot, fliesTotal: G.lv.flies.length, time: s.time, prog: Math.max(0, Math.min(1, s.x / G.lv.goal.x)), best: G.bestProg, combo: G.combo, comboLeft: Math.max(0, G.comboT / T.COMBO_WINDOW), comboPulse: G.comboPulse });
   // 新手提示：前幾次黏住之前，在目標鉤點上顯示 HOLD、擺到前上方時顯示 RELEASE
   if ((save.grabs < 6 || G.level === 1) && s.mode !== 'dead' && s.mode !== 'won') {
     const tg = s.tongue;

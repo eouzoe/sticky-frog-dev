@@ -22,6 +22,8 @@ export function hud(o) {
   set('hudScore', String(o.score));
   set('hudFlies', `${o.flies}/${o.fliesTotal}`);
   set('hudTime', `${o.time.toFixed(1)}s`);
+  $('progFill').style.transform = `scaleX(${o.prog.toFixed(3)})`;
+  const pb = $('progBest'); if (o.best > 0.02) { pb.style.display = 'block'; pb.style.left = `${(o.best * 100).toFixed(1)}%`; } else pb.style.display = 'none';
   const c = $('combo');
   if (o.combo >= 2) {
     c.style.opacity = 1; set('comboN', `x${o.combo}`);
