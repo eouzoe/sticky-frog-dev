@@ -182,10 +182,11 @@ export function createView(canvas) {
     } else renderer.render(scene, camera);
   }
 
-  const v3 = new THREE.Vector3();
+  const v3 = new THREE.Vector3(), scr = { x: 0, y: 0 };
   function project(x, y, z = 0) {
     v3.set(x, y, z).project(camera);
-    return { x: (v3.x * 0.5 + 0.5) * innerWidth, y: (-v3.y * 0.5 + 0.5) * innerHeight };
+    scr.x = (v3.x * 0.5 + 0.5) * innerWidth; scr.y = (-v3.y * 0.5 + 0.5) * innerHeight;
+    return scr;
   }
 
   return { renderer, scene, camera, setTheme, update, render, project, post, setQuality, info: renderer.info };

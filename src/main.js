@@ -333,6 +333,7 @@ on('resDouble', doubleCoins);
 document.getElementById('result').addEventListener('pointerdown', (e) => { if (!isUI(e.target) && performance.now() - G.resultAt > 700) afterResult(true); });
 
 // ---------- 主迴圈 ----------
+const hudData = {};
 const tipV = { x: 0, y: 0 }, mouth = { x: 0, y: 0, z: 0 }, tmp = { x: 0, y: 0 };
 const mood = { lookX: 0, lookY: 0, mouth: false, tongueWob: 0, tipPop: 1, scared: false };
 let last = performance.now(), fpsAcc = 0, fpsN = 0, lowSecs = 0, tReal = 0;
@@ -372,7 +373,8 @@ function updatePlaying(realDt, dt) {
   G.comboPulse = Math.max(0, G.comboPulse - realDt * 5);
   if (G.restartT > 0) { G.restartT -= realDt; if (G.restartT <= 0) { resetRun(); cg.gameplayStart(); } }
   if (G.winT > 0) { G.winT -= realDt; if (G.winT <= 0) finishLevel(); }
-  UI.hud({ level: G.level, score: G.score, flies: s.fliesGot, fliesTotal: G.lv.flies.length, time: s.time, prog: Math.max(0, Math.min(1, s.x / G.lv.goal.x)), best: G.bestProg, combo: G.combo, comboLeft: Math.max(0, G.comboT / T.COMBO_WINDOW), comboPulse: G.comboPulse });
+  Object.assign(hudData, { level: G.level, score: G.score, flies: s.fliesGot, fliesTotal: G.lv.flies.length, time: s.time, prog: Math.max(0, Math.min(1, s.x / G.lv.goal.x)), best: G.bestProg, combo: G.combo, comboLeft: Math.max(0, G.comboT / T.COMBO_WINDOW), comboPulse: G.comboPulse });
+  UI.hud(hudData);
   // 新手提示：前幾次黏住之前，在目標鉤點上顯示 HOLD、擺到前上方時顯示 RELEASE
   if ((save.grabs < 6 || G.level === 1) && s.mode !== 'dead' && s.mode !== 'won') {
     const tg = s.tongue;
