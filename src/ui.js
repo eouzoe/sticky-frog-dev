@@ -120,6 +120,7 @@ export function showResult(r, sfx) {
     ['FLIES', `${r.flies}/${r.fliesTotal}`, r.fliesOk ? '' : `need ${r.fliesNeed}`],
     ['FLIPS', String(r.flips), ''],
     ['SCORE', '0', ''],
+    ['BEST', String(r.best ?? r.score), ''],
   ];
   $('resStats').innerHTML = rows.map(([a, b, c], i) => `<span>${a}</span><b id="rs${i}">${b}${c ? ` <small class="miss">(${c})</small>` : ''}</b>`).join('');
   $('resCoins').textContent = '0';

@@ -40,7 +40,7 @@ export const TUNE = {
   CAM_DIST_SPEED: 0.38,
   CAM_DIST_MAX: 30,
   CAM_LOOKAHEAD: 0.33,
-  CAM_MIN_Y: 6.6,
+  CAM_MIN_Y: 8.2, // 鏡頭最低高度：讓鉤點上方的圈圈、鋸片也在畫面內
   // 招牌時刻
   SLOWMO_SCALE: 0.28,
   SLOWMO_TIME: 0.8, // 真實秒

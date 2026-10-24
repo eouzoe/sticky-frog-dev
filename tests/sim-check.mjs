@@ -2,25 +2,10 @@
 // 用法：node tests/sim-check.mjs [關卡號…]
 import { TUNE as T } from '../src/config.js';
 import { generateLevel, LEVEL_COUNT } from '../src/level.js';
-import { createSim, step, movePos } from '../src/sim.js';
+import { createSim, step } from '../src/sim.js';
+import { makeBot } from '../src/bot.js';
 
-const tmp = { x: 0, y: 0 };
-export function makeBot(rel, grabVy) {
-  return (s) => {
-    const tg = s.tongue;
-    if (s.mode === 'perch') return true;
-    if (tg.state === 'stuck') {
-      const dx = s.x - tg.ax;
-      return !(s.vx > 1.5 && s.vy > 0 && dx > rel * tg.L);
-    }
-    if (tg.state === 'shoot') return true;
-    if (s.target >= 0) {
-      movePos(s.level.hooks[s.target], s.t, tmp);
-      if (tmp.x > s.x + 1.5 && s.vy < grabVy) return true;
-    }
-    return false;
-  };
-}
+export { makeBot };
 
 export function run(n, bot, maxT = 90) {
   const s = createSim(generateLevel(n));

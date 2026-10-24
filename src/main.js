@@ -2,7 +2,8 @@
 import { cg } from './cg.js';
 import { TUNE as T, WORLDS, SKINS, TRAILS } from './config.js';
 import { generateLevel, LEVEL_COUNT, levelLabel, worldOf } from './level.js';
-import { createSim, step, movePos } from './sim.js';
+import { createSim, step, movePos, flyPos } from './sim.js';
+import { makeBot } from './bot.js';
 import { createView } from './scene.js';
 import { createLevelView } from './levelview.js';
 import { createFrog } from './frog.js';
@@ -36,6 +37,8 @@ window.__game = {
   get fps() { return G.fps; }, get timeScale() { return G.timeScale; }, get result() { return G.lastResult; }, get hold() { return G.hold; },
   get drawCalls() { return view.info.render.calls; }, get length() { return G.lv?.length ?? 0; },
   start(n) { startLevel(n); },
+  autoplay: null, // 巡覽截圖用：設成 [rel, grabVy] 讓自動玩家操作
+
   // 測試用：把青蛙放到終點上方，讓它自然落在荷葉上完成關卡
   forceWin() { const s = G.sim, g = G.lv.goal; if (!s) return; s.tongue.state = 'idle'; s.mode = 'air'; s.x = g.x; s.y = g.y + 4; s.vx = 0; s.vy = -4; },
 };
@@ -64,10 +67,11 @@ function resetRun() {
   frog.squash(0.7, 0);
 }
 function startLevel(n) {
+  G.ignorePressUntil = performance.now() + 250;
   A.initAudio();
   loadLevel(n);
   save.last = n; persist();
-  G.state = 'playing'; G.hold = false; UI.show(null); UI.hint(null);
+  G.state = 'playing'; clearHold(); UI.show(null); UI.hint(null);
   G.cam.x = G.sim.x + 6; G.cam.y = T.CAM_MIN_Y;
   UI.popup((n - 1) % 15 === 0 ? `${WORLDS[G.lv.world].name}  ${levelLabel(n)}` : `LEVEL ${levelLabel(n)}`, innerWidth / 2, innerHeight * 0.3, 'big');
   cg.gameplayStart();
@@ -172,7 +176,7 @@ function onEvent(e) {
       }
       UI.dieText(water ? w.die : 'OUCH!');
       A.duckMusic(0.4, 0.4); vibrate([30, 40, 30]);
-      G.combo = 0; G.restartT = T.RESTART_DELAY;
+      G.combo = 0; G.restartT = T.RESTART_DELAY; cg.gameplayStop();
       break;
     }
     case 'win': {
@@ -205,16 +209,16 @@ function finishLevel() {
   persist();
   G.wins++;
   G.lastResult = { level: n, stars, coins, score: G.score, time: s.time };
-  G.state = 'over'; G.resultAt = performance.now(); G.adBreak = false; G.hold = false;
+  G.state = 'over'; G.resultAt = performance.now(); G.adBreak = false; clearHold();
   cg.gameplayStop(); UI.hint(null);
   UI.setCoins(save.coins);
-  UI.showResult({ title, time: s.time, par: lv.par, flies: s.fliesGot, fliesTotal: lv.flies.length, fliesNeed, fliesOk, flips: s.flipsTotal, score: G.score, coins, newBest, offerDouble: cg.ready && save.results % 3 === 0 }, sfx);
+  UI.showResult({ title, time: s.time, par: lv.par, flies: s.fliesGot, fliesTotal: lv.flies.length, fliesNeed, fliesOk, flips: s.flipsTotal, score: G.score, best: save.best[n], coins, newBest, offerDouble: cg.ready && save.results % 3 === 0 }, sfx);
   G.resCoins = coins;
 }
 async function afterResult(next) {
   if (G.state !== 'over') return;
   sfx('click');
-  if (!G.adBreak) { G.state = 'ad'; UI.show('block'); await cg.midgame(); }
+  if (!G.adBreak) { G.state = 'ad'; UI.show('block'); await Promise.race([cg.midgame(), new Promise((r) => setTimeout(r, 45000))]); }
   if (next && G.level >= LEVEL_COUNT) { toMenu(); return; }
   startLevel(next ? G.level + 1 : G.level);
 }
@@ -223,7 +227,8 @@ async function doubleCoins() {
   G.adBreak = true; document.getElementById('resDouble').style.display = 'none';
   G.state = 'ad'; UI.show('block');
   const ok = await cg.rewarded();
-  if (ok) { save.coins += G.resCoins; persist(); UI.setCoins(save.coins); }
+  if (ok) { save.coins += G.resCoins; persist(); UI.setCoins(save.coins); sfx('buy'); }
+  else UI.popup('NO VIDEO RIGHT NOW', innerWidth / 2, innerHeight * 0.18, 'gold');
   G.state = 'over'; UI.show('result'); UI.setResultCoins(ok ? G.resCoins * 2 : G.resCoins);
   document.querySelectorAll('#result .bigstar').forEach((el, i) => { if (i < G.lastResult.stars) el.classList.add('got'); });
 }
@@ -231,13 +236,13 @@ async function doubleCoins() {
 // ---------- 選單 ----------
 function toMenu() {
   if (G.state === 'playing' || G.state === 'paused') cg.gameplayStop();
-  G.state = 'menu'; G.hold = false;
+  G.state = 'menu'; clearHold();
   loadLevel(Math.min(save.last, save.unlocked));
   UI.show('menu'); UI.setCoins(save.coins); UI.hint(null);
   document.getElementById('playBtn').textContent = `PLAY ${levelLabel(Math.min(save.unlocked, LEVEL_COUNT))}`;
 }
-function openLevels() { sfx('click'); G.state = 'levels'; UI.setWorldTab(save.unlocked); UI.renderLevels(save, (n) => { sfx('click'); startLevel(n); }); UI.show('levels'); }
-function openShop() { sfx('click'); G.state = 'shop'; renderShop(); UI.show('shop'); }
+function openLevels() { sfx('click'); if (G.sim && G.sim.mode !== 'perch') resetRun(); clearHold(); G.state = 'levels'; UI.setWorldTab(save.unlocked); UI.renderLevels(save, (n) => { sfx('click'); startLevel(n); }); UI.show('levels'); }
+function openShop() { sfx('click'); if (G.sim && G.sim.mode !== 'perch') resetRun(); clearHold(); G.state = 'shop'; renderShop(); UI.show('shop'); }
 function renderShop() {
   UI.renderShop(save, (tab, it) => {
     if (!save.owned.includes(it.id)) {
@@ -251,11 +256,11 @@ function renderShop() {
 }
 function pause() {
   if (G.state !== 'playing') return;
-  G.state = 'paused'; G.hold = false; cg.gameplayStop(); UI.show('pause');
+  G.state = 'paused'; clearHold(); cg.gameplayStop(); UI.show('pause');
 }
 function resume() {
   if (G.state !== 'paused') return;
-  sfx('click'); G.state = 'playing'; G.hold = false; UI.show(null); cg.gameplayStart();
+  sfx('click'); G.state = 'playing'; clearHold(); UI.show(null); cg.gameplayStart();
 }
 function toggle(key) {
   save[key] = !save[key]; persist(); UI.setToggles(save);
@@ -264,17 +269,24 @@ function toggle(key) {
 
 // ---------- 輸入 ----------
 const isUI = (t) => t instanceof Element && !!t.closest('button, .panel, .card, .lvl, .tab');
-function press() { if (G.state === 'playing' && G.sim.mode !== 'dead') G.hold = true; }
+const held = { key: false, ptr: new Set() };
+const syncHold = () => { G.hold = G.state === 'playing' && (held.key || held.ptr.size > 0); };
+function press() { return G.state === 'playing' && G.sim.mode !== 'dead' && performance.now() > (G.ignorePressUntil ?? 0); }
 addEventListener('pointerdown', (e) => {
   A.initAudio();
   if (isUI(e.target)) return;
-  if (G.state === 'playing') { e.preventDefault(); press(); }
+  if (G.state === 'playing') { e.preventDefault(); if (press()) { held.ptr.add(e.pointerId); syncHold(); } }
 }, { passive: false });
-const up = () => { G.hold = false; };
-addEventListener('touchstart', (e) => { A.initAudio(); if (isUI(e.target)) return; if (G.state === 'playing') { e.preventDefault(); press(); } }, { passive: false });
-addEventListener('touchend', (e) => { if (e.touches.length === 0) up(); });
-addEventListener('touchcancel', up);
-addEventListener('pointerup', up); addEventListener('pointercancel', up); addEventListener('blur', () => { up(); pause(); });
+const ptrUp = (e) => { held.ptr.delete(e.pointerId); syncHold(); };
+const clearHold = () => { held.key = false; held.ptr.clear(); syncHold(); };
+// 合成 TouchEvent（不會產生 pointer 事件）也要能玩：用 'touch' 當一個指標
+addEventListener('touchstart', (e) => { A.initAudio(); if (isUI(e.target)) return; if (G.state === 'playing') { e.preventDefault(); if (press()) { held.ptr.add('touch'); syncHold(); } } }, { passive: false });
+addEventListener('touchend', (e) => { if (e.touches.length === 0) { held.ptr.clear(); syncHold(); } });
+addEventListener('touchcancel', clearHold);
+addEventListener('pointerup', ptrUp); addEventListener('pointercancel', ptrUp);
+// iframe 外放開滑鼠收不到 pointerup：回來時 buttons=0 就當放開
+addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse' && e.buttons === 0 && held.ptr.has(e.pointerId)) ptrUp(e); });
+addEventListener('blur', () => { clearHold(); pause(); });
 addEventListener('contextmenu', (e) => e.preventDefault());
 const HOLD_KEYS = new Set(['Space', 'ArrowUp', 'KeyW', 'ArrowRight', 'KeyD']);
 addEventListener('keydown', (e) => {
@@ -283,15 +295,15 @@ addEventListener('keydown', (e) => {
   if (e.repeat) return;
   const act = HOLD_KEYS.has(e.code) || e.code === 'Enter';
   if (G.state === 'playing') {
-    if (HOLD_KEYS.has(e.code)) press();
+    if (HOLD_KEYS.has(e.code)) { if (press()) { held.key = true; syncHold(); } }
     else if (e.code === 'Escape' || e.code === 'KeyP') pause();
-    else if (e.code === 'KeyR') { resetRun(); }
+    else if (e.code === 'KeyR') { clearHold(); resetRun(); }
   } else if (G.state === 'paused') { if (act || e.code === 'Escape' || e.code === 'KeyP') resume(); }
   else if (G.state === 'menu') { if (act) startLevel(Math.min(save.unlocked, LEVEL_COUNT)); }
   else if (G.state === 'over') { if (act && performance.now() - G.resultAt > 700) afterResult(true); }
   else if ((G.state === 'levels' || G.state === 'shop') && e.code === 'Escape') { sfx('click'); toMenu(); }
 });
-addEventListener('keyup', (e) => { if (HOLD_KEYS.has(e.code)) G.hold = false; });
+addEventListener('keyup', (e) => { if (HOLD_KEYS.has(e.code)) { held.key = false; syncHold(); } });
 document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
 
 const on = (id, fn) => document.getElementById(id).addEventListener('click', fn);
@@ -335,7 +347,8 @@ function frame(now) {
   const s = G.sim;
   if (s && (G.state === 'playing' || G.state === 'menu' || G.state === 'over' || G.state === 'levels' || G.state === 'shop')) {
     G.acc += dt; let n = 0;
-    while (G.acc >= T.DT && n < 14) { step(s, T.DT, G.hold && G.state === 'playing'); G.acc -= T.DT; n++; }
+    const ap = window.__game.autoplay && G.state === 'playing' ? (G.bot ??= makeBot(...window.__game.autoplay)) : null;
+    while (G.acc >= T.DT && n < 14) { step(s, T.DT, ap ? ap(s) : G.hold && G.state === 'playing'); G.acc -= T.DT; n++; }
     if (n >= 14) G.acc = 0;
     for (const e of s.events) onEvent(e);
     s.events.length = 0;
@@ -348,7 +361,7 @@ function updatePlaying(realDt, dt) {
   const s = G.sim;
   if (G.comboT > 0) { G.comboT -= dt; if (G.comboT <= 0) { if (G.combo >= 5) pop(`COMBO x${G.combo}!`, s.x, s.y + 3, 'gold'); G.combo = 0; } }
   G.comboPulse = Math.max(0, G.comboPulse - realDt * 5);
-  if (G.restartT > 0) { G.restartT -= realDt; if (G.restartT <= 0) resetRun(); }
+  if (G.restartT > 0) { G.restartT -= realDt; if (G.restartT <= 0) { resetRun(); cg.gameplayStart(); } }
   if (G.winT > 0) { G.winT -= realDt; if (G.winT <= 0) finishLevel(); }
   UI.hud({ level: G.level, score: G.score, flies: s.fliesGot, fliesTotal: G.lv.flies.length, time: s.time, combo: G.combo, comboLeft: Math.max(0, G.comboT / T.COMBO_WINDOW), comboPulse: G.comboPulse });
   // 新手提示：前幾次黏住之前，在目標鉤點上顯示 HOLD、擺到前上方時顯示 RELEASE
@@ -395,17 +408,19 @@ function render(realDt, dt) {
   s.y += yOff; frog.update(s, realDt, tReal, tip, mood); s.y -= yOff;
   lvView.update(s, tReal, realDt, mouth);
   const sp = Math.hypot(s.vx, s.vy);
+  ambient(s, dt);
   fx.update(dt, realDt, s, sp, G.state === 'playing' && s.mode !== 'dead');
   UI.tickFlash(realDt);
   view.post.amount *= Math.exp(-realDt * 7);
   // 鏡頭：平滑跟隨 + 速度前瞻 + 隨速度拉遠 + FOV 衝擊 + 慢動作推近
   const cam = view.camera, c = G.cam;
   let tx, ty, td;
-  if (G.state === 'menu' || G.state === 'levels' || G.state === 'shop') { tx = s.x - (G.state === 'shop' ? 5.2 : 5.8); ty = 5.4; td = G.state === 'shop' ? 10 : 12; menuIdle(realDt); }
+  if (G.state === 'menu' || G.state === 'levels' || G.state === 'shop') { tx = s.x - cam.aspect * (G.state === 'shop' ? 2.9 : 3.3); ty = 5.4; td = G.state === 'shop' ? 10 : 12; menuIdle(realDt); }
   else {
     const lx = Math.max(-6, Math.min(9, s.vx * T.CAM_LOOKAHEAD)), ly = Math.max(-4, Math.min(4, s.vy * T.CAM_LOOKAHEAD * 0.6));
-    tx = s.x + 3 + lx; ty = Math.max(T.CAM_MIN_Y, s.y + ly - 0.5);
-    td = Math.min(T.CAM_DIST_MAX, T.CAM_DIST + Math.max(0, sp - 9) * T.CAM_DIST_SPEED) - G.slowAmt * 4;
+    tx = s.x + 3 + lx; ty = Math.max(T.CAM_MIN_Y, s.y + ly + 1.2);
+    // 手機橫向（矮螢幕）拉近一點，青蛙才不會太小
+    td = (Math.min(T.CAM_DIST_MAX, T.CAM_DIST + Math.max(0, sp - 9) * T.CAM_DIST_SPEED) - G.slowAmt * 4) * (innerHeight < 500 ? 0.82 : 1);
     if (s.mode === 'won') { tx = s.x + 1; ty = Math.max(5, s.y + 2.5); td = 17; }
   }
   const k = 1 - Math.exp(-realDt * 4.5);
@@ -414,9 +429,21 @@ function render(realDt, dt) {
   const fov = T.CAM_FOV + G.fovKick - G.slowAmt * 7;
   if (Math.abs(cam.fov - fov) > 0.01) { cam.fov = fov; cam.updateProjectionMatrix(); }
   cam.position.set(c.x + fx.shake.x, c.y + fx.shake.y, c.d);
-  cam.rotation.set(-0.05, 0, fx.shake.roll);
+  cam.rotation.set(-0.04, 0, fx.shake.roll);
   view.update(tReal, c.x, Math.max(4, s.y));
   view.render();
+}
+
+// 環境粒子：風扇的上升氣流、蒼蠅的嗡嗡點點（只在鏡頭附近生）
+function ambient(s, dt) {
+  if (dt <= 0) return;
+  const lv = G.lv, cx = G.cam.x;
+  for (const f of lv.fans) if (Math.abs(f.x - cx) < 24 && Math.random() < dt * 14) fx.spawn(f.x + (Math.random() - 0.5) * f.w, f.y0 + 0.5, 0.3, 0, 10 + Math.random() * 6, 0, (f.y1 - f.y0) / 14, 0.3, 0, 0, 2, '#ffffff');
+  for (let i = 0; i < lv.flies.length; i++) {
+    if (s.flies[i] || Math.abs(lv.flies[i].x - cx) > 22 || Math.random() > dt * 5) continue;
+    flyPos(lv.flies[i], s.t, tmp);
+    fx.spawn(tmp.x + (Math.random() - 0.5) * 0.8, tmp.y + (Math.random() - 0.5) * 0.8, 0.4, (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2, 0, 0.5, 0.09, 0, 1, 0, '#fffbe0');
+  }
 }
 
 // 選單裡的青蛙偶爾舔一下空氣（世界是活的）
@@ -431,9 +458,13 @@ async function boot() {
   cg.loadingStart();
   await cg.init();
   save = cg.loadJSON(SAVE_KEY, DEFAULT_SAVE);
-  for (const k of ['stars', 'best']) if (typeof save[k] !== 'object' || !save[k]) save[k] = {};
-  if (!Array.isArray(save.owned)) save.owned = ['tree', 'none'];
-  if (!Array.isArray(save.worldsDone)) save.worldsDone = [];
+  const int = (v, lo, hi, d) => (Number.isFinite(+v) ? Math.max(lo, Math.min(hi, Math.floor(+v))) : d);
+  save.unlocked = int(save.unlocked, 1, LEVEL_COUNT, 1); save.last = int(save.last, 1, LEVEL_COUNT, 1);
+  save.coins = int(save.coins, 0, 1e9, 0); save.results = int(save.results, 0, 1e9, 0); save.grabs = int(save.grabs, 0, 1e9, 0);
+  save.music = save.music !== false; save.sfx = save.sfx !== false;
+  for (const k of ['stars', 'best']) save[k] = typeof save[k] === 'object' && save[k] ? { ...save[k] } : {};
+  save.owned = Array.isArray(save.owned) ? [...save.owned] : ['tree', 'none'];
+  save.worldsDone = Array.isArray(save.worldsDone) ? [...save.worldsDone] : [];
   frog.setSkin(skinOf()); fx.setTrail(trailOf());
   A.setMusic(save.music); A.setSfx(save.sfx); UI.setToggles(save);
   cg.onMute((m) => A.setMuted(m));
