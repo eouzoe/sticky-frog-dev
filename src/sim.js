@@ -209,8 +209,13 @@ export function step(s, dt, hold) {
       const vn = s.vx * nx + s.vy * ny;
       if (vn < 0) {
         const out = Math.max(T.MUSH_MIN_BOUNCE, -vn * T.MUSH_REST);
-        s.vx -= vn * nx; s.vy -= vn * ny;
-        s.vx += nx * out; s.vy += ny * out;
+        if (ny > 0.25) {
+          // 從上面踩到＝彈跳床：固定的往前上方彈出，可預測（玩家要練的是「落在蘑菇上」，不是賭彈多遠）
+          s.vx = (s.vx >= -0.5 ? 1 : -1) * T.MUSH_VX; s.vy = T.MUSH_VY;
+        } else {
+          s.vx -= vn * nx; s.vy -= vn * ny;
+          s.vx += nx * out; s.vy += ny * out;
+        }
         s.omega += (s.vx >= 0 ? -1 : 1) * 3;
         s.bounces++;
         s.events.push({ type: 'bounce', i, speed: out, x: m.x, y: m.y + m.r });

@@ -26,6 +26,8 @@ export const TUNE = {
   RING_R: 1.9,
   MUSH_MIN_BOUNCE: 17,
   MUSH_REST: 1.0,
+  MUSH_VX: 10, // 從上面踩到蘑菇：固定往前 10、往上 19 彈出（可預測，連續蘑菇間距剛好一跳）
+  MUSH_VY: 19,
   FAN_ACC: 64,
   WATER_Y: 0,
   COMBO_WINDOW: 2.8, // 連擊：這麼多秒內沒有新動作就斷

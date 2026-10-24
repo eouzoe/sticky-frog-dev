@@ -17,7 +17,7 @@ function mulberry32(a) {
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 // 部分關卡換種子（tests/sim-check.mjs 的自動玩家破不了或太難的）
-export const SALT = { 23: 1, 37: 1, 38: 1, 47: 1, 50: 1 };
+export const SALT = { 20: 1, 26: 1, 44: 1, 50: 1, 57: 1 };
 
 export function generateLevel(n, salt = SALT[n] ?? 0) {
   const r = mulberry32(n * 7919 + 1013 + salt * 100003);
@@ -50,6 +50,10 @@ export function generateLevel(n, salt = SALT[n] ?? 0) {
     if (n >= 14) types.push('saw');
     if (n >= 20) types.push('spikeHigh', 'move');
     if (n >= 26) types.push('saw', 'spikeLow');
+    if (n >= 4) types.push('swarm');
+    if (n >= 9) types.push('mushChain');
+    if (n >= 12) types.push('ringArc');
+    if (n >= 24) types.push('tunnel');
     let type = pick(types);
     if (type === prevType && type !== 'hook') type = 'hook';
     prevType = type;
@@ -70,7 +74,7 @@ export function generateLevel(n, salt = SALT[n] ?? 0) {
       // 寬一點的間隔，中間放一朵彈跳蘑菇接住下墜
       const gap = 14 + r() * 2 + diff * 2;
       const mx = x + gap * 0.5;
-      L.mush.push({ x: mx, y: 1.6 + r() * 1.2, r: 1.5 });
+      L.mush.push({ x: mx, y: 1.6 + r() * 1.2, r: 1.9 });
       fly(mx, 7.5 + r() * 2);
       x += gap; y = ny; hook(x, y);
     } else if (type === 'ring') {
@@ -92,6 +96,29 @@ export function generateLevel(n, salt = SALT[n] ?? 0) {
       L.fans.push({ x: fx, y0: 0.4, y1: 12 + r() * 2, w: 3.2 });
       fly(fx, 14.5);
       x += gap; y = ny; hook(x, y);
+    } else if (type === 'swarm') {
+      // 一串蒼蠅沿著擺盪弧線排開：想拿蒼蠅星就要盪低一點
+      x += dx; y = ny; hook(x, y);
+      for (let k = 0; k < 3; k++) fly(x - dx * (0.75 - k * 0.25), y - 6.2 + Math.abs(k - 1) * 1.4);
+    } else if (type === 'mushChain') {
+      // 連續蘑菇彈跳：BOING BOING BOING
+      const cnt = 2 + (r() < 0.4 + diff * 0.4 ? 1 : 0);
+      const hop = (2 * TUNE.MUSH_VX * TUNE.MUSH_VY) / TUNE.GRAVITY; // 一跳的水平距離
+      let mx = x + 7;
+      for (let k = 0; k < cnt; k++) { L.mush.push({ x: mx, y: 2, r: 1.9 }); fly(mx + hop * 0.5, 2 + 1.9 + TUNE.MUSH_VY ** 2 / (2 * TUNE.GRAVITY)); mx += hop; }
+      mx -= hop;
+      x = mx + 2; y = ny; hook(x, y);
+    } else if (type === 'ringArc') {
+      // 兩個往上排的圈圈：甩高一點就連穿
+      x += dx + 3; const top = Math.max(y, ny);
+      L.rings.push({ x: x - (dx + 3) * 0.62, y: top + 2.6 }, { x: x - (dx + 3) * 0.3, y: top + 4.6 });
+      y = ny; hook(x, y);
+    } else if (type === 'tunnel') {
+      // 上下夾擊：盪太低或飛太高都會刺到
+      x += dx + 0.5; y = ny; hook(x, y);
+      const mx = x - (dx + 0.5) * 0.5;
+      L.spikes.push({ x: mx, y: 2.6 + diff * 1.4, r: 0.95, pole: true }, { x: mx, y: y + 5.6, r: 0.95, hang: true });
+      fly(mx, y - 1.5);
     } else if (type === 'saw') {
       x += dx + 0.5; y = ny; hook(x, y);
       const sx = x - (dx + 0.5) * 0.5;

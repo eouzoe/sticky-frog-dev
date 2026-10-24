@@ -130,7 +130,7 @@ export function createLevelView(scene) {
     inst('fly', GEO.flyBody, mats.fly, level.flies.length, false); inst('wing', GEO.wing, mats.wing, level.flies.length * 2, false);
     st.hookWob = new Float32Array(H); st.hookWobV = new Float32Array(H);
     st.mushK = new Float32Array(level.mush.length); st.mushKV = new Float32Array(level.mush.length);
-    level.mush.forEach((m, i) => set(M.stem, i, m.x, m.y + 0.05, -0.1, 0, 0, 0, 1, m.y + 1.2, 1));
+    level.mush.forEach((m, i) => set(M.stem, i, m.x, m.y + 0.05, -0.1, 0, 0, 0, m.r / 1.5, m.y + 1.2, m.r / 1.5));
     level.spikes.forEach((s, i) => {
       if (s.pole) set(M.pole, i, s.x, -1, -0.2, 0, 0, 0, 1, s.y + 1, 1);
       else set(M.pole, i, s.x, s.y, -0.2, 0, 0, 0, 0.7, 40, 0.7);
@@ -186,7 +186,8 @@ export function createLevelView(scene) {
     lv.mush.forEach((m, i) => {
       st.mushKV[i] += (-st.mushK[i] * 260 - st.mushKV[i] * 9) * dt; st.mushK[i] += st.mushKV[i] * dt;
       const k = st.mushK[i];
-      set(M.cap, i, m.x, m.y - 0.15, 0, 0, 0, Math.sin(t * 1.7 + i) * 0.04, 1 - k * 0.6, 1 + k, 1 - k * 0.6);
+      const sc = m.r / 1.5;
+      set(M.cap, i, m.x, m.y - 0.15, 0, 0, 0, Math.sin(t * 1.7 + i) * 0.04, sc * (1 - k * 0.6), sc * (1 + k), sc * (1 - k * 0.6));
     });
     if (lv.mush.length) M.cap.instanceMatrix.needsUpdate = true;
     lv.spikes.forEach((sp, i) => set(M.spike, i, sp.x, sp.y + (sp.hang ? Math.sin(t * 1.6 + i) * 0.15 : 0), 0, t * 0.5, t * 0.7 + i, 0, 1));

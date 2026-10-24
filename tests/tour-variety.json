@@ -1,0 +1,83 @@
+[
+ {
+  "wait": 2500
+ },
+ {
+  "eval": "window.__game.autoplay=[0.4,-2]"
+ },
+ {
+  "eval": "window.__game.start(12)"
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "shot": "v12-0"
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "shot": "v12-1"
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "shot": "v12-2"
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "shot": "v12-3"
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "shot": "v12-4"
+ },
+ {
+  "eval": "window.__game.start(24)"
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "shot": "v24-0"
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "shot": "v24-1"
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "shot": "v24-2"
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "shot": "v24-3"
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "shot": "v24-4"
+ },
+ {
+  "eval": "window.__game.autoplay=null; window.__game.forceWin()"
+ },
+ {
+  "wait": 3500
+ },
+ {
+  "shot": "v-result"
+ }
+]

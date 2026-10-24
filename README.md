@@ -50,6 +50,8 @@
 | 17 | 手機震動（包 try） | `src/main.js` `vibrate()` |
 | 18 | 輕量後製（CSS 暈影；受擊色差脈衝，只有脈衝時多一個 pass，低畫質自動關） | `index.html` `#vignette`、`src/scene.js` `render()` |
 
+另外：關卡進度條（含本關最遠紀錄標記）、死在 60% 之後跳「SO CLOSE! 87%」、擦過危險物「CLOSE CALL!」、每關開場大字標題、世界通關 `happytime`。
+
 另外：舌頭是彈性緞帶（射出時抖動、黏上時舌尖「啵」放大、鉤點花彈簧晃動）、大眼睛瞳孔跟加速度晃、看向目標鉤點、快轉時縮成一團。
 
 ## 調參常數在哪
@@ -79,9 +81,22 @@
 
 ## 驗證
 
-- `node tests/sim-check.mjs`：60/60 關可破。
-- 冒煙：見 `/Users/eason/Studio/games/crazygames/_out/hook-hero/DONE.md`。
+- `node tests/sim-check.mjs`：自動玩家 12 組參數跑 60 關，60/60 可破（exit 0）。
+- 冒煙（一律包 heavy.sh）：
+  ```
+  /Users/eason/Studio/games/crazygames/_tools/heavy.sh /Users/eason/Studio/games/crazygames/_tools/smoke.sh /Users/eason/Studio/games/crazygames/hook-hero 5715 /Users/eason/Studio/games/crazygames/hook-hero/tests/smoke-desktop.json <輸出資料夾> [--no-sdk]
+  /Users/eason/Studio/games/crazygames/_tools/heavy.sh /Users/eason/Studio/games/crazygames/_tools/smoke.sh /Users/eason/Studio/games/crazygames/hook-hero 5715 /Users/eason/Studio/games/crazygames/hook-hero/tests/smoke-mobile.json <輸出資料夾> --mobile
+  ```
+  桌機步驟用真實的 Space 按住／放開序列玩第 1 關（序列取自自動玩家，在 Node 加 ±30 ms 抖動實測約 9 成能自然破關、過半會 TRIPLE FLIP），斷言黏上 ≥ 3 次、前進、分數 > 0；沒自然落地才用 `__game.forceWin()` 收尾。
+- 巡覽截圖（非驗收）：`tests/tour-worlds.json`、`tests/tour-hazards.json`、`tests/tour-skins.json`（用 `__game.autoplay`／`__game.look()`）。
+- 除錯掛鉤 `window.__game`：`state`、`level`、`score`、`attachesTotal`、`flips`、`bestFlip`、`maxX`、`deaths`、`fps`、`quality`、`drawCalls`、`result`；`start(n)`、`forceWin()`、`look(skin, trail)`、`autoplay = [rel, grabVy]`。
+
+## 大小
+
+`dist` 約 616 KB、2 個檔（index.html＋一支 JS，three.js 佔大部分；沒有任何圖片、音檔、字型）。
 
 ## 已知問題
 
-見 DONE.md。
+- 音效／音樂只在無頭瀏覽器跑過（無錯誤），沒有人耳試聽過音量平衡。
+- 難度只用自動玩家驗證「可破」，後段關卡（40 關以後）對真人可能偏難，需要真人試玩調 `src/level.js` 的間距與危險物高度。
+- 失焦（點到 iframe 外）會自動暫停，這是刻意的。

@@ -117,6 +117,7 @@ export function showResult(r, sfx) {
   const stars = document.querySelectorAll('#result .bigstar');
   stars.forEach((s) => s.classList.remove('got'));
   $('resBest').style.display = 'none';
+  const un = $('resUnlock'); un.style.display = 'none';
   const rows = [
     ['TIME', `${r.time.toFixed(1)}s`, r.time <= r.par ? '' : `par ${r.par}s`],
     ['FLIES', `${r.flies}/${r.fliesTotal}`, r.fliesOk ? '' : `need ${r.fliesNeed}`],
@@ -140,7 +141,10 @@ export function showResult(r, sfx) {
     const el = $('rs3'); if (el) el.textContent = String(Math.round(r.score * e));
     $('resCoins').textContent = String(Math.round(r.coins * e));
     if (u < 1) { if (Math.random() < 0.5) sfx('coin'); requestAnimationFrame(tick); }
-    else if (r.newBest) $('resBest').style.display = '';
+    else {
+      if (r.newBest) $('resBest').style.display = '';
+      if (r.unlock) { un.textContent = `NEW: ${r.unlock.toUpperCase()} READY TO BUY!`; un.style.display = ''; sfx('buy'); }
+    }
   };
   setTimeout(() => requestAnimationFrame(tick), 250);
 }

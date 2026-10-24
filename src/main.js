@@ -209,7 +209,9 @@ function finishLevel() {
   save.best[n] = Math.max(save.best[n] ?? 0, G.score);
   save.stars[n] = Math.max(save.stars[n] ?? 0, stars);
   save.unlocked = Math.max(save.unlocked, Math.min(LEVEL_COUNT, n + 1));
+  const before = save.coins;
   save.coins += coins; save.results++;
+  const unlock = [...SKINS, ...TRAILS].filter((it) => !save.owned.includes(it.id) && it.price > before && it.price <= save.coins).sort((a, b) => a.price - b.price)[0];
   let title = stars === 3 ? 'PERFECT!' : 'LEVEL CLEAR!';
   if (n % 15 === 0 && !save.worldsDone.includes(n)) { save.worldsDone.push(n); title = 'WORLD CLEAR!'; cg.happytime(); }
   persist();
@@ -218,7 +220,7 @@ function finishLevel() {
   G.state = 'over'; G.resultAt = performance.now(); G.adBreak = false; clearHold();
   cg.gameplayStop(); UI.hint(null);
   UI.setCoins(save.coins);
-  UI.showResult({ title, time: s.time, par: lv.par, flies: s.fliesGot, fliesTotal: lv.flies.length, fliesNeed, fliesOk, flips: s.flipsTotal, score: G.score, best: save.best[n], coins, newBest, offerDouble: cg.ready && save.results % 3 === 0 }, sfx);
+  UI.showResult({ title, time: s.time, par: lv.par, flies: s.fliesGot, fliesTotal: lv.flies.length, fliesNeed, fliesOk, flips: s.flipsTotal, score: G.score, best: save.best[n], coins, newBest, unlock: unlock?.name, offerDouble: cg.ready && save.results % 3 === 0 }, sfx);
   G.resCoins = coins;
 }
 async function afterResult(next) {
@@ -246,6 +248,7 @@ function toMenu() {
   loadLevel(Math.min(save.last, save.unlocked));
   UI.show('menu'); UI.setCoins(save.coins); UI.hint(null);
   document.getElementById('playBtn').textContent = `PLAY ${levelLabel(Math.min(save.unlocked, LEVEL_COUNT))}`;
+  document.getElementById('shopBtn').classList.toggle('badge', [...SKINS, ...TRAILS].some((it) => !save.owned.includes(it.id) && it.price <= save.coins));
 }
 function openLevels() { sfx('click'); if (G.sim && G.sim.mode !== 'perch') resetRun(); clearHold(); G.state = 'levels'; UI.setWorldTab(save.unlocked); UI.renderLevels(save, (n) => { sfx('click'); startLevel(n); }); UI.show('levels'); }
 function openShop() { sfx('click'); if (G.sim && G.sim.mode !== 'perch') resetRun(); clearHold(); G.state = 'shop'; renderShop(); UI.show('shop'); }
