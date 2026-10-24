@@ -153,12 +153,14 @@ export function createLevelView(scene) {
     const flower = new THREE.Group(); flower.position.set(g.x + g.w * 0.3, g.y + 0.2, -1.2); group.add(flower);
     for (let i = 0; i < 6; i++) { const p = new THREE.Mesh(GEO.petal, mats.petal); p.scale.set(0.9, 0.5, 1.3); p.rotation.set(-0.9, (i / 6) * TAU, 0); p.position.set(Math.sin((i / 6) * TAU) * 0.6, 0.3, Math.cos((i / 6) * TAU) * 0.6); flower.add(p); }
     const fc = new THREE.Mesh(GEO.bud, mats.bud); fc.position.y = 0.6; flower.add(fc);
-    // 終點後面的一叢大葉子（擋住飛過頭的青蛙）
-    const leafA = lam({ color: w.vine }), leafB = lam({ color: w.pad });
-    [[0.2, 2, 2.8, leafA], [0.6, 7, 3, leafB], [0.3, 12, 2.7, leafA], [0.7, 16.5, 2.4, leafB], [0.4, 20.5, 2.1, leafA]].forEach(([dx, y, r, m], i) => {
-      const b = new THREE.Mesh(new THREE.IcosahedronGeometry(r, 0), m); b.position.set(g.wall + r * 0.8 + dx, y, -3.4 - (i % 2) * 0.8); b.rotation.set(i, i * 2, 0);
-      b.castShadow = b.receiveShadow = true; group.add(b);
-    });
+    // 終點後面的葉簾（擋住飛過頭的青蛙）：一條細細的葉子柱，貼著遊玩平面，不會變成擋鏡頭的前景大塊
+    const leafA = lam({ color: w.vine }), leafB = lam({ color: w.pad }), leafGeo = new THREE.IcosahedronGeometry(0.8, 0);
+    for (let i = 0; i < 14; i++) {
+      const b = new THREE.Mesh(leafGeo, i % 2 ? leafA : leafB);
+      b.position.set(g.wall + 0.5 + (i % 2) * 0.35, 0.6 + i * 1.6, -0.6); b.scale.set(0.8, 1.3, 0.5); b.rotation.set(0, 0, (i % 2 ? 1 : -1) * 0.5);
+      group.add(b);
+    }
+    const vine = new THREE.Mesh(GEO.vine, mats.vine); vine.position.set(g.wall + 0.65, -1, -0.7); vine.scale.set(2, 26, 2); group.add(vine);
     // 旗子
     const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 6, 5), lam({ color: '#ffffff' })); pole.position.set(g.x - 1.5, g.y + 3, -1.6); group.add(pole);
     const flag = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 1.4, 4, 1), new THREE.MeshLambertMaterial({ color: '#ff6fb5', side: THREE.DoubleSide })); flag.position.set(g.x - 0.4, g.y + 5.2, -1.6); group.add(flag); st.flag = flag;

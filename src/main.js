@@ -64,27 +64,33 @@ function loadLevel(n) {
   A.setWorld(G.lv.world);
   resetRun();
 }
+// 唯一的「進入遊玩」入口：開關、重生、續玩、R 重來、下一關都經過這裡呼叫 gameplayStart（cg.js 會去重）
+function enterPlaying() { G.state = 'playing'; cg.gameplayStart(); }
 function resetRun() {
   G.sim = createSim(G.lv); G.score = 0; G.combo = 0; G.comboT = 0; G.restartT = 0; G.winT = 0; G.winAnim = 0; G.acc = 0;
   G.slowT = 0; G.hitStop = 0; lvView.reset(); fx.clear(); fx.resetTrail(G.sim.x, G.sim.y); UI.dieText(null);
   frog.squash(0.7, 0);
+  if (G.state === 'playing') enterPlaying();
 }
 function startLevel(n) {
   G.ignorePressUntil = performance.now() + 250;
   A.initAudio();
   loadLevel(n);
   save.last = n; persist();
-  G.state = 'playing'; clearHold(); UI.show(null); UI.hint(null);
+  enterPlaying(); clearHold(); UI.show(null); UI.hint(null);
   G.cam.x = G.sim.x + 6; G.cam.y = T.CAM_MIN_Y;
-  UI.popup((n - 1) % 15 === 0 ? `${WORLDS[G.lv.world].name}  ${levelLabel(n)}` : `LEVEL ${levelLabel(n)}`, innerWidth / 2, innerHeight * 0.3, 'big');
-  cg.gameplayStart();
+  UI.popup((n - 1) % 15 === 0 ? `${WORLDS[G.lv.world].name}  ${levelLabel(n)}` : `LEVEL ${levelLabel(n)}`, innerWidth / 2, bigY(), 'big');
 }
 
 // ---------- 連擊與分數 ----------
 const mult = () => 1 + Math.min(3, Math.floor(G.combo / 5) * 0.5);
 function addCombo() { G.combo++; G.comboT = T.COMBO_WINDOW; G.comboPulse = 1; }
 function addScore(v) { const s = Math.round(v * mult()); G.score += s; return s; }
-function pop(text, x, y, cls) { const p = view.project(x, y, 0.5); UI.popup(text, p.x, p.y, cls); }
+const bigY = () => Math.max(132, innerHeight * 0.27);
+function pop(text, x, y, cls) {
+  if (cls === 'big') { UI.popup(text, innerWidth / 2, bigY(), cls); return; }
+  const p = view.project(x, y, 0.5); UI.popup(text, p.x, p.y, cls);
+}
 function slowmo(t = T.SLOWMO_TIME) { G.slowT = Math.max(G.slowT, t); A.duckMusic(0.3, t); }
 
 function onEvent(e) {
@@ -226,7 +232,7 @@ function finishLevel() {
 async function afterResult(next) {
   if (G.state !== 'over') return;
   sfx('click');
-  if (!G.adBreak) { G.state = 'ad'; UI.show('block'); await Promise.race([cg.midgame(), new Promise((r) => setTimeout(r, 45000))]); }
+  if (!G.adBreak) { G.state = 'ad'; UI.show('block'); await cg.midgame(); }
   if (next && G.level >= LEVEL_COUNT) { toMenu(); return; }
   startLevel(next ? G.level + 1 : G.level);
 }
@@ -269,7 +275,7 @@ function pause() {
 }
 function resume() {
   if (G.state !== 'paused') return;
-  sfx('click'); G.state = 'playing'; clearHold(); UI.show(null); cg.gameplayStart();
+  sfx('click'); enterPlaying(); clearHold(); UI.show(null);
 }
 function toggle(key) {
   save[key] = !save[key]; persist(); UI.setToggles(save);
@@ -371,7 +377,7 @@ function updatePlaying(realDt, dt) {
   const s = G.sim;
   if (G.comboT > 0) { G.comboT -= dt; if (G.comboT <= 0) { if (G.combo >= 5) pop(`COMBO x${G.combo}!`, s.x, s.y + 3, 'gold'); G.combo = 0; } }
   G.comboPulse = Math.max(0, G.comboPulse - realDt * 5);
-  if (G.restartT > 0) { G.restartT -= realDt; if (G.restartT <= 0) { resetRun(); cg.gameplayStart(); } }
+  if (G.restartT > 0) { G.restartT -= realDt; if (G.restartT <= 0) resetRun(); }
   if (G.winT > 0) { G.winT -= realDt; if (G.winT <= 0) finishLevel(); }
   Object.assign(hudData, { level: G.level, score: G.score, flies: s.fliesGot, fliesTotal: G.lv.flies.length, time: s.time, prog: Math.max(0, Math.min(1, s.x / G.lv.goal.x)), best: G.bestProg, combo: G.combo, comboLeft: Math.max(0, G.comboT / T.COMBO_WINDOW), comboPulse: G.comboPulse });
   UI.hud(hudData);
