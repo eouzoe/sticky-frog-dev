@@ -1,0 +1,99 @@
+[
+ {
+  "wait": 2500
+ },
+ {
+  "shot": "m01-menu"
+ },
+ {
+  "click": "#playBtn"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "assert": "window.__game.state === 'playing'",
+  "msg": "手機按 PLAY 進遊戲"
+ },
+ {
+  "drag": [
+   [
+    500,
+    250
+   ],
+   [
+    502,
+    250
+   ]
+  ],
+  "ms": 1100
+ },
+ {
+  "wait": 250
+ },
+ {
+  "drag": [
+   [
+    500,
+    250
+   ],
+   [
+    502,
+    250
+   ]
+  ],
+  "ms": 500
+ },
+ {
+  "wait": 250
+ },
+ {
+  "drag": [
+   [
+    500,
+    250
+   ],
+   [
+    502,
+    250
+   ]
+  ],
+  "ms": 500
+ },
+ {
+  "wait": 120
+ },
+ {
+  "shot": "m02-play"
+ },
+ {
+  "drag": [
+   [
+    500,
+    250
+   ],
+   [
+    502,
+    250
+   ]
+  ],
+  "ms": 500
+ },
+ {
+  "wait": 250
+ },
+ {
+  "eval": "({att: window.__game.attachesTotal, maxX: window.__game.maxX, fps: window.__game.fps})"
+ },
+ {
+  "assert": "window.__game.attachesTotal >= 1",
+  "msg": "觸控按住真的讓舌頭黏上"
+ },
+ {
+  "assert": "window.__game.maxX > 5",
+  "msg": "觸控操作讓青蛙前進"
+ },
+ {
+  "shot": "m03-play"
+ }
+]

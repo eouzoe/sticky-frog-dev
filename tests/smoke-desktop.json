@@ -1,0 +1,172 @@
+[
+ {
+  "wait": 2500
+ },
+ {
+  "assert": "window.__game.state === 'menu'",
+  "msg": "開機進選單"
+ },
+ {
+  "shot": "01-menu"
+ },
+ {
+  "click": "#playBtn"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "assert": "window.__game.state === 'playing'",
+  "msg": "按 PLAY 立刻在玩"
+ },
+ {
+  "shot": "02-early"
+ },
+ {
+  "key": "Space",
+  "hold": 1100
+ },
+ {
+  "wait": 250
+ },
+ {
+  "key": "Space",
+  "hold": 500
+ },
+ {
+  "wait": 250
+ },
+ {
+  "down": "Space"
+ },
+ {
+  "wait": 300
+ },
+ {
+  "shot": "03-swing"
+ },
+ {
+  "wait": 150
+ },
+ {
+  "up": "Space"
+ },
+ {
+  "wait": 250
+ },
+ {
+  "key": "Space",
+  "hold": 500
+ },
+ {
+  "wait": 250
+ },
+ {
+  "key": "Space",
+  "hold": 500
+ },
+ {
+  "wait": 120
+ },
+ {
+  "shot": "04-signature"
+ },
+ {
+  "wait": 130
+ },
+ {
+  "key": "Space",
+  "hold": 500
+ },
+ {
+  "wait": 250
+ },
+ {
+  "key": "Space",
+  "hold": 500
+ },
+ {
+  "wait": 250
+ },
+ {
+  "key": "Space",
+  "hold": 500
+ },
+ {
+  "wait": 250
+ },
+ {
+  "eval": "({att: window.__game.attachesTotal, maxX: window.__game.maxX, score: window.__game.score, deaths: window.__game.deaths, flips: window.__game.flips, fps: window.__game.fps, q: window.__game.quality, dc: window.__game.drawCalls})"
+ },
+ {
+  "assert": "window.__game.attachesTotal >= 3",
+  "msg": "舌頭真的黏上過至少 3 次"
+ },
+ {
+  "assert": "window.__game.maxX > 15",
+  "msg": "有往前進"
+ },
+ {
+  "assert": "window.__game.score > 0",
+  "msg": "分數 > 0"
+ },
+ {
+  "eval": "window.__game.forceWin()"
+ },
+ {
+  "wait": 900
+ },
+ {
+  "shot": "05-landing"
+ },
+ {
+  "wait": 2600
+ },
+ {
+  "assert": "window.__game.state === 'over'",
+  "msg": "走到結算"
+ },
+ {
+  "assert": "window.__game.result.score > 0",
+  "msg": "結算分數 > 0"
+ },
+ {
+  "shot": "06-result"
+ },
+ {
+  "key": "Enter"
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "eval": "window.__game.state"
+ },
+ {
+  "wait": 3500
+ },
+ {
+  "assert": "window.__game.state === 'playing' && window.__game.level === 2",
+  "msg": "再一局（下一關）"
+ },
+ {
+  "key": "Space",
+  "hold": 1000
+ },
+ {
+  "wait": 300
+ },
+ {
+  "key": "Space",
+  "hold": 600
+ },
+ {
+  "wait": 200
+ },
+ {
+  "shot": "07-level2"
+ },
+ {
+  "eval": "({att: window.__game.attachesTotal, fps: window.__game.fps, q: window.__game.quality, dc: window.__game.drawCalls})"
+ }
+]
