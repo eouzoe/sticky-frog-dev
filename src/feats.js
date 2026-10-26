@@ -3,22 +3,24 @@
 import { TUNE as T } from './config.js';
 
 export const FEAT_T = {
-  SPIN: 7, // 一次滯空轉滿幾圈
-  FLOW_STALL: 0.2, // 整關「停滯」（速度 < STALL_V）總秒數 ≤ 這個值
-  STALL_V: 7,
+  SPIN: 5, // 一次滯空轉滿幾圈（自動玩家最多 5 圈、1.3% 的局）
+  TORNADO: 7, // 使用者點名的 7 圈：另一個更稀有的成就
+  FLOW_STALL: 0.1, // 速度 < 13 的總秒數（自動玩家勝局 p50＝2.35 秒） // 整關「停滯」（速度 < STALL_V）總秒數 ≤ 這個值
+  STALL_V: 13,
   FLOW_MIN_LEN: 60, // 太短的關不算
-  SPEED: 15.5, // 平均水平速度（單位/秒）≥ 這個值＝超快通關
-  SKIM_Y: 0.5, // 青蛙中心離「落水線」只剩這麼高又飛回去
+  SPEED: 18, // 平均水平速度（單位/秒）≥ 這個值＝超快通關
+  SKIM_Y: 1.0, // 青蛙中心離「落水線」只剩這麼高又飛回去
   SKIM_BACK: 4, // 回到這個高度以上才算救回來
   SHAVE: 0.12, // 擦過尖刺／鋸片：最近距離離碰撞邊緣 ≤ 這個值
-  CLUTCH_Y: 2.4, // 黏住的瞬間青蛙中心低於這個高度、而且正在往下掉
+  CLUTCH_Y: 3.5, // 黏住的瞬間青蛙中心低於這個高度、而且正在往下掉
   CLUTCH_VY: -6,
   CLUTCH_BACK: 6, // 之後回到這個高度以上才算拉回
 };
 
 // better：'max'＝數字越大越強、'min'＝越小越強；fmt 給紀錄頁顯示
 export const FEATS = [
-  { id: 'spin', name: 'SPIN DOCTOR!', line: 'Seven spins in one jump. Dizzy yet?', coins: 30, better: 'max', fmt: (v) => `${v} spins` },
+  { id: 'spin', name: 'SPIN DOCTOR!', line: 'Five spins in one jump. Dizzy yet?', coins: 25, better: 'max', fmt: (v) => `${v} spins` },
+  { id: 'tornado', name: 'FROGNADO!!', line: 'SEVEN spins in one jump. Unreal.', coins: 60, better: 'max', fmt: (v) => `${v} spins` },
   { id: 'flow', name: 'NONSTOP!', line: 'A whole level without slowing down.', coins: 25, better: 'min', fmt: (v) => `${v.toFixed(2)}s stalled` },
   { id: 'speed', name: 'SPEED DEMON!', line: 'That was way too fast.', coins: 25, better: 'max', fmt: (v) => `${v.toFixed(1)} m/s` },
   { id: 'skim', name: 'WAVE KISSER!', line: 'Touched the water and lived.', coins: 20, better: 'min', fmt: (v) => `${v.toFixed(2)} m above` },
@@ -39,7 +41,7 @@ export function createFeatTracker(K = FEAT_T) {
     tick(s, dt) {
       out.length = 0;
       if (s.mode !== 'air' && s.mode !== 'swing') return out;
-      if (Math.hypot(s.vx, s.vy) < K.STALL_V) st.stall += dt;
+      if (s.attaches > 1 && Math.hypot(s.vx, s.vy) < K.STALL_V) st.stall += dt; // 起跳後第一個鉤點（一定會慢一下）不算
       const h = s.y - WATER;
       if (h < 3) st.dip = Math.min(st.dip, h);
       else if (h > K.SKIM_BACK && st.dip < Infinity) {
@@ -52,7 +54,10 @@ export function createFeatTracker(K = FEAT_T) {
     // sim 事件；回傳達成的成就（silent＝只更新紀錄、不再跳一次）
     event(e, s) {
       out.length = 0;
-      if (e.type === 'flip' && e.n >= K.SPIN) out.push({ id: 'spin', value: e.n, silent: e.n > K.SPIN });
+      if (e.type === 'flip' && e.n >= K.SPIN) {
+        out.push({ id: 'spin', value: e.n, silent: e.n > K.SPIN });
+        if (e.n >= K.TORNADO) out.push({ id: 'tornado', value: e.n, silent: e.n > K.TORNADO });
+      }
       else if (e.type === 'close' && e.gap !== undefined && e.gap <= K.SHAVE) out.push({ id: 'shave', value: Math.max(0, e.gap) });
       else if (e.type === 'attach' && e.fy !== undefined && e.fy - WATER < K.CLUTCH_Y && e.fvy < K.CLUTCH_VY) st.clutch = e.fy - WATER;
       else if (e.type === 'die') { st.dip = Infinity; st.clutch = null; }
