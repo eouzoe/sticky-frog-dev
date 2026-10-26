@@ -17,15 +17,20 @@
 | 桌機 | 按住滑鼠左鍵或 Space（↑、W、→、D 也可以）；Esc／P 暫停；R 重來 |
 | 手機 | 按住螢幕任何位置；右上角 56px 暫停鈕 |
 
-一個按鍵就能玩完整款遊戲。結算畫面 Space／Enter／點一下＝下一關。
+一個按鍵就能玩完整款遊戲。過關沒有結算畫面（自動進下一關）；無盡模式結算 Space／Enter／點一下＝再一局。手機第一次玩時，螢幕下方有手指教學（HOLD／LET GO!）。
 
 ## 核心循環
 
-選關（或直接 PLAY 最新一關）→ 15–40 秒的短關卡（擺盪、翻滾、吃蒼蠅）→ 落上荷葉 → 3 顆星評等一顆顆砸下來（完成、蒼蠅 ≥ 70%、時間 ≤ 標準時間）＋金幣累加 → 金幣買青蛙造型與拖尾 → 下一關。
+選關（或直接 PLAY 最新一關）→ 15–40 秒的短關卡（擺盪、翻滾、吃蒼蠅；**金幣即時入帳**，HUD 右上角跳動）→ 落上荷葉 → 1.6 秒慶祝（慢動作＋彩帶＋CLEAR! +25）→ **自動進下一關**（沒有結算畫面、沒有星星：使用者決定，星星不夠不會讓人重玩、只留遺憾，停頓會讓人離開）。
 
 - 60 關，每 15 關換一個世界：JUNGLE → CANDY → NEON CITY → VOLCANO（色盤、天空、水、背景道具、障礙外觀全換）。
 - 新元素依序解鎖：蘑菇（第 3 關）、蒼蠅串（4）、圈圈（5）、移動鉤點（6）、低處尖刺（8）、連續蘑菇（9）、風扇（11）、雙圈（12）、鋸片（14）、高處尖刺（20）、上下夾擊（24）。
-- 可解鎖 12 項：9 隻青蛙（Tree、Poison Dart 60、Tomato 120、Candy 200、Glass 300、Ninja 450、Golden 600、Astro 800、Toad King 1200）＋ 4 種拖尾（Rainbow 150、Fire 250、Bubbles 350、Stardust 500）。第 1 關約 35–45 金幣，第 2 關就買得起第一隻。
+- **無盡模式**（破 1-5 解鎖）：同一個段落產生器無限往後接，難度隨距離上升（上限＝第 60 關），每 450 單位換一個世界（閃光＋世界名）。分數＝距離 × 10 ＋ 翻滾、蒼蠅、圈圈等分數；死了就結算（距離、分數、最佳、本機名次）。
+- **成就＝當下的捧場**（`src/feats.js`）：做出很強的操作時畫面中上方跳出大字＋一句話＋金幣：SPIN DOCTOR（一次滯空 5 圈）、FROGNADO（7 圈）、NONSTOP（整關幾乎沒停滯）、SPEED DEMON（超快通關）、WAVE KISSER（擦過水面又飛回去）、CLOSE SHAVE（擦過尖刺／鋸片）、CLUTCH SAVE（快落水時黏住拉回）。門檻用自動玩家分布訂（一般玩法約 14% 的關卡出現一次），選單皇冠鈕「MY HIGHLIGHTS」看第一次達成日期、最佳數值、次數＋無盡前 10 名。
+- **商店**三個分頁：HEROES（看板角色 Spinny Cat 300 置頂、9 隻青蛙、Vine Ape 650、Silk Frog 900；買角色送招牌舌頭）、TONGUES（Frog Tongue、Yarn 180、Jungle Vine 260、Silk Thread 340：顏色、粗細、材質貼圖、捲曲、舌尖大小、黏上時的粒子都不同）、TRAILS。貓、猿人、蛛絲青蛙現在是青蛙換色佔位，模型等美術線。
+- **選單沒有離開鈕**；退回選單時最顯眼的黃色鈕推「下一步」：新模式 → 新世界 → 買得起的東西（商店裡那件會發光標 CAN BUY）。買完跳「立即試玩」直接帶新造型進遊戲。
+- **排行榜**：CrazyGames SDK v3 有 `user.submitScore`（只開放受邀遊戲、金鑰在 Developer Portal、榜單由平台在遊戲外顯示），接在 `src/leaderboard.js`；`src/config.js` 的 `LB_KEY` 填金鑰就開始送無盡分數，空字串＝只存本機前 10 名。
+- 廣告：每破 3 關在換關空檔插一次 midgame；無盡結算按再一局插 midgame；無盡結算每 3 局一次「看影片 ×2 這局金幣」。
 
 ## 手感清單（18 項，全做）
 
@@ -44,7 +49,7 @@
 | 11 | 衝擊波環（黏住、蘑菇、圈圈、落荷葉、落水） | `src/fx.js` `shock()` |
 | 12 | 每個動作都有音效（多層合成、音高隨機 ±7%） | `src/audio.js` `play()` |
 | 13 | 程序音樂循環（每世界不同調）＋大時刻 ducking | `src/audio.js` `startMusic()`／`duckMusic()` |
-| 14 | UI 動畫（按鈕 hover／按下彈跳、面板 overshoot 彈入、星星砸下、分數金幣跳動累加） | `index.html` CSS、`src/ui.js` `showResult()` |
+| 14 | UI 動畫（按鈕 hover／按下彈跳、面板 overshoot 彈入、成就大字彈入、HUD 金幣跳動、無盡距離累加） | `index.html` CSS、`src/ui.js` `feat()`／`hudCoins()`／`showOver()` |
 | 15 | 預備動作（起跳前蹲 70 ms、舌頭射出前張嘴） | `src/sim.js` `crouch`、`src/frog.js` |
 | 16 | 待機動畫（呼吸、眨眼、鉤點花旋轉搖擺、蒼蠅嗡嗡、水面波浪、旗子飄） | `src/frog.js`、`src/levelview.js`、`src/scene.js` |
 | 17 | 手機震動（包 try） | `src/main.js` `vibrate()` |
@@ -56,7 +61,7 @@
 
 ## 調參常數在哪
 
-全部在 `src/config.js`：`TUNE`（物理、舌頭、翻滾、分數、鏡頭、慢動作）、`WORLDS`（四個世界的色盤）、`SKINS`／`TRAILS`（價格）。關卡產生在 `src/level.js`（段落種類解鎖關卡、間距、難度曲線）。
+全部在 `src/config.js`：`TUNE`（物理、舌頭、翻滾、分數、鏡頭、慢動作）、`WORLDS`（四個世界的色盤）、`SKINS`／`TONGUES`／`TRAILS`（價格、舌頭外觀）、`LB_KEY`。關卡產生在 `src/level.js`（段落 `addSegment`、無盡 `endlessDiff`／`ENDLESS_WORLD_LEN`）。成就門檻在 `src/feats.js` `FEAT_T`；換關廣告間隔、慶祝秒數、金幣換算在 `src/main.js` 檔頭（`MIDGAME_EVERY`、`CELEBRATE`、`COIN_PTS`、`CLEAR_COINS`）；無盡解鎖關在 `src/save.js` `ENDLESS_UNLOCK`。
 
 ## 檔案
 
@@ -64,7 +69,8 @@
 - `src/level.js`：60 關種子程序產生＋`SALT` 換種子表。
 - `src/scene.js`、`src/levelview.js`、`src/frog.js`、`src/fx.js`：渲染。
 - `src/audio.js`：WebAudio 合成。`src/ui.js`：DOM 介面。`src/main.js`：主迴圈與狀態機。`src/cg.js`：CrazyGames SDK 包裝（未改）。
-- `tests/sim-check.mjs`：自動玩家跑 60 關（12 組參數），全部可破才 exit 0。`tests/smoke-*.json`：冒煙步驟。
+- `tests/sim-check.mjs`：自動玩家跑 60 關（12 組參數），全部可破才 exit 0。
+- `tests/endless-check.mjs`：無盡模式自動玩家接力，12 個種子都要跑完四個世界（1800 單位）。`tests/feats-check.mjs`：成就偵測（每種達成／差一點）。`tests/save-check.mjs`：舊存檔相容、下一步推薦、本機榜。`tests/feat-dist.mjs`：成就門檻分布。`tests/smoke-*.json`：冒煙步驟。
 
 ## 設計上改了什麼、為什麼
 
@@ -78,13 +84,13 @@
 8. **鏡頭最低高度拉高**（`CAM_MIN_Y` 8.2）：原本畫面下半部全是水，鉤點上方的圈圈與鋸片會出框。
 9. **死亡也算中斷**：死亡時 `gameplayStop`、0.5 秒後重生 `gameplayStart`（SPEC「復活」也是開始點）。
 11. **踩到蘑菇頂＝固定的往前上方彈出**（`MUSH_VX`／`MUSH_VY`）：原本照圓頂法線反彈，落點靠運氣（自動玩家死因第一名是「蘑菇附近落水」），還會被斜面彈回頭。改成可預測後，玩家要練的是「落在蘑菇上」，連續蘑菇的間距剛好一跳，BOING BOING BOING 變成穩定的爽點；蘑菇也加寬（半徑 1.5 → 1.9）。
-12. **多四種段落**：蒼蠅串（沿擺盪弧線，想拿蒼蠅星要盪低）、連續蘑菇、雙圈（甩高連穿）、上下夾擊（尖刺上下各一）。後段關卡不再只是「鉤點＋一個障礙」重複。
-13. **結算提示「NEW: XXX READY TO BUY!」＋選單 FROGS 鈕紅點**：金幣剛好夠買新造型時提醒，把外層進度接回核心循環。
+12. **多四種段落**：蒼蠅串（沿擺盪弧線，盪低才吃得到一整串）、連續蘑菇、雙圈（甩高連穿）、上下夾擊（尖刺上下各一）。後段關卡不再只是「鉤點＋一個障礙」重複。
+13. **（第二輪改）結算畫面拿掉**：改成選單「下一步」推薦＋商店 CAN BUY 標記，把外層進度接回核心循環。
 10. **新手提示用畫面上的小字**：第 1 關／前 6 次黏住前，目標鉤點旁顯示 HOLD、擺到前上方時在青蛙頭上顯示 RELEASE!，不用文字牆。
 
 ## 驗證
 
-- `node tests/sim-check.mjs`：自動玩家 12 組參數跑 60 關，60/60 可破（exit 0）。
+- `node tests/sim-check.mjs`：自動玩家 12 組參數跑 60 關，60/60 可破（exit 0）。`node tests/endless-check.mjs`、`node tests/feats-check.mjs`、`node tests/save-check.mjs` 都 exit 0。
 - 冒煙（一律包 heavy.sh）：
   ```
   /Users/eason/Studio/games/crazygames/_tools/heavy.sh /Users/eason/Studio/games/crazygames/_tools/smoke.sh /Users/eason/Studio/games/crazygames/hook-hero 5715 /Users/eason/Studio/games/crazygames/hook-hero/tests/smoke-desktop.json <輸出資料夾> [--no-sdk]

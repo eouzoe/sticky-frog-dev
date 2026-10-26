@@ -53,8 +53,6 @@ canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: n
 .lvl { position: relative; aspect-ratio: 1.25; border-radius: 18px; border: 4px solid var(--ink); background: linear-gradient(#5be08f, var(--green)); font-size: 30px; color: #fff; cursor: pointer; font-family: var(--font); transition: transform .12s cubic-bezier(.3,1.8,.5,1); min-height: 56px; }
 .lvl:hover { transform: scale(1.08); } .lvl:active { transform: scale(.94); }
 .lvl.locked { background: #9aa8b5; cursor: default; color: #dde3ea; }
-.lvl .st { position: absolute; bottom: 4px; left: 0; right: 0; font-size: 14px; letter-spacing: 1px; }
-.on-star { color: var(--yellow); } .off-star { color: rgba(0,0,0,.25); }
 #shop { align-items: flex-start; padding-left: 3vw; } #shop .tabs { margin-left: 0; }
 #shop .cards { max-width: min(600px, 66vw); padding: 0 0 16px; max-height: calc(100vh - 150px); grid-auto-rows: min-content; }
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; padding: 0 16px 16px; max-width: 900px; width: 100%; overflow: auto; }
@@ -88,21 +86,54 @@ canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: n
 .pp.big { font-size: 54px; color: var(--yellow); paint-order: stroke; -webkit-text-stroke: 9px var(--ink); text-shadow: 0 6px 0 rgba(0,0,0,.3); animation-duration: 1.3s; }
 .pp.pink { color: #ffd0e8; } .pp.gold { color: var(--yellow); } .pp.red { color: #ff5a5a; font-size: 46px; paint-order: stroke; -webkit-text-stroke: 8px var(--ink); }
 @keyframes pp { 0% { transform: translate(-50%, -50%) scale(.2); opacity: 0; } 18% { transform: translate(-50%, -60%) scale(1.25); opacity: 1; } 30% { transform: translate(-50%, -64%) scale(1); } 75% { opacity: 1; } 100% { transform: translate(-50%, -120%) scale(.9); opacity: 0; } }
-#result .stars { display: flex; justify-content: center; gap: 10px; margin: 8px 0 12px; height: 92px; }
-.bigstar { font-size: 84px; line-height: 1; color: rgba(0,0,0,.15); transform: scale(1); }
-.bigstar.got { color: var(--yellow); -webkit-text-stroke: 5px var(--ink); animation: slam .45s cubic-bezier(.2,1.8,.4,1) both; }
-.bigstar:nth-child(2) { transform: translateY(-14px); }
-@keyframes slam { from { transform: scale(3) rotate(-30deg); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .stats { display: grid; grid-template-columns: auto auto; gap: 4px 26px; font-size: 20px; margin: 4px auto 12px; text-align: left; width: max-content; }
 .stats b { text-align: right; }
 .stats .miss { color: #c0392b; }
-.earn { font-size: 30px; display: flex; gap: 8px; justify-content: center; align-items: center; margin-bottom: 14px; }
 .btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 #shopBtn { position: relative; }
 #shopBtn.badge::after { content: '!'; position: absolute; top: -8px; right: -8px; width: 30px; height: 30px; border-radius: 50%; background: #ff3b3b; border: 3px solid var(--ink); font-size: 18px; line-height: 24px; animation: pulse2 .6s ease-in-out infinite; }
 .newbest { color: #ff3b8d; font-size: 22px; animation: pulse2 .6s ease-in-out infinite; }
 @keyframes pulse2 { 50% { transform: scale(1.12); } }
 .vid { display: inline-block; width: 0; height: 0; border-left: 14px solid #fff; border-top: 9px solid transparent; border-bottom: 9px solid transparent; margin-right: 8px; vertical-align: 0; }
+#hudCoins { position: fixed; top: 14px; right: 84px; font-size: 26px; display: flex; align-items: center; gap: 8px; transition: transform .15s cubic-bezier(.3,1.8,.5,1); }
+#hudCoins.bump { transform: scale(1.3); }
+#nextUp { background: linear-gradient(#ffe066, #ffb703); box-shadow: 0 6px 0 #c77d00, 0 10px 18px rgba(0,0,0,.25); color: var(--ink); text-shadow: none; font-size: 22px; animation: pulse2 .9s ease-in-out infinite; max-width: 90vw; }
+#nextUp small { display: block; font-size: 14px; opacity: .8; }
+#endlessBtn.locked { filter: grayscale(.8); opacity: .75; }
+#endlessBtn.badge::after, .card.afford::after { content: 'NEW'; position: absolute; top: -10px; right: -10px; padding: 2px 6px; border-radius: 10px; background: #ff3b3b; border: 3px solid var(--ink); font-size: 13px; color: #fff; animation: pulse2 .6s ease-in-out infinite; }
+#endlessBtn { position: relative; }
+.card { position: relative; }
+.card.afford { box-shadow: 0 0 0 5px #ffb703, 0 0 22px #ffd23f; animation: pulse2 .9s ease-in-out infinite; }
+.card.afford::after { content: 'CAN BUY'; }
+.card.feat { background: linear-gradient(#fff7c2, #ffe066); }
+.card .tag { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--pink); color: #fff; border: 3px solid var(--ink); border-radius: 10px; font-size: 11px; padding: 1px 6px; white-space: nowrap; }
+.cat .swatch::before, .cat .swatch::after { border-radius: 0 60% 0 60%; background: radial-gradient(circle, #111 30%, #fff 34%); }
+#tryNow { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 20; }
+#tryNow.pop { animation: popc .45s cubic-bezier(.3,1.6,.5,1) both; }
+@keyframes popc { from { transform: translate(-50%, -50%) scale(.3); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
+#feat { position: fixed; left: 50%; top: 96px; transform: translate(-50%, 0); text-align: center; pointer-events: none; display: none; z-index: 5; }
+#feat.on { display: block; animation: featIn 2.6s cubic-bezier(.2,1.6,.4,1) forwards; }
+#feat .ftName { font-size: 46px; color: var(--yellow); paint-order: stroke; -webkit-text-stroke: 9px var(--ink); text-shadow: 0 6px 0 rgba(0,0,0,.3); white-space: nowrap; }
+#feat .ftLine { display: inline-block; margin-top: 4px; font-size: 18px; color: var(--ink); background: #fff; border: 4px solid var(--ink); border-radius: 14px; padding: 4px 12px; }
+#feat .ftCoins { margin-top: 6px; font-size: 26px; display: flex; gap: 8px; justify-content: center; align-items: center; }
+@keyframes featIn { 0% { transform: translate(-50%, 0) scale(.2) rotate(-8deg); opacity: 0; } 12% { transform: translate(-50%, 0) scale(1.18) rotate(2deg); opacity: 1; } 22% { transform: translate(-50%, 0) scale(1); } 85% { opacity: 1; transform: translate(-50%, 0) scale(1); } 100% { transform: translate(-50%, -30px) scale(.9); opacity: 0; } }
+#tut { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); text-align: center; pointer-events: none; display: none; }
+#tut.on { display: block; }
+#tut .tutHand { width: 64px; height: 64px; margin: 0 auto; border-radius: 50%; border: 5px solid #fff; box-shadow: 0 0 0 4px var(--ink); background: rgba(255,111,181,.55); position: relative; }
+#tut .tutHand i { position: absolute; left: 50%; top: 50%; width: 22px; height: 30px; margin: -26px 0 0 -11px; background: #fff; border: 4px solid var(--ink); border-radius: 12px 12px 8px 8px; }
+#tut.hold .tutHand { animation: press 1s ease-in-out infinite; }
+#tut.let .tutHand { animation: lift .5s ease-out infinite; background: rgba(46,204,113,.6); }
+@keyframes press { 0%, 100% { transform: scale(1); } 40%, 70% { transform: scale(.78); box-shadow: 0 0 0 4px var(--ink), 0 0 0 14px rgba(255,255,255,.35); } }
+@keyframes lift { from { transform: translateY(0) scale(.85); } to { transform: translateY(-14px) scale(1.05); } }
+#tut .tutText { font-size: 30px; margin-top: 6px; } #tut .tutSub { font-size: 14px; }
+.recWrap { display: flex; gap: 16px; align-items: flex-start; margin-top: 70px; max-height: calc(100vh - 90px); max-width: 96vw; }
+#featCards { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); max-width: 640px; padding: 0; max-height: calc(100vh - 90px); grid-auto-rows: min-content; }
+#featCards .card { cursor: default; } #featCards .card.lock { opacity: .55; }
+#featCards .fn { font-size: 16px; color: #e0218a; } #featCards .fl { font-size: 11px; font-family: system-ui, sans-serif; font-weight: 700; margin: 2px 0; } #featCards .fb { font-size: 13px; }
+#lbPanel { min-width: 220px; padding: 12px 18px; } .lbT { font-size: 18px; margin-bottom: 6px; } #lbList { text-align: left; font-size: 15px; padding-left: 26px; }
+#lbList li.me { color: #e0218a; }
+.ovDist { font-size: 72px; color: var(--yellow); paint-order: stroke; -webkit-text-stroke: 8px var(--ink); line-height: 1; }
+.ovDist small { font-size: 30px; }
 #block { background: rgba(0,0,0,.5); font-size: 28px; z-index: 50; }
 #dieText { position: fixed; left: 50%; top: 40%; transform: translate(-50%, -50%); font-size: 72px; color: #fff; paint-order: stroke; -webkit-text-stroke: 10px var(--ink); display: none; pointer-events: none; }
 #dieText.on { display: block; animation: pop .3s cubic-bezier(.3,1.8,.5,1) both; }
@@ -111,17 +142,19 @@ canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: n
   #logo .b { transform: rotate(3deg) translateX(12px); }
   #menu { padding-top: 10px; } #menu .col { gap: 10px; margin-top: 14px; } .btn.big { font-size: 28px; padding: 8px 44px; }
   .pp.big { font-size: 38px; -webkit-text-stroke: 7px var(--ink); }
-  /* 結算：統計改四欄（兩組一列）、星星縮小，按鈕一列不用捲動 */
-  #resultPanel { padding: 8px 20px 10px; max-height: none; overflow: visible; }
-  .title { font-size: 26px; margin-bottom: 0; } .bigstar { font-size: 42px; } .bigstar.got { -webkit-text-stroke: 4px var(--ink); } .bigstar:nth-child(2) { transform: translateY(-6px); }
-  #result .stars { height: 46px; margin: 0 0 2px; gap: 6px; } #resBest, #resUnlock { font-size: 15px; }
+  /* 無盡結算：數字縮小、按鈕一列不用捲動 */
+  #overPanel { padding: 8px 20px 10px; max-height: none; overflow: visible; }
+  .title { font-size: 26px; margin-bottom: 0; } .ovDist { font-size: 44px; -webkit-text-stroke: 6px var(--ink); } .ovDist small { font-size: 20px; }
   .stats { grid-template-columns: auto auto auto auto; gap: 1px 12px; font-size: 14px; margin: 2px auto 4px; }
-  .stats small { font-size: 11px; } .earn { font-size: 20px; margin-bottom: 6px; } .earn .coin { width: 20px; height: 20px; }
-  #result .btns { flex-wrap: nowrap; gap: 10px; } #result .btn { font-size: 18px; padding: 8px 18px; }
+  #over .btns { flex-wrap: nowrap; gap: 10px; } #over .btn { font-size: 18px; padding: 8px 18px; }
+  #menu .row .btn { font-size: 18px; padding: 8px 16px; } #nextUp { font-size: 16px; padding: 6px 18px; min-height: 48px; } #nextUp small { font-size: 11px; }
+  #feat { top: 70px; } #feat .ftName { font-size: 30px; -webkit-text-stroke: 6px var(--ink); } #feat .ftLine { font-size: 13px; } #feat .ftCoins { font-size: 18px; }
+  #tut { bottom: 10px; } #tut .tutHand { width: 50px; height: 50px; } #tut .tutText { font-size: 22px; }
+  .recWrap { margin-top: 66px; } #featCards { grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 66vw; gap: 6px; } #featCards .card { padding: 4px; } #lbPanel { min-width: 170px; padding: 6px 10px; } #lbList { font-size: 12px; }
   .panel { padding: 12px 22px; }
   .tabs { margin-top: 76px; margin-bottom: 8px; } .tab { min-height: 56px; padding: 6px 14px; font-size: 16px; } .lvl { aspect-ratio: 2.4; font-size: 22px; }
   /* 商店：5 欄 × 2 列放得下 9 隻，不用捲也不會切到 */
-  #shop .cards { grid-template-columns: repeat(5, minmax(0, 1fr)); max-width: 74vw; gap: 6px; max-height: calc(100vh - 146px); grid-auto-rows: min-content; }
+  #shop .cards { grid-template-columns: repeat(6, minmax(0, 1fr)); max-width: 80vw; gap: 6px; max-height: calc(100vh - 146px); grid-auto-rows: min-content; }
   .card { padding: 4px 3px; border-radius: 12px; border-width: 3px; min-height: 56px; } .card .nm { font-size: 11px; margin: 2px 0 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .card .pr { font-size: 11px; }
   .swatch { width: 40px; height: 30px; border-width: 3px; } .swatch::before, .swatch::after { width: 14px; height: 14px; top: -7px; border-width: 2px; } .tswatch { margin: 8px 4px; height: 20px; } #hudL .score { font-size: 26px; } #combo { top: 76px; }
 }
@@ -138,44 +171,56 @@ canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: n
   <div id="combo" class="stroke"><span id="comboN">x2</span> COMBO<div class="bar"><i id="comboBar"></i></div></div>
   <div id="hudC" class="stroke"><span><span class="flyico"></span><span id="hudFlies">0/0</span></span><span id="hudTime">0.0s</span></div>
   <div id="prog"><i id="progFill"></i><b id="progBest"></b></div>
+  <div id="hudCoins" class="stroke"><span class="coin"></span><span id="hudCoinN">0</span></div>
   <button id="pauseBtn" class="btn icon gray" aria-label="Pause">II</button>
   <div id="hint" class="stroke"><span id="hintText">HOLD</span><div class="hand"></div></div>
 </div>
+
+<div id="feat"><div class="ftName"></div><div class="ftLine"></div><div class="ftCoins stroke"><span class="coin"></span><span class="ftN">+25</span></div></div>
+<div id="tut"><div class="tutHand"><i></i></div><div class="tutText stroke">HOLD</div><div class="tutSub stroke">anywhere on screen</div></div>
 
 <div id="menu" class="screen">
   <div class="coins stroke"><span class="coin"></span><span class="coinN">0</span></div>
   <div id="logo"><span class="a">STICKY</span><span class="b">FROG</span></div>
   <div class="col">
+    <button id="nextUp" class="btn" style="display:none"></button>
     <button id="playBtn" class="btn big green">PLAY</button>
-    <div class="row"><button id="levelsBtn" class="btn">LEVELS</button><button id="shopBtn" class="btn">FROGS</button></div>
+    <div class="row"><button id="levelsBtn" class="btn">LEVELS</button><button id="endlessBtn" class="btn">ENDLESS</button><button id="shopBtn" class="btn">SHOP</button><button id="recordsBtn" class="btn icon gray" aria-label="My highlights">&#9819;</button></div>
   </div>
   <div id="menuTip" class="stroke">HOLD to lick &middot; RELEASE to fly</div>
   <div class="toggles"><button class="btn icon gray musicT" aria-label="Music">&#9835;</button><button class="btn icon gray sfxT" aria-label="Sound">&#9834;</button></div>
 </div>
 
 <div id="levels" class="screen">
-  <div class="hdr"><button class="btn small gray back">&larr; BACK</button><span class="stroke" style="font-size:28px">LEVELS</span><span id="starTotal" class="stroke" style="font-size:22px;color:var(--yellow)"></span></div>
+  <div class="hdr"><button class="btn small gray back">&larr; BACK</button><span class="stroke" style="font-size:28px">LEVELS</span></div>
   <div class="coins stroke"><span class="coin"></span><span class="coinN">0</span></div>
   <div class="tabs" id="worldTabs"></div>
   <div class="grid" id="levelGrid"></div>
 </div>
 
 <div id="shop" class="screen">
-  <div class="hdr"><button class="btn small gray back">&larr; BACK</button><span class="stroke" style="font-size:28px">FROGS</span></div>
+  <div class="hdr"><button class="btn small gray back">&larr; BACK</button><span class="stroke" style="font-size:28px">SHOP</span></div>
   <div class="coins stroke"><span class="coin"></span><span class="coinN">0</span></div>
-  <div class="tabs"><button class="tab on" data-t="skins">FROGS</button><button class="tab" data-t="trails">TRAILS</button></div>
+  <div class="tabs"><button class="tab on" data-t="skins">HEROES</button><button class="tab" data-t="tongues">TONGUES</button><button class="tab" data-t="trails">TRAILS</button></div>
   <div class="cards" id="cards"></div>
+  <div id="tryNow" class="panel pop" style="display:none">
+    <div class="title" id="tryTitle">YOURS!</div>
+    <div class="btns"><button id="tryLater" class="btn small gray">LATER</button><button id="tryPlay" class="btn green">PLAY NOW &rarr;</button></div>
+  </div>
 </div>
 
-<div id="result" class="screen">
-  <div class="panel pop" id="resultPanel">
-    <div class="title" id="resTitle">LEVEL CLEAR!</div>
-    <div class="stars"><span class="bigstar">&#9733;</span><span class="bigstar">&#9733;</span><span class="bigstar">&#9733;</span></div>
-    <div id="resBest" class="newbest" style="display:none">NEW BEST!</div>
-    <div id="resUnlock" class="newbest" style="display:none;color:#1f8f4e"></div>
-    <div class="stats" id="resStats"></div>
-    <div class="earn"><span class="coin"></span>+<span id="resCoins">0</span></div>
-    <div class="btns"><button id="resMenu" class="btn small gray">MENU</button><button id="resRetry" class="btn small">RETRY</button><button id="resDouble" class="btn small" style="display:none"><span class="vid"></span>x2 COINS</button><button id="resNext" class="btn green">NEXT &rarr;</button></div>
+<div id="records" class="screen">
+  <div class="hdr"><button class="btn small gray back">&larr; BACK</button><span class="stroke" style="font-size:28px">MY HIGHLIGHTS</span></div>
+  <div class="recWrap"><div class="cards" id="featCards"></div><div class="panel" id="lbPanel"><div class="lbT">ENDLESS TOP 10</div><ol id="lbList"></ol></div></div>
+</div>
+
+<div id="over" class="screen">
+  <div class="panel pop" id="overPanel">
+    <div class="title">RUN OVER</div>
+    <div class="ovDist"><span id="ovDist">0</span><small> m</small></div>
+    <div id="ovNew" class="newbest" style="display:none">NEW BEST!</div>
+    <div class="stats" id="ovStats"></div>
+    <div class="btns"><button id="ovMenu" class="btn small gray">MENU</button><button id="ovDouble" class="btn small" style="display:none"><span class="vid"></span>x2 COINS</button><button id="ovRetry" class="btn green">RETRY &#8635;</button></div>
   </div>
 </div>
 

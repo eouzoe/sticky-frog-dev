@@ -27,6 +27,10 @@
   "msg": "手機按 PLAY 進遊戲"
  },
  {
+  "assert": "(() => { const t = document.getElementById('tut'); if (!t.classList.contains('on')) return false; const r = t.getBoundingClientRect(), [fx, fy] = window.__game.frogScreen; const inside = fx > r.left && fx < r.right && fy > r.top && fy < r.bottom; return !inside && r.bottom <= innerHeight && r.top >= 0 && r.height < innerHeight * 0.35; })()",
+  "msg": "手機觸控教學 HOLD 出現、不擋青蛙、不出框"
+ },
+ {
   "shot": "m02-early"
  },
  {
@@ -111,24 +115,33 @@
   "eval": "window.__game.state === 'playing' && window.__game.forceWin()"
  },
  {
-  "wait": 3600
+  "wait": 3000
  },
  {
-  "assert": "window.__game.state === 'over'",
-  "msg": "手機走到結算"
+  "assert": "window.__game.state === 'playing' && window.__game.level === 2",
+  "msg": "手機：過關後 3 秒內自動進下一關"
  },
  {
-  "shot": "m04-result"
+  "shot": "m04-level2"
  },
  {
-  "assert": "['resMenu','resRetry','resNext'].every((id) => { const r = document.getElementById(id).getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth && r.height >= 56; })",
-  "msg": "手機結算：MENU／RETRY／NEXT 不捲動就全部可見、高度 ≥ 56px"
+  "click": "#pauseBtn"
  },
  {
-  "click": "#resMenu"
+  "wait": 400
  },
  {
-  "wait": 500
+  "click": "#pMenu"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "shot": "m05-menu"
+ },
+ {
+  "assert": "(() => { const els = ['#playBtn', '#levelsBtn', '#endlessBtn', '#shopBtn', '#recordsBtn'].map((q) => document.querySelector(q).getBoundingClientRect()); return els.every((r) => r.bottom <= innerHeight && r.right <= innerWidth && r.height >= 44); })()",
+  "msg": "手機選單：按鈕都在畫面內"
  },
  {
   "click": "#shopBtn"
@@ -137,10 +150,10 @@
   "wait": 500
  },
  {
-  "shot": "m05-shop"
+  "shot": "m06-shop"
  },
  {
-  "assert": "(() => { const b = document.querySelector('#shop .back').getBoundingClientRect(), t = document.querySelector('#shop .tab').getBoundingClientRect(), cards = [...document.querySelectorAll('#cards .card')], last = cards[cards.length - 1].getBoundingClientRect(); return b.bottom <= t.top && last.bottom <= innerHeight && cards.length === 9; })()",
-  "msg": "手機商店：BACK 不壓分頁鈕、9 張卡最後一張完整可見"
+  "assert": "(() => { const b = document.querySelector('#shop .back').getBoundingClientRect(), t = document.querySelector('#shop .tab').getBoundingClientRect(), cards = [...document.querySelectorAll('#cards .card')], last = cards[cards.length - 1].getBoundingClientRect(); return b.bottom <= t.top && last.bottom <= innerHeight && cards.length === 12; })()",
+  "msg": "手機商店：BACK 不壓分頁鈕、12 張角色卡最後一張完整可見"
  }
 ]

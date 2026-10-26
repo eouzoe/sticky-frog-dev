@@ -125,38 +125,25 @@
   "eval": "(window.__game.state === 'playing' && window.__game.mode !== 'won') ? (window.__game.forceWin(), 'forced') : 'natural:' + window.__game.state"
  },
  {
-  "wait": 3200
+  "wait": 1000
  },
  {
-  "assert": "window.__game.state === 'over'",
-  "msg": "走到結算"
+  "assert": "window.__game.state === 'playing' && !document.getElementById('result') && !document.getElementById('over').classList.contains('on')",
+  "msg": "過關後沒有結算畫面（慶祝中仍在遊戲畫面）"
  },
  {
-  "assert": "window.__game.result.score > 0 && window.__game.result.stars >= 1",
-  "msg": "結算分數 > 0、至少 1 星"
+  "shot": "05-celebrate"
  },
  {
-  "shot": "05-result"
- },
- {
-  "assert": "['resMenu','resRetry','resNext'].every((id) => { const r = document.getElementById(id).getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth && r.height >= 56; })",
-  "msg": "桌機結算：三顆按鈕完整可見"
- },
- {
-  "key": "Enter"
- },
- {
-  "wait": 1500
- },
- {
-  "eval": "window.__game.state"
- },
- {
-  "wait": 7500
+  "wait": 2000
  },
  {
   "assert": "window.__game.state === 'playing' && window.__game.level === 2",
-  "msg": "再一局（下一關）"
+  "msg": "過關後 3 秒內自動進下一關（level 2）"
+ },
+ {
+  "assert": "window.__game.lastWin && window.__game.lastWin.level === 1 && window.__game.coins > 0 && Number(document.getElementById('hudCoinN').textContent) === window.__game.coins",
+  "msg": "金幣即時入帳且 HUD 顯示"
  },
  {
   "down": "Space"
@@ -196,6 +183,145 @@
   "msg": "第 2 關也黏得上"
  },
  {
-  "eval": "({att: window.__game.attachesTotal, fps: window.__game.fps, q: window.__game.quality, dc: window.__game.drawCalls, coins: window.__game.coins})"
+  "key": "Escape"
+ },
+ {
+  "wait": 400
+ },
+ {
+  "click": "#pMenu"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "assert": "window.__game.state === 'menu' && !document.getElementById('exitBtn')",
+  "msg": "退回選單（沒有離開遊戲鈕）"
+ },
+ {
+  "shot": "07-menu-after"
+ },
+ {
+  "eval": "localStorage.setItem('sticky-frog-v1', JSON.stringify({ unlocked: 9, stars: { 1: 3, 2: 2, 3: 1 }, best: { 1: 1200 }, coins: 340, skin: 'dart', trail: 'rainbow', owned: ['tree', 'none', 'dart', 'rainbow'], music: true, sfx: true, results: 8, grabs: 77, last: 8, worldsDone: [] })); setTimeout(() => location.reload(), 50); 'reload'"
+ },
+ {
+  "wait": 3000
+ },
+ {
+  "assert": "window.__game.state === 'menu'",
+  "msg": "舊存檔（有 stars 欄位）重新載入不報錯、進選單"
+ },
+ {
+  "assert": "window.CrazyGames?.SDK?.data ? true : (window.__game.save.unlocked === 9 && window.__game.coins === 340 && window.__game.save.skin === 'dart' && !('stars' in window.__game.save))",
+  "msg": "（無 SDK 時）舊存檔進度、金幣、造型保留，stars 丟掉"
+ },
+ {
+  "eval": "({ next: document.getElementById('nextUp').textContent, shopBadge: document.getElementById('shopBtn').className })"
+ },
+ {
+  "shot": "08-menu-oldsave"
+ },
+ {
+  "eval": "window.__game.save.unlocked = Math.max(window.__game.save.unlocked, 9); window.__game.startEndless(); window.__game.endless"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "assert": "window.__game.state === 'playing' && window.__game.endless",
+  "msg": "無盡模式開始"
+ },
+ {
+  "eval": "window.__game.autoplay = [0.25, -2]; 'bot'"
+ },
+ {
+  "wait": 9000
+ },
+ {
+  "shot": "09-endless"
+ },
+ {
+  "assert": "window.__game.dist > 40",
+  "msg": "無盡模式前進（距離 > 40 m）"
+ },
+ {
+  "eval": "window.__game.autoplay = null; window.__game.forceDie(); window.__game.dist"
+ },
+ {
+  "wait": 1800
+ },
+ {
+  "assert": "window.__game.state === 'over' && document.getElementById('over').classList.contains('on') && window.__game.result.dist > 0 && window.__game.result.rank >= 1",
+  "msg": "無盡結算：距離、名次"
+ },
+ {
+  "shot": "10-endless-over"
+ },
+ {
+  "assert": "['ovMenu','ovRetry'].every((id) => { const r = document.getElementById(id).getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight && r.height >= 56; })",
+  "msg": "無盡結算按鈕完整可見"
+ },
+ {
+  "key": "Enter"
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "eval": "window.__game.state"
+ },
+ {
+  "wait": 6000
+ },
+ {
+  "assert": "window.__game.state === 'playing' && window.__game.endless",
+  "msg": "Enter 再一局（無盡）"
+ },
+ {
+  "key": "Escape"
+ },
+ {
+  "wait": 400
+ },
+ {
+  "click": "#pMenu"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "click": "#recordsBtn"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "assert": "window.__game.state === 'records' && document.querySelectorAll('#featCards .card').length === 7 && document.querySelectorAll('#lbList li').length >= 1",
+  "msg": "紀錄頁：7 種成就＋無盡前 10 名"
+ },
+ {
+  "shot": "11-records"
+ },
+ {
+  "key": "Escape"
+ },
+ {
+  "wait": 400
+ },
+ {
+  "click": "#shopBtn"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "assert": "document.querySelector('#cards .card').dataset.id === 'cat'",
+  "msg": "商店置頂是旋轉貓咪"
+ },
+ {
+  "shot": "12-shop"
+ },
+ {
+  "eval": "({att: window.__game.attachesTotal, fps: window.__game.fps, q: window.__game.quality, dc: window.__game.drawCalls, coins: window.__game.coins, feats: window.__game.feats.length})"
  }
 ]
