@@ -74,6 +74,20 @@ export function play(name, o = {}) {
     case 'click': tone('triangle', 660 * p, 990 * p, 0.07, 0.16); break;
     case 'buy': [0, 7, 12].forEach((s, i) => tone('triangle', 660 * Math.pow(2, s / 12), 660 * Math.pow(2, s / 12), 0.2, 0.16, i * 0.06)); break;
     case 'whoosh': noise(0.6, 300, 3000, 0.25, 0.7); break;
+    // 第二輪（軟膠公仔特效的聲音層）
+    case 'sparkle': { const n = Math.min(7, o.n ?? 1); for (let i = 0; i < n + 1; i++) tone('triangle', note(1568, (i * 3) % 10) * p, note(1568, (i * 3) % 10) * p, 0.12, 0.05 + n * 0.006, i * 0.035); break; } // 閃星：高音琶音，圈數越多越長
+    case 'fanfare': { const big = (o.n ?? 1) >= 2; // 號角：大三和弦往上爬＋長音，7 圈版多一層低音與鈸
+      [0, 4, 7, 12, 16, 19, 24].slice(0, big ? 7 : 5).forEach((st, i) => { tone('sawtooth', 392 * Math.pow(2, st / 12), 392 * Math.pow(2, st / 12), 0.22, 0.05, i * 0.07); tone('triangle', 392 * Math.pow(2, st / 12), 392 * Math.pow(2, st / 12), 0.3, 0.12, i * 0.07); });
+      tone('triangle', 1568, 1568, big ? 1.1 : 0.6, 0.12, big ? 0.5 : 0.36);
+      if (big) { tone('sine', 98, 49, 0.9, 0.4, 0.02); noise(1.2, 9000, 4000, 0.12, 0.6, 'highpass', 0.05); }
+      break; }
+    case 'gulp': tone('sine', 520 * p, 160, 0.09, 0.3); tone('sine', 300 * p, 700 * p, 0.06, 0.12, 0.07); break; // 吞蒼蠅：啵咕
+    case 'jelly': { const t = ctx.currentTime, o2 = ctx.createOscillator(), g = ctx.createGain(), lfo = ctx.createOscillator(), lg = ctx.createGain(); // 果凍晃：帶顫音的低音彈簧
+      o2.type = 'sine'; o2.frequency.setValueAtTime(140 * p, t); o2.frequency.exponentialRampToValueAtTime(320 * p, t + 0.35);
+      lfo.frequency.value = 18; lg.gain.setValueAtTime(40, t); lg.gain.exponentialRampToValueAtTime(1, t + 0.35); lfo.connect(lg); lg.connect(o2.frequency);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.3, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.38);
+      o2.connect(g); g.connect(sfx); o2.start(t); lfo.start(t); o2.stop(t + 0.4); lfo.stop(t + 0.4); break; }
+    case 'pop': for (let i = 0; i < 4; i++) tone('sine', (500 + i * 220) * p, (900 + i * 300) * p, 0.06, 0.12, i * 0.06); break; // 泡泡啵啵（換關出場）
   }
 }
 

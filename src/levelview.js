@@ -1,241 +1,185 @@
-// 關卡物件的 3D 外觀（全部 InstancedMesh，draw call 固定）：鉤點花、蘑菇、尖刺、鋸片、風扇、圈圈、蒼蠅、終點荷葉。
+// 關卡物件的 3D 外觀（GLB 軟膠素材，同種物件全部 InstancedMesh）：鉤點花、蘑菇、尖刺、鋸片、風扇、圈圈、蒼蠅、終點荷葉＋葉牆。
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { movePos, flyPos } from './sim.js';
-import { tint } from './scene.js';
+import { dressProp, softMaterial, WORLD_PAL } from './artkit.js';
+import { ART, splitProp, PartSet } from './art.js';
 
-const lam = (o) => new THREE.MeshLambertMaterial({ flatShading: true, ...o });
-const TAU = Math.PI * 2;
 const tmp = { x: 0, y: 0 };
 const dummy = new THREE.Object3D();
-
-function capGeo() {
-  const g = new THREE.SphereGeometry(1, 10, 5, 0, TAU, 0, Math.PI / 2).toNonIndexed();
-  g.scale(1.65, 1.15, 1.65);
-  const n = g.attributes.position.count, col = new Float32Array(n * 3);
-  let seed = 7;
-  for (let i = 0; i < n; i += 3) {
-    seed = (seed * 16807) % 2147483647;
-    const spot = seed % 100 < 28 ? 1 : 0;
-    for (let k = 0; k < 3; k++) col.set(spot ? [1, 1, 1] : [0, 0, 0], (i + k) * 3);
-  }
-  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-  g.userData.mask = Float32Array.from({ length: n }, (_, i) => col[i * 3]);
-  return g;
-}
-// mask 0 → 顏色 a，1 → 顏色 b（換世界時重新上色）
-function recolor(g, a, b) {
-  const ca = new THREE.Color(a), cb = new THREE.Color(b), col = g.attributes.color, m = g.userData.mask;
-  for (let i = 0; i < col.count; i++) { const c = m[i] ? cb : ca; col.setXYZ(i, c.r, c.g, c.b); }
-  col.needsUpdate = true;
-}
-function spikeGeo() {
-  const parts = [tint(new THREE.IcosahedronGeometry(0.62, 0), '#ffffff', 0.15)];
-  const ico = new THREE.IcosahedronGeometry(1, 0), p = ico.attributes.position, seen = new Set();
-  for (let i = 0; i < p.count; i++) {
-    const v = new THREE.Vector3().fromBufferAttribute(p, i).normalize(), key = v.toArray().map((a) => a.toFixed(2)).join();
-    if (seen.has(key)) continue; seen.add(key);
-    const c = new THREE.ConeGeometry(0.24, 0.62, 4); c.translate(0, 0.78, 0);
-    c.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), v));
-    parts.push(tint(c, '#ffffff'));
-  }
-  const g = mergeGeometries(parts), nb = parts[0].attributes.position.count;
-  g.userData.mask = Float32Array.from({ length: g.attributes.position.count }, (_, i) => (i < nb ? 0 : 1));
-  return g;
-}
-function sawGeo() {
-  const parts = [tint(new THREE.CylinderGeometry(1.05, 1.05, 0.18, 14), '#ffffff', 0.1), tint(new THREE.CylinderGeometry(0.3, 0.3, 0.3, 8), '#555555')];
-  for (let i = 0; i < 12; i++) {
-    const c = new THREE.ConeGeometry(0.2, 0.42, 3); c.rotateZ(-Math.PI / 2); c.translate(1.18, 0, 0); c.rotateY((i / 12) * TAU);
-    parts.push(tint(c, '#ffffff'));
-  }
-  const g = mergeGeometries(parts); g.rotateX(Math.PI / 2); return g;
-}
-function bladeGeo() {
-  const parts = [];
-  for (let i = 0; i < 3; i++) { const b = new THREE.BoxGeometry(1.2, 0.08, 0.36); b.translate(0.6, 0, 0); b.rotateY((i / 3) * TAU); parts.push(b); }
-  return mergeGeometries(parts);
-}
+const M4 = new THREE.Matrix4(), N4 = new THREE.Matrix4();
+const FAN_TILT = 0.5; // 風扇往鏡頭傾一點：側視角也看得到轉動的扇葉（美術線提醒）
 
 const GEO = {
-  petal: (() => { const g = new THREE.DodecahedronGeometry(0.85, 0); g.scale(1, 1, 0.35); return g; })(),
-  bud: new THREE.IcosahedronGeometry(0.42, 0),
-  vine: (() => { const g = new THREE.CylinderGeometry(0.07, 0.07, 1, 5); g.translate(0, 0.5, 0); return g; })(),
-  cap: capGeo(),
-  stem: (() => { const g = new THREE.CylinderGeometry(0.42, 0.6, 1, 7); g.translate(0, -0.5, 0); return g; })(),
-  spike: spikeGeo(),
-  pole: (() => { const g = new THREE.CylinderGeometry(0.12, 0.12, 1, 5); g.translate(0, 0.5, 0); return g; })(),
-  saw: sawGeo(),
+  vine: (() => { const g = new THREE.CylinderGeometry(0.09, 0.09, 1, 10); g.translate(0, 0.5, 0); return g; })(),
+  pole: (() => { const g = new THREE.CylinderGeometry(0.13, 0.13, 1, 12); g.translate(0, 0.5, 0); return g; })(),
   track: new THREE.BoxGeometry(1, 1, 0.05),
-  fanBase: (() => { const g = new THREE.CylinderGeometry(1.5, 1.7, 0.7, 8); return g; })(),
-  blade: bladeGeo(),
   column: new THREE.BoxGeometry(1, 1, 0.1),
-  ring: new THREE.TorusGeometry(1.9, 0.2, 6, 22),
-  flyBody: new THREE.IcosahedronGeometry(0.3, 0),
-  wing: (() => { const g = new THREE.CircleGeometry(0.32, 6); g.scale(1, 0.55, 1); return g; })(),
-  pad: new THREE.CylinderGeometry(1, 1, 0.45, 22, 1, false, 0.35, TAU - 0.7),
-  ripple: new THREE.TorusGeometry(1.25, 0.08, 4, 24),
+  ripple: new THREE.TorusGeometry(1.35, 0.09, 8, 40),
+  stump: new THREE.CylinderGeometry(1.1, 1.3, 4.5, 24),
+  flagPole: new THREE.CylinderGeometry(0.1, 0.1, 6, 12),
+  flag: new THREE.PlaneGeometry(2.2, 1.4, 8, 2),
 };
+const flagBase = Float32Array.from(GEO.flag.attributes.position.array);
+
+// 彈性出場（0→1，帶過衝）：換關時物件由左到右依序「啵」地長出來
+const elastic = (u) => (u <= 0 ? 0 : u >= 1 ? 1 : 1 - Math.pow(2, -9 * u) * Math.cos(u * 10.5));
 
 export function createLevelView(scene) {
   const group = new THREE.Group(); scene.add(group);
-  let meshes = [], lv = null, theme = null;
-  const st = { hookWob: [], hookWobV: [], mushK: [], mushKV: [], flyGone: [], ringGone: [], target: -1, attached: -1, goalBounce: 0 };
-  const M = {};
+  let sets = [], lv = null, wi = 0;
+  const st = { hookWob: [], hookWobV: [], mushK: [], mushKV: [], flyGone: [], ringGone: [], ringJ: [], target: -1, attached: -1, goalBounce: 0, intro: 9, introX: 0 };
+  const S = {};
   const mats = {
-    petal: lam({ color: '#ff6fb5' }), bud: lam({ color: '#ffd23f' }), vine: lam({ color: '#27ae60' }),
-    cap: lam({ color: '#ffffff', vertexColors: true }), stem: lam({ color: '#f5e6c8' }),
-    spike: lam({ color: '#ffffff', vertexColors: true }), pole: lam({ color: '#6b4f3a' }),
-    saw: new THREE.MeshPhongMaterial({ color: '#c0c8d0', vertexColors: true, flatShading: true, shininess: 80 }),
-    track: new THREE.MeshBasicMaterial({ color: '#000000', transparent: true, opacity: 0.18, depthWrite: false }),
-    fanBase: lam({ color: '#6b4f3a' }), blade: lam({ color: '#dddddd' }),
-    column: new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.13, depthWrite: false }),
-    ring: new THREE.MeshPhongMaterial({ color: '#ffd23f', emissive: '#7a5a00', shininess: 70, flatShading: true }),
-    fly: lam({ color: '#222233' }), wing: new THREE.MeshBasicMaterial({ color: '#e8f8ff', transparent: true, opacity: 0.75, side: THREE.DoubleSide }),
-    pad: lam({ color: '#2ecc71' }), wood: lam({ color: '#8b5a2b' }),
+    track: new THREE.MeshBasicMaterial({ color: '#000000', transparent: true, opacity: 0.16, depthWrite: false }),
+    column: new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.12, depthWrite: false }),
     hi: new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.9, depthWrite: false }),
   };
   // 目標高亮（兩個環：實心 + 外擴）
   const hi = new THREE.Mesh(GEO.ripple, mats.hi); hi.renderOrder = 2; scene.add(hi);
   const hi2Mat = mats.hi.clone(); const hi2 = new THREE.Mesh(GEO.ripple, hi2Mat); scene.add(hi2);
 
-  const inst = (name, geo, mat, n, shadow = true) => {
-    const m = new THREE.InstancedMesh(geo, mat, Math.max(1, n)); m.count = n; m.castShadow = shadow; m.receiveShadow = shadow;
-    m.frustumCulled = false; group.add(m); meshes.push(m); M[name] = m; return m;
+  const add = (name, parts, n, o) => { const s = new PartSet(group, parts, n, o); sets.push(s); S[name] = s; return s; };
+  const simple = (name, geo, mat, n, shadow = false) => add(name, [{ geometry: geo, material: mat, matrix: new THREE.Matrix4(), cast: true }], n, { shadow, receive: shadow });
+  const mat = (x, y, z, rx, ry, rz, sx, sy = sx, sz = sx) => {
+    dummy.position.set(x, y, z); dummy.rotation.set(rx, ry, rz); dummy.scale.set(sx, sy, sz); dummy.updateMatrix(); return dummy.matrix;
   };
-  const set = (m, i, x, y, z, rx, ry, rz, sx, sy = sx, sz = sx) => {
-    dummy.position.set(x, y, z); dummy.rotation.set(rx, ry, rz); dummy.scale.set(sx, sy, sz); dummy.updateMatrix(); m.setMatrixAt(i, dummy.matrix);
-  };
+  const popK = (x) => elastic(st.intro - Math.max(0, Math.min(0.7, (x - st.introX) * 0.01)));
 
+  let fan = null, mush = null, fly = null;
   function build(level, w) {
-    lv = level; theme = w;
-    for (const m of meshes) { group.remove(m); m.dispose(); }
+    lv = level; wi = Math.max(0, Math.min(3, level.world ?? 0));
+    const P = WORLD_PAL[wi], q = ART.q;
+    for (const s of sets) s.dispose(group);
     for (const o of [...group.children]) group.remove(o);
-    meshes = [];
-    mats.petal.color.set(w.petal); mats.bud.color.set(w.bud); mats.vine.color.set(w.vine);
-    recolor(GEO.cap, w.cap, w.capSpot); recolor(GEO.spike, w.hazard, w.hazardTip);
-    mats.stem.color.set(w.stem); mats.pole.color.set(w.hazard);
-    mats.saw.color.set(w.saw); mats.fanBase.color.set(w.wood); mats.pad.color.set(w.pad); mats.wood.color.set(w.wood);
-    const neon = w.props === 'city' || w.props === 'volcano';
-    mats.petal.emissive.set(neon ? w.petal : '#000000'); mats.petal.emissiveIntensity = neon ? 0.55 : 0;
-    mats.bud.emissive.set(neon ? w.bud : '#000000'); mats.bud.emissiveIntensity = neon ? 0.4 : 0;
+    sets = [];
     const H = level.hooks.length;
-    inst('petal', GEO.petal, mats.petal, H); inst('bud', GEO.bud, mats.bud, H); inst('vine', GEO.vine, mats.vine, H, false);
-    inst('cap', GEO.cap, mats.cap, level.mush.length); inst('stem', GEO.stem, mats.stem, level.mush.length);
-    inst('spike', GEO.spike, mats.spike, level.spikes.length); inst('pole', GEO.pole, mats.pole, level.spikes.length, false);
-    inst('saw', GEO.saw, mats.saw, level.saws.length); inst('track', GEO.track, mats.track, level.saws.length, false);
-    inst('fanBase', GEO.fanBase, mats.fanBase, level.fans.length); inst('blade', GEO.blade, mats.blade, level.fans.length);
-    inst('column', GEO.column, mats.column, level.fans.length, false);
-    inst('ring', GEO.ring, mats.ring, level.rings.length);
-    inst('fly', GEO.flyBody, mats.fly, level.flies.length, false); inst('wing', GEO.wing, mats.wing, level.flies.length * 2, false);
+    add('hook', splitProp('prop-hook', wi).main, H);
+    simple('vine', GEO.vine, softMaterial(P.vine, q, { rough: 0.5 }), H);
+    mush = splitProp('prop-mush', wi, ['stem']);
+    add('cap', mush.main, level.mush.length); add('stem', mush.sub.stem.parts, level.mush.length);
+    add('spike', splitProp('prop-spike', wi).main, level.spikes.length);
+    simple('pole', GEO.pole, softMaterial(P.hazard, q, { rough: 0.3 }), level.spikes.length, true);
+    add('saw', splitProp('prop-saw', wi).main, level.saws.length);
+    simple('track', GEO.track, mats.track, level.saws.length);
+    fan = splitProp('prop-fan', wi, ['blades']);
+    // 扇葉原本是白色、底座頂面也是白：傾斜後讀成一個白盤子 → 扇葉換成世界花瓣色，轉起來才看得出是風扇
+    for (const p of fan.sub.blades.parts) { const u = p.material.userData.uniforms; if (u) { u.uBase.value.set(P.petal); u.uSec.value.set(P.bud); } }
+    add('fanBase', fan.main, level.fans.length); add('blade', fan.sub.blades.parts, level.fans.length);
+    simple('column', GEO.column, mats.column, level.fans.length);
+    add('ring', splitProp('prop-ring', wi).main, level.rings.length);
+    fly = splitProp('prop-fly', wi, ['wing_L', 'wing_R']);
+    add('fly', fly.main, level.flies.length, { shadow: false }); add('wingL', fly.sub.wing_L.parts, level.flies.length, { shadow: false }); add('wingR', fly.sub.wing_R.parts, level.flies.length, { shadow: false });
     st.hookWob = new Float32Array(H); st.hookWobV = new Float32Array(H);
     st.mushK = new Float32Array(level.mush.length); st.mushKV = new Float32Array(level.mush.length);
-    level.mush.forEach((m, i) => set(M.stem, i, m.x, m.y + 0.05, -0.1, 0, 0, 0, m.r / 1.5, m.y + 1.2, m.r / 1.5));
     level.spikes.forEach((s, i) => {
-      if (s.pole) set(M.pole, i, s.x, -1, -0.2, 0, 0, 0, 1, s.y + 1, 1);
-      else set(M.pole, i, s.x, s.y, -0.2, 0, 0, 0, 0.7, 40, 0.7);
+      if (s.pole) S.pole.set(i, mat(s.x, -1, -0.2, 0, 0, 0, 1, s.y + 1, 1));
+      else S.pole.set(i, mat(s.x, s.y, -0.2, 0, 0, 0, 0.6, 40, 0.6));
     });
-    level.saws.forEach((s, i) => {
-      const ax = s.move.ax, ay = s.move.ay;
-      set(M.track, i, s.x, s.y, -0.3, 0, 0, 0, ax * 2 + 0.25, ay * 2 + 0.25, 1);
-    });
-    level.fans.forEach((f, i) => {
-      set(M.fanBase, i, f.x, f.y0, 0, 0, 0, 0, f.w / 3.2);
-      set(M.column, i, f.x, (f.y0 + f.y1) / 2, -0.4, 0, 0, 0, f.w, f.y1 - f.y0, 1);
-    });
-    for (const m of [M.stem, M.pole, M.track, M.fanBase, M.column]) m.instanceMatrix.needsUpdate = true;
-    // 起點木樁、終點荷葉、後牆
-    const stump = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.3, 4.5, 8), mats.wood);
+    level.saws.forEach((s, i) => S.track.set(i, mat(s.x, s.y, -0.3, 0, 0, 0, s.move.ax * 2 + 0.25, s.move.ay * 2 + 0.25, 1)));
+    level.fans.forEach((f, i) => S.column.set(i, mat(f.x, (f.y0 + f.y1) / 2, -0.4, 0, 0, 0, f.w, f.y1 - f.y0, 1)));
+    for (const k of ['pole', 'track', 'column']) S[k].commit();
+    // 起點木樁、終點荷葉、葉牆、旗子（各一個，不用 instancing）
+    const stump = new THREE.Mesh(GEO.stump, softMaterial(P.wood, q, { rough: 0.5 }));
     stump.position.set(level.start.x, level.start.y - 2.25, 0); stump.castShadow = stump.receiveShadow = true; group.add(stump);
     const g = level.goal;
-    const pad = new THREE.Mesh(GEO.pad, mats.pad); pad.scale.set(g.w * 0.5, 1, g.w * 0.32); pad.position.set(g.x, g.y - 0.22, 0);
-    pad.receiveShadow = true; group.add(pad); st.pad = pad;
-    const flower = new THREE.Group(); flower.position.set(g.x + g.w * 0.3, g.y + 0.2, -1.2); group.add(flower);
-    for (let i = 0; i < 6; i++) { const p = new THREE.Mesh(GEO.petal, mats.petal); p.scale.set(0.9, 0.5, 1.3); p.rotation.set(-0.9, (i / 6) * TAU, 0); p.position.set(Math.sin((i / 6) * TAU) * 0.6, 0.3, Math.cos((i / 6) * TAU) * 0.6); flower.add(p); }
-    const fc = new THREE.Mesh(GEO.bud, mats.bud); fc.position.y = 0.6; flower.add(fc);
-    // 終點後面的葉簾（擋住飛過頭的青蛙）：一條細細的葉子柱，貼著遊玩平面，不會變成擋鏡頭的前景大塊
-    const leafA = lam({ color: w.vine }), leafB = lam({ color: w.pad }), leafGeo = new THREE.IcosahedronGeometry(0.8, 0);
-    for (let i = 0; i < 14; i++) {
-      const b = new THREE.Mesh(leafGeo, i % 2 ? leafA : leafB);
-      b.position.set(g.wall + 0.5 + (i % 2) * 0.35, 0.6 + i * 1.6, -0.6); b.scale.set(0.8, 1.3, 0.5); b.rotation.set(0, 0, (i % 2 ? 1 : -1) * 0.5);
-      group.add(b);
+    const goal = dressProp(ART.models, 'prop-goal', wi, q); goal.position.set(g.x, g.y, 0); goal.scale.x = g.w / 12; group.add(goal); st.pad = goal;
+    // 葉牆：遠看像一根綠柱（美術線提醒）→ 加寬、前後兩片錯開、往鏡頭轉一點，讀起來是一整片葉簾
+    // 一根會讀成綠柱 → 每片橫向撐寬成樹籬，再往右後方排出高低錯落的一叢；前面那片貼著碰撞面
+    for (const [dx, dz, sx, sy, ry] of [[1.0, -0.8, 2.1, 1.0, -0.2], [3.6, -2.4, 1.9, 0.62, 0.6], [6.0, -4.2, 2.0, 0.78, 1.5], [2.0, -6.5, 2.2, 0.5, -0.9]]) {
+      const wall = dressProp(ART.models, 'prop-goalWall', wi, q); wall.position.set(g.wall + dx, 0, dz); wall.scale.set(sx, sy, sx * 0.8); wall.rotation.y = ry; group.add(wall);
     }
-    const vine = new THREE.Mesh(GEO.vine, mats.vine); vine.position.set(g.wall + 0.65, -1, -0.7); vine.scale.set(2, 26, 2); group.add(vine);
-    // 旗子
-    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 6, 5), lam({ color: '#ffffff' })); pole.position.set(g.x - 1.5, g.y + 3, -1.6); group.add(pole);
-    const flag = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 1.4, 4, 1), new THREE.MeshLambertMaterial({ color: '#ff6fb5', side: THREE.DoubleSide })); flag.position.set(g.x - 0.4, g.y + 5.2, -1.6); group.add(flag); st.flag = flag;
+    const pole = new THREE.Mesh(GEO.flagPole, softMaterial('#ffffff', q, { rough: 0.3 })); pole.position.set(g.x - 1.5, g.y + 3, -1.6); pole.castShadow = true; group.add(pole);
+    const flagMat = softMaterial(P.accent ?? '#ff6fb5', q, { rough: 0.35 }); flagMat.side = THREE.DoubleSide; // 只有旗子用這個色
+    const flag = new THREE.Mesh(GEO.flag, flagMat); flag.position.set(g.x - 0.4, g.y + 5.2, -1.6); flag.castShadow = true; group.add(flag); st.flag = flag;
     reset();
   }
 
   function reset() {
     if (!lv) return;
-    st.flyGone = lv.flies.map(() => 0); st.ringGone = lv.rings.map(() => 0); st.attached = -1;
+    st.flyGone = lv.flies.map(() => 0); st.ringGone = lv.rings.map(() => 0); st.ringJ = lv.rings.map(() => 0); st.attached = -1;
     st.hookWob.fill(0); st.hookWobV.fill(0); st.mushK.fill(0); st.mushKV.fill(0);
   }
 
   function update(s, t, dt, mouth) {
     if (!lv) return;
+    st.intro += dt;
     const vineTop = 45;
     for (let i = 0; i < lv.hooks.length; i++) {
       movePos(lv.hooks[i], s.t, tmp);
-      st.hookWobV[i] += (-st.hookWob[i] * 320 - st.hookWobV[i] * 10) * dt; st.hookWob[i] += st.hookWobV[i] * dt;
-      const k = 1 + st.hookWob[i], sw = Math.sin(t * 1.3 + i) * 0.08;
-      set(M.petal, i, tmp.x, tmp.y, -0.15, 0, 0, t * 0.4 + i, k * (i === st.target ? 1.15 : 1));
-      set(M.bud, i, tmp.x, tmp.y, 0.22, 0, 0, sw, k);
-      set(M.vine, i, tmp.x, tmp.y + 0.5, -0.3, 0, 0, sw * 0.1, 1, vineTop - tmp.y, 1);
+      st.hookWobV[i] += (-st.hookWob[i] * 320 - st.hookWobV[i] * 8) * dt; st.hookWob[i] += st.hookWobV[i] * dt;
+      const k = (1 + st.hookWob[i]) * popK(tmp.x), sw = Math.sin(t * 1.3 + i) * 0.08 + st.hookWob[i] * 0.5;
+      const big = i === st.target ? 1.12 : 1;
+      // 果凍：橫向擠、縱向拉（體積守恆的感覺）
+      S.hook.set(i, mat(tmp.x, tmp.y, 0, 0, 0, sw, 1.15 * big * (1 - st.hookWob[i] * 0.4) * popK(tmp.x), 1.15 * big * k, 1.15 * big * popK(tmp.x)));
+      S.vine.set(i, mat(tmp.x, tmp.y + 0.55, -0.3, 0, 0, sw * 0.08, 1, vineTop - tmp.y, 1));
     }
-    M.petal.instanceMatrix.needsUpdate = M.bud.instanceMatrix.needsUpdate = M.vine.instanceMatrix.needsUpdate = true;
+    S.hook.commit(); S.vine.commit();
     lv.mush.forEach((m, i) => {
-      st.mushKV[i] += (-st.mushK[i] * 260 - st.mushKV[i] * 9) * dt; st.mushK[i] += st.mushKV[i] * dt;
-      const k = st.mushK[i];
-      const sc = m.r / 1.5;
-      set(M.cap, i, m.x, m.y - 0.15, 0, 0, 0, Math.sin(t * 1.7 + i) * 0.04, sc * (1 - k * 0.6), sc * (1 + k), sc * (1 - k * 0.6));
+      st.mushKV[i] += (-st.mushK[i] * 260 - st.mushKV[i] * 7) * dt; st.mushK[i] += st.mushKV[i] * dt;
+      const k = st.mushK[i], sc = (m.r / 1.5) * popK(m.x);
+      S.cap.set(i, mat(m.x, m.y - 0.15, 0, 0, 0, Math.sin(t * 1.7 + i) * 0.04, sc * (1 - k * 0.6), sc * (1 + k), sc * (1 - k * 0.6)));
+      M4.copy(mat(m.x, m.y - 0.15, -0.05, 0, 0, 0, sc, m.y + 1.0, sc)).multiply(mush.sub.stem.node); S.stem.set(i, M4);
     });
-    if (lv.mush.length) M.cap.instanceMatrix.needsUpdate = true;
-    lv.spikes.forEach((sp, i) => set(M.spike, i, sp.x, sp.y + (sp.hang ? Math.sin(t * 1.6 + i) * 0.15 : 0), 0, t * 0.5, t * 0.7 + i, 0, 1));
-    if (lv.spikes.length) M.spike.instanceMatrix.needsUpdate = true;
-    lv.saws.forEach((sw, i) => { movePos(sw, s.t, tmp); set(M.saw, i, tmp.x, tmp.y, 0, 0, 0, -t * 9, sw.r / 1.25); });
-    if (lv.saws.length) M.saw.instanceMatrix.needsUpdate = true;
-    lv.fans.forEach((f, i) => set(M.blade, i, f.x, f.y0 + 0.45, 0, 0, t * 14, 0, f.w / 3.2));
-    if (lv.fans.length) M.blade.instanceMatrix.needsUpdate = true;
+    S.cap.commit(); S.stem.commit();
+    lv.spikes.forEach((sp, i) => S.spike.set(i, mat(sp.x, sp.y + (sp.hang ? Math.sin(t * 1.6 + i) * 0.15 : 0), 0, t * 0.5, t * 0.7 + i, 0, popK(sp.x))));
+    S.spike.commit();
+    lv.saws.forEach((sw, i) => { movePos(sw, s.t, tmp); S.saw.set(i, mat(tmp.x, tmp.y, 0, 0, 0, -t * 9, (sw.r / 1.25) * popK(sw.x))); });
+    S.saw.commit();
+    lv.fans.forEach((f, i) => {
+      const sc = (f.w / 3.2) * popK(f.x);
+      N4.copy(mat(f.x, f.y0, 0, FAN_TILT, 0, 0, sc)); S.fanBase.set(i, N4);
+      M4.copy(N4).multiply(fan.sub.blades.node).multiply(mat(0, 0, 0, 0, t * 14, 0, 1)); S.blade.set(i, M4);
+    });
+    S.fanBase.commit(); S.blade.commit();
     lv.rings.forEach((g, i) => {
-      if (st.ringGone[i] > 0) st.ringGone[i] = Math.min(1, st.ringGone[i] + dt * 5);
-      const k = st.ringGone[i] > 0 ? Math.max(0, 1 + st.ringGone[i] * 0.6) * (1 - st.ringGone[i]) : 1 + Math.sin(t * 4 + i) * 0.04;
-      set(M.ring, i, g.x, g.y, 0, 0, 0.55 + Math.sin(t * 1.2 + i) * 0.2, 0, k);
+      st.ringJ[i] *= Math.exp(-dt * 3);
+      let k;
+      if (st.ringGone[i] > 0) { st.ringGone[i] = Math.min(1, st.ringGone[i] + dt * 3.2); const u = st.ringGone[i]; k = (1 + Math.sin(u * 14) * 0.25 * (1 - u) + u * 0.5) * (1 - u * u); } // 果凍晃兩下再縮掉
+      else k = 1 + Math.sin(t * 4 + i) * 0.04;
+      k *= popK(g.x);
+      S.ring.set(i, mat(g.x, g.y, 0, 0, 0.55 + Math.sin(t * 1.2 + i) * 0.2, 0, k));
     });
-    if (lv.rings.length) M.ring.instanceMatrix.needsUpdate = true;
+    S.ring.commit();
     lv.flies.forEach((f, i) => {
-      let x, y, k = 1;
+      let x, y, k = 1.3;
       flyPos(f, s.t, tmp); x = tmp.x; y = tmp.y;
       if (st.flyGone[i] > 0) {
         st.flyGone[i] = Math.min(1, st.flyGone[i] + dt * 8);
-        const u = st.flyGone[i]; x += (mouth.x - x) * u; y += (mouth.y - y) * u; k = 1 - u;
+        const u = st.flyGone[i]; x += (mouth.x - x) * u; y += (mouth.y - y) * u; k *= 1 - u;
       }
-      set(M.fly, i, x, y, 0.3, 0, 0, Math.sin(t * 10 + i) * 0.3, k, k * 0.85, k);
-      const flap = Math.abs(Math.sin(t * 60 + i)) * k;
-      set(M.wing, i * 2, x - 0.18, y + 0.25, 0.3, 0, 0, 0.6, flap, k, 1);
-      set(M.wing, i * 2 + 1, x + 0.18, y + 0.25, 0.3, 0, 0, -0.6, flap, k, 1);
+      k *= popK(x);
+      N4.copy(mat(x, y, 0.3, 0.25, -0.5, Math.sin(t * 10 + i) * 0.3, k));
+      S.fly.set(i, N4);
+      const flap = Math.sin(t * 60 + i) * 0.7;
+      M4.copy(N4).multiply(fly.sub.wing_L.node).multiply(mat(0, 0, 0, -0.3 - flap, 0, 0, 1)); S.wingL.set(i, M4);
+      M4.copy(N4).multiply(fly.sub.wing_R.node).multiply(mat(0, 0, 0, 0.3 + flap, 0, 0, 1)); S.wingR.set(i, M4);
     });
-    if (lv.flies.length) { M.fly.instanceMatrix.needsUpdate = true; M.wing.instanceMatrix.needsUpdate = true; }
+    S.fly.commit(); S.wingL.commit(); S.wingR.commit();
     // 目標高亮
     const tg = st.target;
     if (tg >= 0 && st.attached < 0) {
       movePos(lv.hooks[tg], s.t, tmp);
       hi.visible = hi2.visible = true;
-      hi.position.set(tmp.x, tmp.y, 0.4); hi.scale.setScalar(1 + Math.sin(t * 12) * 0.08);
+      hi.position.set(tmp.x, tmp.y, 0.5); hi.scale.setScalar(1 + Math.sin(t * 12) * 0.08);
       const u = (t * 1.6) % 1; hi2.position.copy(hi.position); hi2.scale.setScalar(1 + u * 0.9); hi2Mat.opacity = 0.7 * (1 - u);
     } else hi.visible = hi2.visible = false;
-    // 終點旗子飄
-    if (st.flag) st.flag.rotation.y = Math.sin(t * 3) * 0.25;
-    if (st.pad) { st.goalBounce *= Math.exp(-dt * 6); st.pad.scale.y = 1 - st.goalBounce * Math.sin(t * 30) * 0.5; }
+    // 終點旗子飄（頂點波）
+    if (st.flag) {
+      const p = GEO.flag.attributes.position.array;
+      for (let i = 0; i < p.length; i += 3) { const u = (flagBase[i] + 1.1) / 2.2; p[i + 2] = Math.sin(flagBase[i] * 2.4 - t * 6) * 0.22 * u; }
+      GEO.flag.attributes.position.needsUpdate = true; GEO.flag.computeVertexNormals();
+    }
+    // 落荷葉：荷葉果凍彈（壓扁＋橫向撐開）
+    if (st.pad) { st.goalBounce *= Math.exp(-dt * 4); const b = st.goalBounce * Math.sin(t * 26); st.pad.scale.y = 1 - b * 0.55; st.pad.scale.z = 1 + b * 0.25; }
   }
 
   return {
     build, reset, update, st,
-    wobbleHook(i) { st.hookWobV[i] += 9; },
-    squashMush(i) { st.mushKV[i] -= 0; st.mushK[i] = -0.45; },
+    wobbleHook(i) { st.hookWobV[i] += 11; },
+    squashMush(i) { st.mushK[i] = -0.5; st.mushKV[i] = 0; },
     eatFly(i) { st.flyGone[i] = 0.001; },
     takeRing(i) { st.ringGone[i] = 0.001; },
     bouncePad() { st.goalBounce = 1; },
+    intro(x) { st.intro = 0; st.introX = x; },
   };
 }
