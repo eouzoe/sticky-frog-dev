@@ -1,0 +1,65 @@
+[
+ {
+  "wait": 2500
+ },
+ {
+  "assert": "window.__game.state === 'menu'",
+  "msg": "直式開機進選單"
+ },
+ {
+  "shot": "p01-menu"
+ },
+ {
+  "click": "#playBtn"
+ },
+ {
+  "wait": 700
+ },
+ {
+  "assert": "(() => { const t = document.getElementById('tut'); if (!t.classList.contains('on')) return false; const r = t.getBoundingClientRect(), [fx, fy] = window.__game.frogScreen; const inside = fx > r.left && fx < r.right && fy > r.top && fy < r.bottom; return !inside && r.bottom <= innerHeight && r.top >= 0 && r.height < innerHeight * 0.35; })()",
+  "msg": "直式：觸控教學 HOLD 出現、不擋青蛙、不出框"
+ },
+ {
+  "assert": "(() => { const r = ['hudLevel', 'hudC', 'hudCoins', 'pauseBtn', 'prog'].map((id) => document.getElementById(id).getBoundingClientRect()); const hit = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom; for (let i = 0; i < r.length; i++) for (let j = i + 1; j < r.length; j++) if (hit(r[i], r[j])) return false; return r.every((x) => x.right <= innerWidth && x.left >= 0); })()",
+  "msg": "直式 HUD：關卡、蒼蠅／時間、金幣、暫停、進度條互不重疊、不出框"
+ },
+ {
+  "shot": "p02-tut-hold"
+ },
+ {
+  "drag": [
+   [
+    200,
+    500
+   ],
+   [
+    202,
+    500
+   ]
+  ],
+  "ms": 1100
+ },
+ {
+  "wait": 200
+ },
+ {
+  "drag": [
+   [
+    200,
+    500
+   ],
+   [
+    202,
+    500
+   ]
+  ],
+  "ms": 500
+ },
+ {
+  "assert": "window.__game.attachesTotal >= 1",
+  "msg": "直式：觸控黏得上"
+ },
+ {
+  "shot": "p03-play"
+ }
+]

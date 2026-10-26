@@ -30,7 +30,7 @@ export function createSim(level) {
     airRot: 0, airFlips: 0, airTime: 0,
     flies: level.flies.map(() => false), rings: level.rings.map(() => false),
     fliesGot: 0, attaches: 0, flipsTotal: 0, bounces: 0, maxX: level.start.x,
-    fanIn: -1, cause: null, near: new Uint8Array(level.spikes.length + level.saws.length),
+    fanIn: -1, cause: null, near: [], nearMin: [], // 一般陣列：無盡模式會一直往關卡尾端加危險物
     events: [],
   };
 }
@@ -125,7 +125,7 @@ export function step(s, dt, hold) {
     else if (tg.tip >= d) {
       tg.state = 'stuck'; tg.L = Math.min(T.ROPE_MAX, Math.max(T.ROPE_MIN, d)); tg.rest = Math.min(tg.L, T.ROPE_REST); tg.ax = tmp.x; tg.ay = tmp.y;
       s.mode = 'swing'; s.attaches++;
-      s.events.push({ type: 'attach', hook: tg.hook, x: tmp.x, y: tmp.y, speed: Math.hypot(s.vx, s.vy), flips: s.airFlips });
+      s.events.push({ type: 'attach', hook: tg.hook, x: tmp.x, y: tmp.y, speed: Math.hypot(s.vx, s.vy), flips: s.airFlips, fy: s.y, fvy: s.vy });
       s.airFlips = 0; s.airRot = 0;
     }
   } else if (tg.state === 'retract') {
@@ -230,8 +230,8 @@ export function step(s, dt, hold) {
     const r = i < nS ? lv.spikes[i].r : lv.saws[i - nS].r;
     const d = Math.hypot(s.x - h.x, s.y - h.y), rr = r + R * 0.8;
     if (d < rr) return die(s, i < nS ? 'spike' : 'saw');
-    if (d < rr + 1.1) s.near[i] = 1;
-    else if (s.near[i] === 1 && d > rr + 2) { s.near[i] = 2; s.events.push({ type: 'close', x: s.x, y: s.y }); }
+    if (d < rr + 1.1) { s.nearMin[i] = s.near[i] === 1 ? Math.min(s.nearMin[i], d - rr) : d - rr; s.near[i] = 1; }
+    else if (s.near[i] === 1 && d > rr + 2) { s.near[i] = 2; s.events.push({ type: 'close', x: s.x, y: s.y, gap: s.nearMin[i] }); }
   }
   for (let i = 0; i < lv.rings.length; i++) {
     if (s.rings[i]) continue;
