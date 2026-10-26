@@ -75,7 +75,7 @@ const DATA = /^(it\.|world\.|die\.|feat\.|featLine\.)/;
 for (const k of used) if (!(k in en) && !DATA.test(k)) errs.push(`key used but missing in en.js: ${k}`);
 for (const k of Object.keys(en)) if (!used.has(k)) errs.push(`en.js key never used: ${k}`);
 
-// ---- 5. other languages (none yet): same keys and {vars} as English
+// ---- 5. other languages: same keys (no missing, no extra), same {vars} as English, no empty strings
 const { DICTS, detect, matchLang, t, setLang, itemName, pseudo, enablePseudo } = await import(new URL('src/i18n.js', root));
 const vars = (s) => [...String(s).matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort().join(',');
 // English that lives next to the data (fallbacks): it.<tab>.<id>, world.<i>, die.<i>, feat.<id>, featLine.<id>
@@ -85,18 +85,24 @@ WORLDS.forEach((w, i) => { extra[`world.${i}`] = w.name; extra[`die.${i}`] = w.d
 for (const f of FEATS) { extra[`feat.${f.id}`] = f.name; extra[`featLine.${f.id}`] = f.line; }
 for (const [code, d] of Object.entries(DICTS)) {
   if (code === 'en') continue;
-  for (const k of Object.keys({ ...en, ...extra })) { if (!(k in d)) errs.push(`${code}: missing ${k}`); else if (vars(d[k]) !== vars(en[k] ?? extra[k])) errs.push(`${code}: ${k} vars differ`); }
+  const want = { ...en, ...extra };
+  for (const k of Object.keys(d)) if (!(k in want)) errs.push(`${code}: extra key ${k}`);
+  for (const [k, v] of Object.entries(d)) if (typeof v !== 'string' || !v.trim()) errs.push(`${code}: empty ${k}`);
+  for (const k of Object.keys(want)) { if (!(k in d)) errs.push(`${code}: missing ${k}`); else if (vars(d[k]) !== vars(want[k])) errs.push(`${code}: ${k} vars differ`); }
 }
 
 // ---- 6. detection + lookup
 setLang('en');
 const cases = [
-  [matchLang('en-US'), 'en'], [matchLang('de-DE'), null], [matchLang(''), null],
-  [detect({ nav: ['de-DE', 'en'] }), 'en'], [detect({ saved: 'en' }), 'en'], [detect({}), 'en'],
+  [matchLang('en-US'), 'en'], [matchLang('de-DE'), 'de'], [matchLang('pt-BR'), 'pt'], [matchLang('zh_TW'), 'zh-Hant'], [matchLang('zh-CN'), 'zh-Hans'], [matchLang('in'), 'id'], [matchLang('sv'), null], [matchLang(''), null],
+  [detect({ nav: ['de-DE', 'en'] }), 'de'], [detect({ nav: ['sv', 'fr-CA'] }), 'fr'], [detect({ sdk: { locale: 'ja-JP' }, nav: ['zh-TW'] }), 'ja'], [detect({ sdk: { countryCode: 'KR' }, nav: ['zh-TW'] }), 'ko'], [detect({ url: 'ru', saved: 'de', sdk: { locale: 'ja' } }), 'ru'], [detect({ saved: 'de', sdk: { locale: 'ja' } }), 'de'], [detect({ saved: 'en' }), 'en'], [detect({}), 'en'],
   [t('menu.play', { level: '1-2' }), 'PLAY 1-2'], [t('nope.key', null, 'FALLBACK'), 'FALLBACK'],
   [itemName('skins', SKINS[0]), SKINS[0].name], [t('world.2', null, WORLDS[2].name), 'NEON CITY'],
 ];
 const nLang = Object.keys(DICTS).length;
+if (nLang !== 12) errs.push(`expected 12 languages, found ${nLang}`);
+const { LANGS } = await import(new URL('src/i18n.js', root));
+if (LANGS.map((l) => l[0]).join() !== Object.keys(DICTS).join()) errs.push('LANGS order / codes differ from DICTS');
 enablePseudo();
 cases.push([matchLang('xx'), 'xx'], [setLang('xx') && t('menu.levels'), pseudo('LEVELS')], [pseudo('LEVELS').length, 'LEVELS'.length + 3]);
 setLang('en');

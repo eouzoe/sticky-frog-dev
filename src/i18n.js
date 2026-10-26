@@ -6,10 +6,22 @@
 // Styles (per-language fonts, the picker) are in i18n.css, imported by main.js so this module also loads in node.
 import en from './lang/en.js';
 
-// This round ships English only; the translation line adds the other 11 (es pt fr de tr ru ja ko id zh-Hant zh-Hans).
-export const DICTS = { en };
+import es from './lang/es.js';
+import pt from './lang/pt.js';
+import fr from './lang/fr.js';
+import de from './lang/de.js';
+import tr from './lang/tr.js';
+import ru from './lang/ru.js';
+import ja from './lang/ja.js';
+import ko from './lang/ko.js';
+import id from './lang/id.js';
+import zhHant from './lang/zh-Hant.js';
+import zhHans from './lang/zh-Hans.js';
+
+export const DICTS = { en, es, pt, fr, de, tr, ru, ja, ko, id, 'zh-Hant': zhHant, 'zh-Hans': zhHans };
 // picker order + native names (each name is drawn in its own language's font stack, i18n.css)
-export const LANGS = [['en', 'English']]; // add ['es', 'Español'], ['pt', 'Português (BR)'], ['fr', 'Français'] … with their DICTS
+export const LANGS = [['en', 'English'], ['es', 'Español'], ['pt', 'Português (BR)'], ['fr', 'Français'], ['de', 'Deutsch'], ['tr', 'Türkçe'],
+  ['ru', 'Русский'], ['ja', '日本語'], ['ko', '한국어'], ['id', 'Indonesia'], ['zh-Hant', '繁體中文'], ['zh-Hans', '简体中文']];
 // ?lang=xx (tests only): pseudo-locale, each English string padded ~40% to prove buttons / titles survive DE / FR lengths
 export function pseudo(v) { const n = Math.ceil(v.replace(/<[^>]*>|\{\w+\}/g, '').length * 0.4); return n ? v + 'ÉÀÖÜÇÑÄ'.repeat(9).slice(0, n) : v; }
 const SHORT = { en: 'EN', es: 'ES', pt: 'PT', fr: 'FR', de: 'DE', tr: 'TR', ru: 'RU', ja: 'JA', ko: 'KO', id: 'ID', 'zh-Hant': '繁', 'zh-Hans': '简', xx: 'XX' };
