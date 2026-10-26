@@ -24,4 +24,5 @@
 #clear .sticker { max-width: 92vw; }
 .ttl { min-width: 0; flex: 0 1 auto; }
 .price, .wcard .wn, .wcard .wp, .card .tag { max-width: 100%; }
+.wcard .wn { white-space: normal; } /* long world names wrap to two lines inside the card */
 .card .tag { max-width: calc(100% - 16px); }

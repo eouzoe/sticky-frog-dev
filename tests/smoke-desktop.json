@@ -111,12 +111,12 @@
   "msg": "真實按住／放開：舌頭黏上過至少 3 次"
  },
  {
-  "assert": "window.__game.maxX > 15",
-  "msg": "真實輸入讓青蛙前進"
+  "assert": "window.__game.furthest > 15",
+  "msg": "真實輸入讓青蛙前進（這一關最遠，死掉重來前的也算）"
  },
  {
-  "assert": "window.__game.score > 0",
-  "msg": "分數 > 0"
+  "assert": "window.__game.bestScore > 0",
+  "msg": "分數 > 0（這一關最高分，死掉重來前的也算）"
  },
  {
   "wait": 1500

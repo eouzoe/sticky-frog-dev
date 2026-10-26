@@ -49,7 +49,8 @@ window.__game = {
   get fps() { return G.fps; }, get timeScale() { return G.timeScale; }, get result() { return G.lastResult; }, get hold() { return G.hold; },
   get drawCalls() { return view.info.render.calls; }, get length() { return G.lv?.length ?? 0; },
   get frogScreen() { const p = view.project(G.sim?.x ?? 0, G.sim?.y ?? 0, 0); return [p.x, p.y]; }, get dist() { return G.endless ? endlessDist() : 0; },
-  get levelResult() { return G.levelResult; }, get endless() { return G.endless; }, get startedAt() { return G.startedAt; }, get feats() { return G.featLog; }, get lastWin() { return G.lastWin; }, get save() { return save; },
+  get levelResult() { return G.levelResult; }, // 這一關所有嘗試裡最遠／最高分（死掉重來前的也算；冒煙用）
+  get furthest() { return Math.max(G.sim?.maxX ?? 0, G.bestProg * (G.lv?.goal?.x ?? 0)); }, get bestScore() { return Math.max(G.score, G.lvBestScore ?? 0); }, get endless() { return G.endless; }, get startedAt() { return G.startedAt; }, get feats() { return G.featLog; }, get lastWin() { return G.lastWin; }, get save() { return save; },
   start(n) { startLevel(n); }, startEndless() { startEndless(); },
   // 測試用：直接換造型／拖尾（不改存檔）
   look(skin, trail, tongue) { applyLook(SKINS.find((k) => k.id === skin), TRAILS.find((k) => k.id === trail), TONGUES.find((k) => k.id === tongue)); },
@@ -76,7 +77,8 @@ const sfx = (n, o) => A.play(n, o);
 
 // ---------- 關卡 ----------
 function loadLevel(n) {
-  if (G.level !== n) G.bestProg = 0;
+  const fresh = G.level !== n;
+  if (fresh) G.bestProg = 0;
   G.endless = false; G.level = n; G.lv = generateLevel(n);
   const w = WORLDS[G.lv.world];
   if (G.builtLevel !== n) {
@@ -85,6 +87,7 @@ function loadLevel(n) {
   }
   A.setWorld(G.lv.world); UI.setWorld(G.lv.world);
   resetRun();
+  if (fresh) G.lvBestScore = 0; // 換關：上一關的分數不算進這一關
 }
 // 無盡模式：每次一條新的隨機路線；世界每 ENDLESS_WORLD_LEN 單位輪替
 const ENDLESS_SPAN = 6000; // 背景道具一次鋪這麼長（換世界時才重鋪，避免背景跳動）
@@ -115,6 +118,7 @@ const endlessScore = () => G.score + endlessDist() * 10;
 function enterPlaying() { G.state = 'playing'; cg.gameplayStart(); }
 function resetRun() {
   if (G.endless && G.sim && G.sim.maxX > 60) { G.sim = null; loadEndless(); return; } // 無盡模式死掉或重來＝新路線
+  G.lvBestScore = Math.max(G.lvBestScore ?? 0, G.score);
   G.sim = createSim(G.lv); G.score = 0; G.coinPts = 0; G.runCoins = 0; G.feats.reset(); G.runFeats = []; G.combo = 0; G.comboT = 0; G.restartT = 0; G.winT = 0; G.winAnim = 0; G.acc = 0;
   G.slowT = 0; G.hitStop = 0; lvView.reset(); fx.clear(); fx.resetTrail(G.sim.x, G.sim.y); UI.dieText(null);
   frog.squash(0.7, 0);

@@ -97,6 +97,7 @@ export function hint(text, x, y) {
 // 跳字：同時最多 3 個；大字一次只留一個
 const pool = [];
 export function popup(text, x, y, cls = '') {
+  if (cls.includes('big') && !$('feat').hidden) return; // 成就膠囊在場：同時只留一個大型橫幅
   const busy = pool.filter((p) => p.busy).sort((a, b) => a.t - b.t);
   if (cls.includes('big')) for (const o of busy) if (o.node.classList.contains('big')) free(o);
   if (busy.filter((p) => p.busy).length >= 3) free(busy.find((p) => p.busy));
@@ -207,7 +208,7 @@ export function nextUp(text, sub, pic = null) {
   const p = pic?.skin ? `<img src="${portrait(pic.skin)}" alt="" />` : icon(pic?.icon ?? 'play');
   b.innerHTML = `<span class="nuPic">${p}</span><span class="t">${text}${sub ? `<small>${sub}</small>` : ''}</span><span class="arr">&rarr;</span>`;
   if (b.style.display === 'none') A.play('next_up');
-  b.style.display = '';
+  b.style.display = ''; fit(b.parentElement);
 }
 
 // ---------- 選關：世界卡片＋15 顆關卡膠珠（每關最佳星數；星數不鎖關） ----------
