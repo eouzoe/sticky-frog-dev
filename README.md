@@ -102,7 +102,7 @@
 
 ## 大小
 
-`dist` 約 616 KB、2 個檔（index.html＋一支 JS，three.js 佔大部分；沒有任何圖片、音檔、字型）。
+`dist` 約 1.6 MB、28 個檔：index.html＋一支 JS（770 KB，gzip 208 KB，three.js 佔大部分）＋`models/` 26 個 meshopt 壓縮的 GLB（共約 880 KB）。沒有圖片、音檔、字型。
 
 ## 已知問題
 
