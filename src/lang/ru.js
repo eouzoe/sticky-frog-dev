@@ -8,7 +8,7 @@ export default {
   'shop.title': 'МАГАЗИН', 'shop.star': 'ЗВЕЗДА', 'shop.heroes': 'ГЕРОИ', 'shop.tongues': 'ЯЗЫКИ', 'shop.trails': 'СЛЕДЫ',
   'shop.comesWith': 'в комплекте: {tongue}', 'shop.bundle': '+ {tongue}', 'shop.buy': 'КУПИТЬ', 'shop.equipped': 'НАДЕТО', 'shop.useIt': 'НАДЕТЬ', 'shop.on': 'ВКЛ', 'shop.tapToUse': 'НАЖМИ, ЧТОБЫ НАДЕТЬ',
   'shop.yours': '{item}!', 'shop.tryLine': '{item} теперь твой. Покачаемся?', 'shop.later': 'ПОТОМ', 'shop.playNow': 'ИГРАТЬ',
-  'records.title': 'МОИ РЕКОРДЫ', 'records.top': 'ТОП-10 БЕСКОНЕЧНО', 'records.locked': '???', 'records.notYet': 'пока нет', 'records.count': 'x{n} · впервые {day}', 'records.empty': 'Сыграй в БЕСКОНЕЧНЫЙ!',
+  'records.title': 'МОИ РЕКОРДЫ', 'records.top': 'ТОП-10 ЗАБЕГОВ', 'records.locked': '???', 'records.notYet': 'пока нет', 'records.count': 'x{n} · впервые {day}', 'records.empty': 'Сыграй в БЕСКОНЕЧНЫЙ РЕЖИМ!',
   'result.clear': 'УРОВЕНЬ ПРОЙДЕН!', 'result.perfect': 'ИДЕАЛЬНО!', 'result.world': 'МИР ПРОЙДЕН!', 'result.level': 'УРОВЕНЬ {level}', 'result.cleared': 'ПРОЙДЕН',
   'result.flies': 'МУХ: {got}/{total}', 'result.time': '{time} с / {par} с', 'result.score': 'ОЧКИ', 'result.coins': 'МОНЕТЫ', 'result.newBest': 'НОВЫЙ РЕКОРД!',
   'result.next': 'ДАЛЕЕ', 'result.retry': 'ЕЩЁ РАЗ', 'result.menu': 'МЕНЮ',

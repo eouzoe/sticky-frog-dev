@@ -1,0 +1,768 @@
+[
+ {
+  "wait": 3000
+ },
+ {
+  "eval": "(() => {\n  const EN = /\\b(PLAY|LEVELS|ENDLESS|CLEAR|NEXT|RETRY|MENU|SCORE|COINS|PAUSED|RESUME|RESTART|BEST|FLIPS|RANK|HOLD|RELEASE|HEROES|TONGUES|TRAILS|BUY|EQUIPPED|LATER|PERFECT|WORLD|FLIES|TIME|OVER|SPLASH|JUNGLE|CANDY|VOLCANO|FLIP|DOUBLE|TRIPLE|LOCKED|OPEN|YARN|VINE|SILK|FIRE|BUBBLES|RAINBOW|FROG|TONGUE|FIRST|NEW|RECORD|LANDED|OUCH|CLOSE|CALL|RUN|GET)\\b/i;\n  const ALLOW = /^(STICKY|FROG|TOP)$/;\n  window.__chk = (lang, name) => {\n    const a = __game.i18n.audit();\n    (window.__aud ||= {})[lang + ' ' + name] = a;\n    const eng = [];\n    const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);\n    for (let n = w.nextNode(); n; n = w.nextNode()) {\n      const el = n.parentElement, s = n.nodeValue.trim();\n      if (!s || !el || el.closest('script, style, #logo, #langMenu, svg') || !el.checkVisibility?.({ checkOpacity: true, checkVisibilityCSS: true })) continue;\n      let hid = false; for (let p = el; p; p = p.parentElement) if (parseFloat(getComputedStyle(p).opacity) < 0.05) { hid = true; break; }\n      if (hid) continue;\n      for (const tok of s.match(/[A-Za-z]{3,}/g) || []) {\n        if (ALLOW.test(tok)) continue;\n        if (lang === 'de' || lang === 'es' || lang === 'pt' || lang === 'fr' || lang === 'id' || lang === 'tr') { if (EN.test(tok)) eng.push(tok); } else eng.push(tok);\n      }\n    }\n    a.eng = eng;\n    // vertical-only 'box' hits are stickers / pop-ups that straddle their panel edge on purpose (same in English): keep sideways, viewport and scroller hits\n    a.overflow = a.overflow.filter((o) => { const m = /^box (-?\\d+),(-?\\d+):/.exec(o); return !m || +m[1] < -2 || +m[2] < -2; });\n    // every data-fit box (buttons, tabs, titles, stickers) must hold its text without clipping, even after shrinking to 55 %\n    for (const e of document.querySelectorAll('[data-fit]')) if (e.offsetWidth && e.checkVisibility?.({ checkOpacity: true, checkVisibilityCSS: true }) && (e.scrollWidth > e.clientWidth + 3 || e.scrollHeight > e.clientHeight + 3)) a.overflow.push('fit clipped: ' + (e.id || e.className) + ' ← ' + e.textContent.trim().slice(0, 30));\n    return a.lang === lang && !a.overflow.length && !a.keys.length && !a.missing.length && a.translated > 0 && !eng.length;\n  };\n  return 'ok';\n})()"
+ },
+ {
+  "eval": "JSON.stringify({ lang: __game.i18n.audit().lang, nav: navigator.languages, sdk: window.CrazyGames?.SDK?.user?.systemInfo || null })"
+ },
+ {
+  "assert": "__game.state === 'menu'",
+  "msg": "開機進選單"
+ },
+ {
+  "assert": "document.querySelectorAll('#langMenu .lmItem').length === 12 || (document.querySelector('.langT').click(), document.querySelectorAll('#langMenu .lmItem').length === 12)",
+  "msg": "語言選單列出 12 種"
+ },
+ {
+  "key": "Escape"
+ },
+ {
+  "wait": 200
+ },
+ {
+  "click": ".langT"
+ },
+ {
+  "wait": 300
+ },
+ {
+  "click": "#langMenu .lmItem[data-code='de']"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "assert": "document.documentElement.lang === 'de' && __game.state === 'menu'",
+  "msg": "de: 從選單挑語言立刻換、不開局"
+ },
+ {
+  "assert": "window.__chk('de', 'menu')",
+  "msg": "de menu: 選單: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['de menu']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "de-1-menu"
+ },
+ {
+  "click": "#recordsBtn"
+ },
+ {
+  "wait": 700
+ },
+ {
+  "assert": "window.__chk('de', 'records')",
+  "msg": "de records: 精彩時刻: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['de records']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "de-2-records"
+ },
+ {
+  "click": "#records .back"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "click": "#shopBtn"
+ },
+ {
+  "wait": 900
+ },
+ {
+  "assert": "window.__chk('de', 'shop')",
+  "msg": "de shop: 商店（角色）: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['de shop']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "de-3-shop"
+ },
+ {
+  "click": "#shop .tab[data-t='tongues']"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "assert": "window.__chk('de', 'shop-tongues')",
+  "msg": "de shop-tongues: 商店（舌頭）: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['de shop-tongues']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "de-3b-shop-tongues"
+ },
+ {
+  "click": "#shop .tab[data-t='trails']"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "assert": "window.__chk('de', 'shop-trails')",
+  "msg": "de shop-trails: 商店（拖尾）: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['de shop-trails']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "de-3c-shop-trails"
+ },
+ {
+  "click": "#shop .back"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "click": "#playBtn"
+ },
+ {
+  "wait": 900
+ },
+ {
+  "assert": "__game.state === 'playing'",
+  "msg": "de: 開始玩"
+ },
+ {
+  "eval": "(() => { try { __game.ui.feat(__game.ui.featName('tornado'), __game.ui.featLine('tornado'), 60); __game.emit({ type: 'flip', n: 3 }); } catch (e) { return 'ERR ' + e.message; } return 'feat'; })()"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "assert": "window.__chk('de', 'hud')",
+  "msg": "de hud: HUD 加成就彈出: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['de hud']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "de-4-hud-feat"
+ },
+ {
+  "wait": 2300
+ },
+ {
+  "click": "#pauseBtn"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "assert": "window.__chk('de', 'pause')",
+  "msg": "de pause: 暫停: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['de pause']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "de-5-pause"
+ },
+ {
+  "click": "#resumeBtn"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "eval": "__game.forceWin()"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "wait": 2400
+ },
+ {
+  "assert": "__game.state === 'result' || document.getElementById('result').classList.contains('on')",
+  "msg": "de: 進結算"
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "assert": "window.__chk('de', 'result')",
+  "msg": "de result: 結算: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['de result']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "de-6-result"
+ },
+ {
+  "click": "#resMenu"
+ },
+ {
+  "wait": 800
+ },
+ {
+  "click": ".langT"
+ },
+ {
+  "wait": 300
+ },
+ {
+  "click": "#langMenu .lmItem[data-code='ru']"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "assert": "document.documentElement.lang === 'ru' && __game.state === 'menu'",
+  "msg": "ru: 從選單挑語言立刻換、不開局"
+ },
+ {
+  "assert": "window.__chk('ru', 'menu')",
+  "msg": "ru menu: 選單: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['ru menu']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "ru-1-menu"
+ },
+ {
+  "click": "#recordsBtn"
+ },
+ {
+  "wait": 700
+ },
+ {
+  "assert": "window.__chk('ru', 'records')",
+  "msg": "ru records: 精彩時刻: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['ru records']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "ru-2-records"
+ },
+ {
+  "click": "#records .back"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "click": "#shopBtn"
+ },
+ {
+  "wait": 900
+ },
+ {
+  "assert": "window.__chk('ru', 'shop')",
+  "msg": "ru shop: 商店（角色）: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['ru shop']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "ru-3-shop"
+ },
+ {
+  "click": "#shop .tab[data-t='tongues']"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "assert": "window.__chk('ru', 'shop-tongues')",
+  "msg": "ru shop-tongues: 商店（舌頭）: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['ru shop-tongues']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "ru-3b-shop-tongues"
+ },
+ {
+  "click": "#shop .tab[data-t='trails']"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "assert": "window.__chk('ru', 'shop-trails')",
+  "msg": "ru shop-trails: 商店（拖尾）: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['ru shop-trails']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "ru-3c-shop-trails"
+ },
+ {
+  "click": "#shop .back"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "click": "#playBtn"
+ },
+ {
+  "wait": 900
+ },
+ {
+  "assert": "__game.state === 'playing'",
+  "msg": "ru: 開始玩"
+ },
+ {
+  "eval": "(() => { try { __game.ui.feat(__game.ui.featName('tornado'), __game.ui.featLine('tornado'), 60); __game.emit({ type: 'flip', n: 3 }); } catch (e) { return 'ERR ' + e.message; } return 'feat'; })()"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "assert": "window.__chk('ru', 'hud')",
+  "msg": "ru hud: HUD 加成就彈出: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['ru hud']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "ru-4-hud-feat"
+ },
+ {
+  "wait": 2300
+ },
+ {
+  "click": "#pauseBtn"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "assert": "window.__chk('ru', 'pause')",
+  "msg": "ru pause: 暫停: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['ru pause']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "ru-5-pause"
+ },
+ {
+  "click": "#resumeBtn"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "eval": "__game.forceWin()"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "wait": 2400
+ },
+ {
+  "assert": "__game.state === 'result' || document.getElementById('result').classList.contains('on')",
+  "msg": "ru: 進結算"
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "assert": "window.__chk('ru', 'result')",
+  "msg": "ru result: 結算: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['ru result']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "ru-6-result"
+ },
+ {
+  "click": "#resMenu"
+ },
+ {
+  "wait": 800
+ },
+ {
+  "click": ".langT"
+ },
+ {
+  "wait": 300
+ },
+ {
+  "click": "#langMenu .lmItem[data-code='ja']"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "assert": "document.documentElement.lang === 'ja' && __game.state === 'menu'",
+  "msg": "ja: 從選單挑語言立刻換、不開局"
+ },
+ {
+  "assert": "window.__chk('ja', 'menu')",
+  "msg": "ja menu: 選單: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['ja menu']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "ja-1-menu"
+ },
+ {
+  "click": "#recordsBtn"
+ },
+ {
+  "wait": 700
+ },
+ {
+  "assert": "window.__chk('ja', 'records')",
+  "msg": "ja records: 精彩時刻: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['ja records']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "ja-2-records"
+ },
+ {
+  "click": "#records .back"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "click": "#shopBtn"
+ },
+ {
+  "wait": 900
+ },
+ {
+  "assert": "window.__chk('ja', 'shop')",
+  "msg": "ja shop: 商店（角色）: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['ja shop']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "ja-3-shop"
+ },
+ {
+  "click": "#shop .tab[data-t='tongues']"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "assert": "window.__chk('ja', 'shop-tongues')",
+  "msg": "ja shop-tongues: 商店（舌頭）: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['ja shop-tongues']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "ja-3b-shop-tongues"
+ },
+ {
+  "click": "#shop .tab[data-t='trails']"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "assert": "window.__chk('ja', 'shop-trails')",
+  "msg": "ja shop-trails: 商店（拖尾）: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['ja shop-trails']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "ja-3c-shop-trails"
+ },
+ {
+  "click": "#shop .back"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "click": "#playBtn"
+ },
+ {
+  "wait": 900
+ },
+ {
+  "assert": "__game.state === 'playing'",
+  "msg": "ja: 開始玩"
+ },
+ {
+  "eval": "(() => { try { __game.ui.feat(__game.ui.featName('tornado'), __game.ui.featLine('tornado'), 60); __game.emit({ type: 'flip', n: 3 }); } catch (e) { return 'ERR ' + e.message; } return 'feat'; })()"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "assert": "window.__chk('ja', 'hud')",
+  "msg": "ja hud: HUD 加成就彈出: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['ja hud']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "ja-4-hud-feat"
+ },
+ {
+  "wait": 2300
+ },
+ {
+  "click": "#pauseBtn"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "assert": "window.__chk('ja', 'pause')",
+  "msg": "ja pause: 暫停: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['ja pause']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "ja-5-pause"
+ },
+ {
+  "click": "#resumeBtn"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "eval": "__game.forceWin()"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "wait": 2400
+ },
+ {
+  "assert": "__game.state === 'result' || document.getElementById('result').classList.contains('on')",
+  "msg": "ja: 進結算"
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "assert": "window.__chk('ja', 'result')",
+  "msg": "ja result: 結算: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['ja result']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "ja-6-result"
+ },
+ {
+  "click": "#resMenu"
+ },
+ {
+  "wait": 800
+ },
+ {
+  "click": ".langT"
+ },
+ {
+  "wait": 300
+ },
+ {
+  "click": "#langMenu .lmItem[data-code='zh-Hant']"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "assert": "document.documentElement.lang === 'zh-Hant' && __game.state === 'menu'",
+  "msg": "zh-Hant: 從選單挑語言立刻換、不開局"
+ },
+ {
+  "assert": "window.__chk('zh-Hant', 'menu')",
+  "msg": "zh-Hant menu: 選單: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['zh-Hant menu']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "zh-Hant-1-menu"
+ },
+ {
+  "click": "#recordsBtn"
+ },
+ {
+  "wait": 700
+ },
+ {
+  "assert": "window.__chk('zh-Hant', 'records')",
+  "msg": "zh-Hant records: 精彩時刻: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['zh-Hant records']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "zh-Hant-2-records"
+ },
+ {
+  "click": "#records .back"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "click": "#shopBtn"
+ },
+ {
+  "wait": 900
+ },
+ {
+  "assert": "window.__chk('zh-Hant', 'shop')",
+  "msg": "zh-Hant shop: 商店（角色）: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['zh-Hant shop']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "zh-Hant-3-shop"
+ },
+ {
+  "click": "#shop .tab[data-t='tongues']"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "assert": "window.__chk('zh-Hant', 'shop-tongues')",
+  "msg": "zh-Hant shop-tongues: 商店（舌頭）: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['zh-Hant shop-tongues']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "zh-Hant-3b-shop-tongues"
+ },
+ {
+  "click": "#shop .tab[data-t='trails']"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "assert": "window.__chk('zh-Hant', 'shop-trails')",
+  "msg": "zh-Hant shop-trails: 商店（拖尾）: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['zh-Hant shop-trails']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "zh-Hant-3c-shop-trails"
+ },
+ {
+  "click": "#shop .back"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "click": "#playBtn"
+ },
+ {
+  "wait": 900
+ },
+ {
+  "assert": "__game.state === 'playing'",
+  "msg": "zh-Hant: 開始玩"
+ },
+ {
+  "eval": "(() => { try { __game.ui.feat(__game.ui.featName('tornado'), __game.ui.featLine('tornado'), 60); __game.emit({ type: 'flip', n: 3 }); } catch (e) { return 'ERR ' + e.message; } return 'feat'; })()"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "assert": "window.__chk('zh-Hant', 'hud')",
+  "msg": "zh-Hant hud: HUD 加成就彈出: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['zh-Hant hud']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "zh-Hant-4-hud-feat"
+ },
+ {
+  "wait": 2300
+ },
+ {
+  "click": "#pauseBtn"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "assert": "window.__chk('zh-Hant', 'pause')",
+  "msg": "zh-Hant pause: 暫停: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['zh-Hant pause']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "zh-Hant-5-pause"
+ },
+ {
+  "click": "#resumeBtn"
+ },
+ {
+  "wait": 500
+ },
+ {
+  "eval": "__game.forceWin()"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "wait": 2400
+ },
+ {
+  "assert": "__game.state === 'result' || document.getElementById('result').classList.contains('on')",
+  "msg": "zh-Hant: 進結算"
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "assert": "window.__chk('zh-Hant', 'result')",
+  "msg": "zh-Hant result: 結算: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
+ },
+ {
+  "eval": "(() => { const a = window.__aud['zh-Hant result']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+ },
+ {
+  "shot": "zh-Hant-6-result"
+ },
+ {
+  "click": "#resMenu"
+ },
+ {
+  "wait": 800
+ },
+ {
+  "eval": "JSON.stringify(Object.fromEntries(Object.entries(window.__aud).map(([k, a]) => [k, a.overflow.length + a.keys.length + a.missing.length + a.eng.length])))"
+ }
+]
