@@ -4,7 +4,7 @@ import { SKINS, TRAILS, TONGUES } from './config.js';
 export const SAVE_KEY = 'sticky-frog-v1';
 export const ENDLESS_UNLOCK = 5; // 破第 5 關解鎖無盡模式
 export const DEFAULT_SAVE = {
-  unlocked: 1, best: {}, coins: 0, skin: 'tree', trail: 'none', tongue: 'tongue', owned: ['tree', 'none', 'tongue'],
+  unlocked: 1, stars: {}, best: {}, coins: 0, skin: 'tree', trail: 'none', tongue: 'tongue', owned: ['tree', 'none', 'tongue'],
   music: true, sfx: true, grabs: 0, last: 1, worldsDone: [], clears: 0,
   feats: {}, lb: [], endlessBest: 0, endlessRuns: 0,
   seen: { endless: false, world: 0 }, // 玩家在選單上「已經看過」的解鎖（推薦只推新的）
@@ -14,7 +14,7 @@ export const DEFAULT_SAVE = {
 const int = (v, lo, hi, d) => (Number.isFinite(+v) ? Math.max(lo, Math.min(hi, Math.floor(+v))) : d);
 const obj = (v) => (typeof v === 'object' && v && !Array.isArray(v) ? { ...v } : {});
 
-// 任何來源（舊版有 stars／results 欄位、壞掉的 JSON 片段）都整理成合法存檔；不認得的欄位丟掉
+// 任何來源（舊版有 results 欄位、壞掉的 JSON 片段）都整理成合法存檔；不認得的欄位丟掉。stars（每關最佳星數 1–3）沿用舊存檔
 export function normalizeSave(raw, levelCount) {
   const r = obj(raw), s = { ...DEFAULT_SAVE };
   s.unlocked = int(r.unlocked, 1, levelCount, 1); s.last = int(r.last, 1, levelCount, 1);
@@ -22,6 +22,8 @@ export function normalizeSave(raw, levelCount) {
   s.endlessBest = int(r.endlessBest, 0, 1e9, 0); s.endlessRuns = int(r.endlessRuns, 0, 1e9, 0);
   s.music = r.music !== false; s.sfx = r.sfx !== false; s.tutTouch = r.tutTouch === true;
   s.best = obj(r.best); s.feats = obj(r.feats);
+  s.stars = {};
+  for (const [k, v] of Object.entries(obj(r.stars))) { const n = Number(k), st = int(v, 0, 3, 0); if (Number.isInteger(n) && n >= 1 && n <= levelCount && st >= 1) s.stars[n] = st; }
   const ids = new Set([...SKINS, ...TRAILS, ...TONGUES].map((i) => i.id));
   s.owned = [...new Set([...DEFAULT_SAVE.owned, ...(Array.isArray(r.owned) ? r.owned : []).filter((id) => ids.has(id))])];
   // 擁有角色就擁有它的招牌舌頭（舊存檔買過的角色沒有舌頭欄位）
@@ -53,4 +55,16 @@ export function nextStep(s) {
   const it = bestAffordable(s);
   if (it) return { kind: 'shop', item: it };
   return null;
+}
+
+// 評星（沿用第一輪）：1 顆＝過關、2＝吃到 ≥ 70% 的蒼蠅、3＝在標準時間 par（關卡長度 / PAR_SPEED + 3 秒）內
+export function rateStars({ flies, fliesTotal, time, par }) {
+  const fliesNeed = Math.ceil(fliesTotal * 0.7), fliesOk = flies >= fliesNeed, timeOk = time <= par;
+  return { stars: 1 + (fliesOk ? 1 : 0) + (timeOk ? 1 : 0), fliesNeed, fliesOk, timeOk };
+}
+// 每關只留最佳星數：新的比舊的低不覆蓋。回傳這次是否刷新
+export function recordStars(save, n, stars) {
+  const prev = save.stars[n] ?? 0;
+  if (stars > prev) save.stars[n] = stars;
+  return stars > prev;
 }

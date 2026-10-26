@@ -125,21 +125,44 @@
   "eval": "(window.__game.state === 'playing' && window.__game.level === 1 && window.__game.mode !== 'won') ? (window.__game.forceWin(), 'forced') : 'natural:' + window.__game.level + ':' + window.__game.mode"
  },
  {
-  "wait": 1000
+  "wait": 600
  },
  {
-  "assert": "window.__game.state === 'playing' && !document.getElementById('result') && !document.getElementById('over').classList.contains('on')",
-  "msg": "過關後沒有結算畫面（慶祝中仍在遊戲畫面）"
+  "assert": "window.__game.state === 'playing' && !document.getElementById('result').classList.contains('on') && !document.getElementById('clear').hidden",
+  "msg": "落荷葉後先短暫慶祝（CLEAR 貼紙，還沒進結算）"
  },
  {
   "shot": "05-celebrate"
  },
  {
-  "wait": 2000
+  "wait": 1700
  },
  {
-  "assert": "window.__game.state === 'playing' && window.__game.level === 2 && window.__game.lastWin.level === 1 && window.__game.startedAt - window.__game.lastWin.at < 3000",
-  "msg": "過關後 3 秒內自動進下一關（level 2，落地到開下一關 < 3000 ms）"
+  "assert": "window.__game.state === 'result' && document.getElementById('result').classList.contains('on') && window.__game.levelResult.level === 1",
+  "msg": "慶祝完進結算畫面、停在那裡等玩家"
+ },
+ {
+  "key": "Enter"
+ },
+ {
+  "wait": 150
+ },
+ {
+  "assert": "window.__game.state === 'result' && window.__game.levelResult.stars >= 1 && document.querySelectorAll('#resStars .rs.got.hit').length === window.__game.levelResult.stars && document.querySelectorAll('#resStars .rs').length === 3",
+  "msg": "進場動畫中按 Enter：跳到結尾（星星都亮），不略過結算"
+ },
+ {
+  "shot": "05b-result"
+ },
+ {
+  "key": "Enter"
+ },
+ {
+  "wait": 700
+ },
+ {
+  "assert": "window.__game.state === 'playing' && window.__game.level === 2 && window.__game.lastWin.level === 1",
+  "msg": "按下一關（Enter）後 level 加 1、開始遊玩"
  },
  {
   "assert": "window.__game.lastWin && window.__game.lastWin.level === 1 && window.__game.coins > 0 && Number(document.getElementById('hudCoinN').textContent) === window.__game.coins",
@@ -212,8 +235,8 @@
   "msg": "舊存檔（有 stars 欄位）重新載入不報錯、進選單"
  },
  {
-  "assert": "window.CrazyGames?.SDK?.data ? true : (window.__game.save.unlocked === 9 && window.__game.coins === 340 && window.__game.save.skin === 'dart' && !('stars' in window.__game.save))",
-  "msg": "（無 SDK 時）舊存檔進度、金幣、造型保留，stars 丟掉"
+  "assert": "window.CrazyGames?.SDK?.data ? true : (window.__game.save.unlocked === 9 && window.__game.coins === 340 && window.__game.save.skin === 'dart' && window.__game.save.stars[1] === 3 && window.__game.save.stars[3] === 1)",
+  "msg": "（無 SDK 時）舊存檔進度、金幣、造型保留，星數沿用"
  },
  {
   "eval": "({ next: document.getElementById('nextUp').textContent, shopBadge: document.getElementById('shopBtn').className })"
@@ -296,7 +319,7 @@
   "wait": 500
  },
  {
-  "assert": "window.__game.state === 'records' && document.querySelectorAll('#featCards .card').length === 7 && document.querySelectorAll('#lbList li').length >= 1",
+  "assert": "window.__game.state === 'records' && document.querySelectorAll('#featCards .fcard').length === 7 && document.querySelectorAll('#lbList li').length >= 1",
   "msg": "紀錄頁：7 種成就＋無盡前 10 名"
  },
  {
@@ -315,7 +338,7 @@
   "wait": 500
  },
  {
-  "assert": "document.querySelector('#cards .card').dataset.id === 'cat'",
+  "assert": "(() => { const sc = document.getElementById('showcase'), r = sc.getBoundingClientRect(); return sc.dataset.id === 'cat' && r.top < document.querySelector('#cards .card').getBoundingClientRect().bottom && r.width > 0; })()",
   "msg": "商店置頂是旋轉貓咪"
  },
  {

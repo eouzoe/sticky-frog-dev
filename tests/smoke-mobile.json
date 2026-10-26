@@ -6,7 +6,7 @@
   "wait": 10
  },
  {
-  "assert": "(() => { const f = document.querySelector('#logo .b').getBoundingClientRect(), p = document.getElementById('playBtn').getBoundingClientRect(); return f.bottom <= p.top + 4; })()",
+  "assert": "(() => { const f = document.querySelector('#logo .w2').getBoundingClientRect(), p = document.getElementById('playBtn').getBoundingClientRect(); return f.bottom <= p.top + 4; })()",
   "msg": "手機選單：FROG 字不被 PLAY 鈕壓到"
  },
  {
@@ -115,17 +115,46 @@
   "eval": "(window.__game.state === 'playing' && window.__game.level === 1 && window.__game.mode !== 'won') ? (window.__game.forceWin(), 'forced') : 'natural:' + window.__game.level + ':' + window.__game.mode"
  },
  {
-  "wait": 1200
+  "wait": 1000
  },
  {
   "shot": "m03b-celebrate"
  },
  {
-  "wait": 1800
+  "wait": 1300
  },
  {
-  "assert": "window.__game.state === 'playing' && window.__game.level === 2 && window.__game.lastWin.level === 1 && window.__game.startedAt - window.__game.lastWin.at < 3000",
-  "msg": "手機：過關後 3 秒內自動進下一關（level 2，落地到開下一關 < 3000 ms）"
+  "assert": "window.__game.state === 'result' && document.getElementById('result').classList.contains('on') && window.__game.levelResult.level === 1",
+  "msg": "手機：慶祝完進結算畫面"
+ },
+ {
+  "tap": [
+   12,
+   200
+  ]
+ },
+ {
+  "wait": 150
+ },
+ {
+  "assert": "window.__game.state === 'result' && window.__game.levelResult.stars >= 1 && document.querySelectorAll('#resStars .rs.got.hit').length === window.__game.levelResult.stars && document.querySelectorAll('#resStars .rs').length === 3",
+  "msg": "手機：進場動畫中點一下＝跳到結尾，不略過結算"
+ },
+ {
+  "shot": "m03c-result"
+ },
+ {
+  "tap": [
+   12,
+   200
+  ]
+ },
+ {
+  "wait": 700
+ },
+ {
+  "assert": "window.__game.state === 'playing' && window.__game.level === 2 && window.__game.lastWin.level === 1",
+  "msg": "手機：點一下＝下一關，level 加 1"
  },
  {
   "shot": "m04-level2"
@@ -159,7 +188,7 @@
   "shot": "m06-shop"
  },
  {
-  "assert": "(() => { const b = document.querySelector('#shop .back').getBoundingClientRect(), t = document.querySelector('#shop .tab').getBoundingClientRect(), cards = [...document.querySelectorAll('#cards .card')], last = cards[cards.length - 1].getBoundingClientRect(); return b.bottom <= t.top && last.bottom <= innerHeight && cards.length === 12; })()",
+  "assert": "(() => { const b = document.querySelector('#shop .back').getBoundingClientRect(), t = document.querySelector('#shop .tab').getBoundingClientRect(), cards = [...document.querySelectorAll('#cards .card')], last = cards[cards.length - 1].getBoundingClientRect(); return b.bottom <= t.top && last.bottom <= innerHeight && cards.length === 11 && document.getElementById('showcase').dataset.id === 'cat'; })()",
   "msg": "手機商店：BACK 不壓分頁鈕、12 張角色卡最後一張完整可見"
  }
 ]

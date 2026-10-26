@@ -11,12 +11,12 @@ import { createFx } from './fx.js';
 import * as A from './audio.js';
 import * as UI from './ui.js';
 import { createFeatTracker, featById, recordFeat } from './feats.js';
-import { SAVE_KEY, DEFAULT_SAVE, ENDLESS_UNLOCK, normalizeSave, nextStep } from './save.js';
+import { SAVE_KEY, DEFAULT_SAVE, ENDLESS_UNLOCK, normalizeSave, nextStep, rateStars, recordStars } from './save.js';
 import { addLocal, submitPlatform } from './leaderboard.js';
 import { tongueTexture } from './tongues.js';
 
 const MIDGAME_EVERY = 3; // 每破 3 關，在換關的空檔插一次 midgame（SDK 自己還會限 3 分鐘一次）
-const CELEBRATE = 1.6; // 落荷葉後的慶祝秒數，然後自動進下一關
+const CELEBRATE = 1.2; // 落荷葉後的短暫慶祝秒數，然後進結算畫面（等玩家按 NEXT）
 const COIN_PTS = 100; // 每 100 分＝1 金幣（即時入帳）
 const CLEAR_COINS = 25; // 過關獎勵
 const FLIP_NAMES = ['', 'FLIP!', 'DOUBLE FLIP!', 'TRIPLE FLIP!', 'QUAD FLIP!'];
@@ -44,12 +44,13 @@ window.__game = {
   get fps() { return G.fps; }, get timeScale() { return G.timeScale; }, get result() { return G.lastResult; }, get hold() { return G.hold; },
   get drawCalls() { return view.info.render.calls; }, get length() { return G.lv?.length ?? 0; },
   get frogScreen() { const p = view.project(G.sim?.x ?? 0, G.sim?.y ?? 0, 0); return [p.x, p.y]; }, get dist() { return G.endless ? endlessDist() : 0; },
-  get endless() { return G.endless; }, get startedAt() { return G.startedAt; }, get feats() { return G.featLog; }, get lastWin() { return G.lastWin; }, get save() { return save; },
+  get levelResult() { return G.levelResult; }, get endless() { return G.endless; }, get startedAt() { return G.startedAt; }, get feats() { return G.featLog; }, get lastWin() { return G.lastWin; }, get save() { return save; },
   start(n) { startLevel(n); }, startEndless() { startEndless(); },
   // 測試用：直接換造型／拖尾（不改存檔）
   look(skin, trail, tongue) { applyLook(SKINS.find((k) => k.id === skin), TRAILS.find((k) => k.id === trail), TONGUES.find((k) => k.id === tongue)); },
   // 測試用：讓無盡模式直接死（驗結算流程）
   forceDie() { const s = G.sim; if (s && s.mode !== 'dead') { s.mode = 'air'; s.tongue.state = 'idle'; s.y = 0.1; s.vy = -5; } },
+  ui: UI, // 截圖／測試用：直接叫 UI（例如成就膠囊）
   autoplay: null, // 巡覽截圖用：設成 [rel, grabVy] 讓自動玩家操作
 
   // 測試用：把青蛙放到終點上方，讓它自然落在荷葉上完成關卡
@@ -74,7 +75,7 @@ function loadLevel(n) {
     view.setTheme(w, G.lv.length); lvView.build(G.lv, w); G.builtLevel = n;
     document.body.style.background = w.sky[0];
   }
-  A.setWorld(G.lv.world);
+  A.setWorld(G.lv.world); UI.setWorld(G.lv.world);
   resetRun();
 }
 // 無盡模式：每次一條新的隨機路線；世界每 ENDLESS_WORLD_LEN 單位輪替
@@ -89,7 +90,7 @@ function setEndlessWorld(k, quiet) {
   G.world = k; G.lv.world = k;
   const w = WORLDS[k];
   view.setTheme(w, Math.max(ENDLESS_SPAN, (G.sim?.x ?? 0) + 4000)); lvView.build(G.lv, w); restoreEaten();
-  document.body.style.background = w.sky[0]; A.setWorld(k);
+  document.body.style.background = w.sky[0]; A.setWorld(k); UI.setWorld(k);
   if (!quiet) { UI.flash(0.6); sfx('win'); pop(w.name, 0, 0, 'big'); fx.addTrauma(0.2); }
 }
 // lvView.build 會把蒼蠅、圈圈的「被吃掉」狀態清掉：照 sim 補回去
@@ -106,7 +107,7 @@ const endlessScore = () => G.score + endlessDist() * 10;
 function enterPlaying() { G.state = 'playing'; cg.gameplayStart(); }
 function resetRun() {
   if (G.endless && G.sim && G.sim.maxX > 60) { G.sim = null; loadEndless(); return; } // 無盡模式死掉或重來＝新路線
-  G.sim = createSim(G.lv); G.score = 0; G.coinPts = 0; G.runCoins = 0; G.feats.reset(); G.combo = 0; G.comboT = 0; G.restartT = 0; G.winT = 0; G.winAnim = 0; G.acc = 0;
+  G.sim = createSim(G.lv); G.score = 0; G.coinPts = 0; G.runCoins = 0; G.feats.reset(); G.runFeats = []; G.combo = 0; G.comboT = 0; G.restartT = 0; G.winT = 0; G.winAnim = 0; G.acc = 0;
   G.slowT = 0; G.hitStop = 0; lvView.reset(); fx.clear(); fx.resetTrail(G.sim.x, G.sim.y); UI.dieText(null);
   frog.squash(0.7, 0);
   if (G.state === 'playing') enterPlaying();
@@ -134,6 +135,8 @@ function onFeat(f, s) {
   const d = featById(f.id), better = recordFeat(save.feats, f.id, f.value);
   G.featLog.push({ id: f.id, value: f.value, t: performance.now() });
   if (f.silent) return;
+  G.runFeats.push(f.id);
+  if (typeof fxFeat === 'function') fxFeat(f.id); // 整合線提供的場景特效掛鉤（還沒合進來時跳過）
   addCoins(d.coins); persist();
   UI.feat(d.name, d.line, d.coins); sfx('ring'); sfx('buy'); A.duckMusic(0.35, 0.8);
   slowmo(0.5); UI.flash(0.25); G.fovKick -= 4; vibrate([15, 30, 15]);
@@ -277,19 +280,35 @@ function onEvent(e) {
 function levelCleared() {
   const s = G.sim, n = G.level;
   addCoins(CLEAR_COINS);
-  UI.popup(`CLEAR! +${CLEAR_COINS}`, innerWidth / 2, bigY() + 70, 'gold');
+  const rate = rateStars({ flies: s.fliesGot, fliesTotal: G.lv.flies.length, time: s.time, par: G.lv.par });
+  recordStars(save, n, rate.stars);
+  UI.clearSticker(true, rate.stars === 3 ? 'PERFECT!' : 'CLEAR!');
+  { const p = view.project(s.x, s.y, 0.5); UI.coinFly([p.x, p.y], document.getElementById('hudCoins'), 3); }
+  const newBest = G.score > (save.best[n] ?? 0) && (save.best[n] ?? 0) > 0;
   save.best[n] = Math.max(save.best[n] ?? 0, G.score);
   save.unlocked = Math.max(save.unlocked, Math.min(LEVEL_COUNT, n + 1));
   save.clears++; G.sessionClears++; G.wins++;
   if (n % 15 === 0 && !save.worldsDone.includes(n)) { save.worldsDone.push(n); cg.happytime(); } // 解鎖新世界＝真正的成就
   persist();
   G.lastWin = { level: n, score: G.score, time: s.time, coins: G.runCoins, at: performance.now() };
-  cg.gameplayStop(); UI.hint(null); UI.tut(null);
+  G.levelResult = { level: n, stars: rate.stars, ...rate, flies: s.fliesGot, fliesTotal: G.lv.flies.length, time: s.time, par: G.lv.par, score: G.score, newBest,
+    title: n % 15 === 0 ? 'WORLD CLEAR!' : rate.stars === 3 ? 'PERFECT!' : 'LEVEL CLEAR!', feats: [...new Set(G.runFeats)] };
+  UI.hint(null); UI.tut(null);
 }
+// 結算畫面：慶祝完停在這裡等玩家（gameplayStop）；NEXT／Space／Enter／點一下＝下一關，進場動畫沒播完時先跳到結尾
+function showLevelResult() {
+  G.state = 'result'; G.resultAt = performance.now(); clearHold(); cg.gameplayStop();
+  G.levelResult.coins = G.runCoins; UI.showResult(G.levelResult);
+}
+function resultNext() {
+  if (G.state !== 'result' || UI.finishResult()) return;
+  sfx('click'); advance();
+}
+function resultRetry() { if (G.state !== 'result') return; UI.finishResult(); sfx('click'); startLevel(G.level); }
 async function advance() {
   const n = G.level;
   if (n >= LEVEL_COUNT) { toMenu(); return; }
-  if (G.sessionClears % MIDGAME_EVERY === 0) { G.state = 'ad'; clearHold(); UI.show('block'); await cg.midgame(); } // 關卡之間＝自然中斷點
+  if (G.sessionClears % MIDGAME_EVERY === 0) { G.state = 'ad'; clearHold(); UI.show('block'); await cg.midgame(); } // 按 NEXT＝自然中斷點，每 MIDGAME_EVERY 關一次
   startLevel(n + 1);
 }
 
@@ -332,16 +351,16 @@ function toMenu() {
   G.state = 'menu'; clearHold(); UI.tryNow(null);
   loadLevel(Math.min(save.last, save.unlocked));
   UI.show('menu'); UI.setCoins(save.coins); UI.hint(null);
-  document.getElementById('playBtn').textContent = `PLAY ${levelLabel(Math.min(save.unlocked, LEVEL_COUNT))}`;
+  UI.setPlay(`PLAY ${levelLabel(Math.min(save.unlocked, LEVEL_COUNT))}`); UI.setHero(skinOf());
   const eb = document.getElementById('endlessBtn'), endlessOk = save.unlocked > ENDLESS_UNLOCK;
-  eb.classList.toggle('locked', !endlessOk); eb.innerHTML = endlessOk ? 'ENDLESS' : `ENDLESS &#128274;`;
+  UI.setEndless(endlessOk);
   menuStep = nextStep(save);
   eb.classList.toggle('badge', menuStep?.kind === 'endless');
   document.getElementById('shopBtn').classList.toggle('badge', menuStep?.kind === 'shop');
   if (!menuStep) UI.nextUp(null);
-  else if (menuStep.kind === 'endless') UI.nextUp('NEW MODE: ENDLESS &rarr;', 'swing forever, chase your best');
-  else if (menuStep.kind === 'world') UI.nextUp(`NEW WORLD: ${WORLDS[menuStep.world].name} &rarr;`, `level ${levelLabel(menuStep.level)} is open`);
-  else UI.nextUp(`GET ${menuStep.item.name.toUpperCase()} &rarr;`, `you have ${save.coins} coins, it costs ${menuStep.item.price}`);
+  else if (menuStep.kind === 'endless') UI.nextUp('NEW: ENDLESS MODE', 'swing forever, chase your best', { icon: 'loop' });
+  else if (menuStep.kind === 'world') UI.nextUp(`NEW WORLD: ${WORLDS[menuStep.world].name}`, `level ${levelLabel(menuStep.level)} is open`, { icon: 'globe' });
+  else UI.nextUp(`GET ${menuStep.item.name.toUpperCase()}`, `you have ${save.coins} · it costs ${menuStep.item.price}`, menuStep.item.tab === 'skins' ? { skin: menuStep.item.id } : { icon: 'coin' });
 }
 function goNextUp() {
   const st = menuStep; if (!st) return;
@@ -370,16 +389,17 @@ function renderShop() {
     else if (tab === 'tongues') { save.tongue = it.id; G.lick.x = G.sim.x + 2.5; G.lick.y = G.sim.y + 1.5; G.lick.t = 0.4; G.tongueWob = 0.5; }
     else save.trail = it.id;
     applyLook(); persist(); renderShop();
-    if (bought) { G.bought = it; UI.tryNow(it.name); } // 買完立刻推「立即試玩」
+    if (bought) { G.bought = it; UI.tryNow(it.name, it); } // 買完：慶祝＋立刻推「立即試玩」
   }, G.shopHi);
 }
 function tryBought() {
   sfx('click'); UI.tryNow(null);
-  if (G.bought?.tab === 'skins' || G.bought?.tab === 'tongues' || G.bought?.tab === 'trails') startLevel(Math.min(save.unlocked, LEVEL_COUNT));
+  if (G.bought) startLevel(Math.min(save.unlocked, LEVEL_COUNT)); // 穿著剛買的東西直接開玩
 }
 function pause() {
   if (G.state !== 'playing') return;
-  G.state = 'paused'; clearHold(); cg.gameplayStop(); UI.show('pause');
+  G.state = 'paused'; clearHold(); cg.gameplayStop();
+  UI.pauseMeta(G.endless ? `ENDLESS · ${endlessDist()} m` : `LEVEL ${levelLabel(G.level)} · ${G.score.toLocaleString('en-US')}`); UI.show('pause');
 }
 function resume() {
   if (G.state !== 'paused') return;
@@ -416,6 +436,8 @@ addEventListener('keydown', (e) => {
   if (HOLD_KEYS.has(e.code) || e.code.startsWith('Arrow')) e.preventDefault();
   A.initAudio();
   if (e.repeat) return;
+  // 鍵盤操作 UI：焦點在按鈕上時 Enter／Space 交給那顆按鈕（click），不搶
+  if ((e.code === 'Enter' || e.code === 'Space') && G.state !== 'playing' && document.activeElement instanceof HTMLButtonElement && document.activeElement.offsetParent) return;
   const act = HOLD_KEYS.has(e.code) || e.code === 'Enter';
   if (G.state === 'playing') {
     if (HOLD_KEYS.has(e.code)) { if (press()) { held.key = true; syncHold(); } }
@@ -423,6 +445,7 @@ addEventListener('keydown', (e) => {
     else if (e.code === 'KeyR') { clearHold(); resetRun(); }
   } else if (G.state === 'paused') { if (act || e.code === 'Escape' || e.code === 'KeyP') resume(); }
   else if (G.state === 'menu') { if (act) startLevel(Math.min(save.unlocked, LEVEL_COUNT)); }
+  else if (G.state === 'result') { if (act) resultNext(); else if (e.code === 'KeyR') resultRetry(); else if (e.code === 'Escape') toMenu(); }
   else if (G.state === 'over') { if (act && performance.now() - G.resultAt > 700) retryEndless(); else if (e.code === 'Escape') toMenu(); }
   else if ((G.state === 'levels' || G.state === 'shop' || G.state === 'records') && e.code === 'Escape') { sfx('click'); toMenu(); }
 });
@@ -433,7 +456,9 @@ const on = (id, fn) => document.getElementById(id).addEventListener('click', fn)
 on('playBtn', () => { sfx('click'); startLevel(Math.min(save.unlocked, LEVEL_COUNT)); });
 on('levelsBtn', openLevels); on('shopBtn', () => openShop(menuStep?.kind === 'shop' ? menuStep.item : null));
 on('endlessBtn', () => { sfx('click'); if (save.unlocked <= ENDLESS_UNLOCK) { UI.popup(`CLEAR LEVEL ${levelLabel(ENDLESS_UNLOCK)} FIRST`, innerWidth / 2, innerHeight * 0.8, 'gold'); return; } save.seen.endless = true; persist(); startEndless(); });
-on('recordsBtn', openRecords); on('nextUp', goNextUp);
+on('recordsBtn', openRecords); on('nextUp', goNextUp); on('heroTag', () => openShop());
+on('resNext', resultNext); on('resRetry', resultRetry); on('resMenu', () => { sfx('click'); toMenu(); });
+document.getElementById('result').addEventListener('pointerdown', (e) => { if (!(e.target instanceof Element && e.target.closest('button'))) resultNext(); });
 on('tryPlay', tryBought); on('tryLater', () => { sfx('click'); UI.tryNow(null); });
 for (const b of document.querySelectorAll('.back')) b.addEventListener('click', () => { sfx('click'); toMenu(); });
 for (const b of document.querySelectorAll('.musicT')) b.addEventListener('click', () => toggle('music'));
@@ -492,7 +517,7 @@ function updatePlaying(realDt, dt) {
   G.comboPulse = Math.max(0, G.comboPulse - realDt * 5);
   if (G.restartT > 0) { G.restartT -= realDt; if (G.restartT <= 0) resetRun(); }
   if (G.overT > 0) { G.overT -= realDt; if (G.overT <= 0) { endlessOver(); return; } }
-  if (G.winT > 0) { G.winT -= realDt; if (G.winT <= 0) { advance(); return; } }
+  if (G.winT > 0) { G.winT -= realDt; if (G.winT <= 0) { showLevelResult(); return; } }
   if (G.endless) updateEndless();
   UI.hudCoins(save.coins);
   Object.assign(hudData, { endless: G.endless, dist: G.endless ? endlessDist() : 0, level: G.level, score: G.endless ? endlessScore() : G.score, flies: s.fliesGot, fliesTotal: G.lv.flies.length, time: s.time, prog: Math.max(0, Math.min(1, s.x / G.lv.goal.x)), best: G.bestProg, combo: G.combo, comboLeft: Math.max(0, G.comboT / T.COMBO_WINDOW), comboPulse: G.comboPulse });
