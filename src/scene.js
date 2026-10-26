@@ -1,49 +1,10 @@
 // 渲染器、鏡頭、燈光、天空、水面、背景視差、輕量後製（受擊色差脈衝）。
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { TUNE as T } from './config.js';
+import { BG_SETS, initEnv } from './artkit.js';
+import { ART, splitProp, PartSet } from './art.js';
 
-const lam = (o) => new THREE.MeshLambertMaterial({ flatShading: true, ...o });
-
-// 幾何加上頂點色（拼裝 low-poly 道具用）
-export function tint(geo, color, jitter = 0) {
-  const g = geo.index ? geo.toNonIndexed() : geo;
-  const c = new THREE.Color(color), n = g.attributes.position.count, arr = new Float32Array(n * 3);
-  for (let i = 0; i < n; i += 3) {
-    const j = 1 + (Math.random() - 0.5) * jitter;
-    for (let k = 0; k < 3; k++) { arr[(i + k) * 3] = c.r * j; arr[(i + k) * 3 + 1] = c.g * j; arr[(i + k) * 3 + 2] = c.b * j; }
-  }
-  g.setAttribute('color', new THREE.BufferAttribute(arr, 3));
-  if (g.attributes.uv) g.deleteAttribute('uv');
-  return g;
-}
-const at = (g, x, y, z, rx = 0, ry = 0, rz = 0, sx = 1, sy = 1, sz = 1) => {
-  const m = new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, ry, rz)), new THREE.Vector3(sx, sy, sz));
-  return g.applyMatrix4(m);
-};
-
-function propGeo(kind) {
-  if (kind === 'jungle') return [
-    mergeGeometries([tint(at(new THREE.CylinderGeometry(0.45, 0.8, 12, 6), 0, 6, 0), '#7a4a26', 0.2), tint(at(new THREE.IcosahedronGeometry(3.6, 0), 0, 12.5, 0, 0, 0, 0, 1, 0.8, 1), '#27ae60', 0.25), tint(at(new THREE.IcosahedronGeometry(2.6, 0), 1.8, 14.6, 0.5), '#2ecc71', 0.25), tint(at(new THREE.IcosahedronGeometry(2.2, 0), -2, 13.8, -0.5), '#1e8f4e', 0.25)]),
-    mergeGeometries([tint(at(new THREE.CylinderGeometry(2.2, 2.2, 0.25, 10, 1, false, 0.3, 5.7), 0, 0.25, 0), '#3fbf6a', 0.2), tint(at(new THREE.ConeGeometry(0.45, 0.7, 5), 0.6, 0.7, 0.4, Math.PI), '#ff6fb5', 0.15), tint(at(new THREE.IcosahedronGeometry(0.22, 0), 0.6, 0.55, 0.4), '#ffd23f')]),
-  ];
-  if (kind === 'candy') {
-    const disc = tint(at(new THREE.CylinderGeometry(3, 3, 0.7, 12), 0, 11, 0, Math.PI / 2), '#ff6fb5', 0);
-    const col = disc.attributes.color; for (let i = 0; i < col.count; i += 6) for (let k = 0; k < 3 && i + k < col.count; k++) col.setXYZ(i + k, 1, 1, 1);
-    return [
-      mergeGeometries([tint(at(new THREE.CylinderGeometry(0.25, 0.25, 11, 6), 0, 5.5, 0), '#ffffff', 0.05), disc]),
-      mergeGeometries([tint(at(new THREE.CylinderGeometry(1.4, 2.4, 2.6, 8), 0, 1.3, 0), '#7be0ff', 0.2), tint(at(new THREE.IcosahedronGeometry(0.5, 0), 0, 2.8, 0), '#ff3b6b')]),
-    ];
-  }
-  if (kind === 'city') return [
-    mergeGeometries([tint(at(new THREE.BoxGeometry(5, 18, 5), 0, 9, 0), '#2a1a50', 0.2), tint(at(new THREE.BoxGeometry(5.2, 0.4, 5.2), 0, 18, 0), '#ff2bd6'), tint(at(new THREE.BoxGeometry(0.15, 3, 0.15), 1.5, 19.5, 0), '#00f0ff')]),
-    mergeGeometries([tint(at(new THREE.CylinderGeometry(0.15, 0.2, 5, 5), 0, 2.5, 0), '#3d2470', 0.2), tint(at(new THREE.BoxGeometry(1.4, 0.25, 0.4), 0.5, 5, 0), '#3d2470'), tint(at(new THREE.IcosahedronGeometry(0.35, 0), 1.1, 4.8, 0), '#fff36b'), tint(at(new THREE.BoxGeometry(2.6, 0.6, 0.6), 0, 0.2, 0), '#ff2bd6')]),
-  ];
-  return [
-    mergeGeometries([tint(at(new THREE.ConeGeometry(2.4, 12, 5), 0, 6, 0), '#3b2420', 0.35), tint(at(new THREE.ConeGeometry(0.8, 3, 5), 0.6, 10.5, 0.5), '#ff7a1f')]),
-    mergeGeometries([tint(at(new THREE.DodecahedronGeometry(2, 0), 0, 1, 0, 0, 0, 0, 1.3, 0.8, 1), '#4a2c26', 0.35)]),
-  ];
-}
+const WI = { jungle: 0, candy: 1, city: 2, volcano: 3 };
 
 export function createView(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
@@ -70,21 +31,20 @@ export function createView(canvas) {
   scene.background = skyTex;
   scene.fog = new THREE.Fog('#d6f2d8', 30, 125);
 
-  // 水面（CPU 頂點波浪，flatShading 不必重算法線）
-  const waterGeo = new THREE.PlaneGeometry(170, 92, 56, 15); waterGeo.rotateX(-Math.PI / 2);
+  // 水面（CPU 頂點波浪＋平滑法線；亮面、帶一點環境反光，像果凍糖漿）
+  const waterGeo = new THREE.PlaneGeometry(170, 92, 64, 18); waterGeo.rotateX(-Math.PI / 2);
   const waterBase = Float32Array.from(waterGeo.attributes.position.array);
-  const waterMat = lam({ color: '#2ec4c4', transparent: true, opacity: 0.93 });
+  const waterHi = new THREE.MeshStandardMaterial({ color: '#2ec4c4', roughness: 0.16, envMap: initEnv(renderer), envMapIntensity: 0.35, transparent: true, opacity: 0.94 });
+  const waterLo = new THREE.MeshLambertMaterial({ color: '#2ec4c4', transparent: true, opacity: 0.94 });
+  let waterMat = waterHi;
   const water = new THREE.Mesh(waterGeo, waterMat);
   water.position.z = -6; water.receiveShadow = true; scene.add(water);
 
   // 背景視差層
   const bg = new THREE.Group(); scene.add(bg);
-  const propMat = lam({ vertexColors: true });
-  const hillGeo = new THREE.IcosahedronGeometry(1, 1);
-  const hillMat = lam({ color: '#ffffff' });
-  const cloudGeo = mergeGeometries([at(new THREE.IcosahedronGeometry(1, 1), 0, 0, 0), at(new THREE.IcosahedronGeometry(0.75, 1), 0.95, -0.15, 0.1), at(new THREE.IcosahedronGeometry(0.7, 1), -0.95, -0.2, -0.1), at(new THREE.IcosahedronGeometry(0.55, 1), 0.4, 0.45, 0.3)]);
-  const cloudMat = lam({ color: '#ffffff', emissive: '#bbbbbb' });
-  let bgMeshes = [];
+  const hillGeo = new THREE.SphereGeometry(1, 40, 20);
+  const hillHi = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.8 }), hillLo = new THREE.MeshLambertMaterial({ color: '#ffffff' });
+  let bgMeshes = [], bgSets = [];
   const dummy = new THREE.Object3D();
 
   function setTheme(w, length) {
@@ -93,40 +53,53 @@ export function createView(canvas) {
     g.fillStyle = gr; g.fillRect(0, 0, 4, 256); skyTex.needsUpdate = true;
     scene.fog.color.set(w.fog);
     hemi.color.set(w.hemi[0]); hemi.groundColor.set(w.hemi[1]);
-    waterMat.color.set(w.water); waterMat.emissive.set(w.waterEm);
+    waterMat = ART.q === 'high' ? waterHi : waterLo; water.material = waterMat;
+    for (const m of [waterHi, waterLo]) { m.color.set(w.water); m.emissive.set(w.waterEm); }
     for (const m of bgMeshes) { bg.remove(m); m.dispose(); }
-    bgMeshes = [];
+    for (const p of bgSets) p.dispose(bg);
+    bgMeshes = []; bgSets = [];
+    const wi = WI[w.props] ?? 0;
     const rnd = mulberry(w.name.length * 31 + Math.round(length));
     const span = length + 140;
-    const [geoA, geoB] = propGeo(w.props);
-    const nA = Math.ceil(span / 7), nB = Math.ceil(span / 9), nH = Math.ceil(span / 20), nC = Math.ceil(span / 16);
-    const A = new THREE.InstancedMesh(geoA, propMat, nA), B = new THREE.InstancedMesh(geoB, propMat, nB);
-    const H = new THREE.InstancedMesh(hillGeo, hillMat, nH);
+    const [nameA, nameB] = BG_SETS[wi];
+    const nA = Math.ceil(span / 7), nB = Math.ceil(span / 9), nH = Math.ceil(span / 20), nC = Math.ceil(span / 16), nP = Math.ceil(span / 8);
+    // 背景件不投影（陰影圖只照鏡頭附近 22 單位，背景投影只是多畫一次）
+    const A = new PartSet(bg, splitProp(nameA, wi).main, nA, { shadow: false, receive: false });
+    const B = new PartSet(bg, splitProp(nameB, wi).main, nB, { shadow: false, receive: false });
+    bgSets.push(A, B);
     for (let i = 0; i < nA; i++) {
       const s = 0.8 + rnd() * 0.7;
-      dummy.position.set(-50 + (i / nA) * span + rnd() * 4, 0, -22 - rnd() * 26); dummy.rotation.set(0, rnd() * 6, 0); dummy.scale.set(s, s * (0.8 + rnd() * 0.5), s);
-      dummy.updateMatrix(); A.setMatrixAt(i, dummy.matrix);
+      dummy.position.set(-50 + (i / nA) * span + rnd() * 4, 0, -22 - rnd() * 26); dummy.rotation.set(0, wi === 1 ? (rnd() - 0.5) * 0.6 : rnd() * 6, 0); dummy.scale.set(s, s * (0.8 + rnd() * 0.5), s);
+      dummy.updateMatrix(); A.set(i, dummy.matrix);
     }
     for (let i = 0; i < nB; i++) {
       const s = 0.6 + rnd() * 0.6;
       dummy.position.set(-50 + (i / nB) * span + rnd() * 5, -0.2, -9 - rnd() * 8); dummy.rotation.set(0, rnd() * 6, 0); dummy.scale.set(s, s, s);
-      dummy.updateMatrix(); B.setMatrixAt(i, dummy.matrix);
+      dummy.updateMatrix(); B.set(i, dummy.matrix);
     }
+    if (wi <= 1) { // 叢林、糖果：水上漂著小荷葉
+      const Pd = new PartSet(bg, splitProp('prop-pad', wi).main, nP, { shadow: false, receive: true }); bgSets.push(Pd);
+      for (let i = 0; i < nP; i++) {
+        dummy.position.set(-46 + (i / nP) * span + rnd() * 4, 0.06, -3.5 - rnd() * 9); dummy.rotation.set(0, rnd() * 6, 0); dummy.scale.setScalar(1.1 + rnd() * 1.1);
+        dummy.updateMatrix(); Pd.set(i, dummy.matrix);
+      }
+    }
+    const H = new THREE.InstancedMesh(hillGeo, ART.q === 'high' ? hillHi : hillLo, nH);
     const hc = [new THREE.Color(w.bgHill), new THREE.Color(w.bgHill2)];
     for (let i = 0; i < nH; i++) {
       dummy.position.set(-60 + (i / nH) * (span + 40) + rnd() * 8, -2, -80 - rnd() * 20); dummy.rotation.set(0, rnd() * 3, 0);
       dummy.scale.set(16 + rnd() * 14, 9 + rnd() * 12, 8); dummy.updateMatrix(); H.setMatrixAt(i, dummy.matrix); H.setColorAt(i, hc[i % 2]);
     }
-    bgMeshes.push(A, B, H);
+    bgMeshes.push(H);
     if (w.props === 'jungle' || w.props === 'candy') {
-      const C = new THREE.InstancedMesh(cloudGeo, cloudMat, nC);
+      const C = new PartSet(bg, splitProp('bg-cloud', wi).main, nC, { shadow: false, receive: false }); bgSets.push(C);
       for (let i = 0; i < nC; i++) {
         dummy.position.set(-50 + (i / nC) * span + rnd() * 8, 24 + rnd() * 10, -45 - rnd() * 15); dummy.rotation.set(0, rnd() * 0.6, 0);
-        dummy.scale.set(3 + rnd() * 2.5, 1.8 + rnd() * 0.8, 2); dummy.updateMatrix(); C.setMatrixAt(i, dummy.matrix);
+        dummy.scale.set(3 + rnd() * 2.5, 2.2 + rnd(), 2); dummy.updateMatrix(); C.set(i, dummy.matrix);
       }
-      bgMeshes.push(C);
     }
-    for (const m of bgMeshes) { m.instanceMatrix.needsUpdate = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; bg.add(m); }
+    for (const p of bgSets) p.commit();
+    for (const m of bgMeshes) { m.instanceMatrix.needsUpdate = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; m.frustumCulled = false; bg.add(m); }
   }
 
   // 後製：只有色差脈衝時才多一個 pass（平常 0 成本），低畫質時關掉
@@ -156,7 +129,7 @@ export function createView(canvas) {
     renderer.setPixelRatio(high ? Math.min(devicePixelRatio, 1.5) : 1);
     renderer.shadowMap.enabled = high; sun.castShadow = high;
     post.enabled = high; resize();
-    scene.traverse((o) => { if (o.material) o.material.needsUpdate = true; });
+    scene.traverse((o) => { if (o.material && !Array.isArray(o.material)) o.material.needsUpdate = true; });
   }
 
   function update(t, focusX, focusY) {
@@ -167,7 +140,7 @@ export function createView(canvas) {
       const wx = waterBase[i] + water.position.x, wz = waterBase[i + 2];
       p[i + 1] = Math.sin(wx * 0.45 + t * 1.8) * 0.18 + Math.sin(wz * 0.6 + wx * 0.2 + t * 1.3) * 0.14;
     }
-    waterGeo.attributes.position.needsUpdate = true;
+    waterGeo.attributes.position.needsUpdate = true; waterGeo.computeVertexNormals();
     sun.position.set(focusX + 6, focusY + 16, 12); sun.target.position.set(focusX, focusY, 0);
     bg.position.x = 0;
   }

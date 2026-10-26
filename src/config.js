@@ -5,7 +5,7 @@ export const TUNE = {
   AIR_DRAG: 0.04,
   MAX_SPEED: 36,
   FROG_R: 0.55,
-  FROG_VIS: 1.5, // 青蛙外觀放大倍率（碰撞半徑不變，對尖刺比較寬容）
+  FROG_VIS: 1.72, // 外觀放大倍率（第二輪 1.5 → 1.72，擺盪畫面主角大約 15%；碰撞半徑 FROG_R 不變）
   JUMP_V: [6.5, 13], // 從起點木樁跳起的速度
   JUMP_DELAY: 0.07, // 起跳前蹲下（預備動作）
   TONGUE_RANGE: 16, // 舌頭能黏到的最遠距離
@@ -47,6 +47,9 @@ export const TUNE = {
   SLOWMO_SCALE: 0.28,
   SLOWMO_TIME: 0.8, // 真實秒
   RESTART_DELAY: 0.5,
+  // 畫面震動（src/fx.js addTrauma）：小事件取 max、大事件累加；使用者一句「太強／太弱」就調這兩個
+  SHAKE_SCALE: 0.85, // 位移／旋轉幅度倍率
+  SHAKE_DECAY: 1.9, // 每秒掉多少 trauma（越大停得越快）
   PAR_SPEED: 10.5, // 3 星時間：關卡長度 / 這個速度 + 3 秒
 };
 

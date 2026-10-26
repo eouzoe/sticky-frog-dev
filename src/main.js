@@ -14,6 +14,8 @@ import { createFeatTracker, featById, recordFeat } from './feats.js';
 import { SAVE_KEY, DEFAULT_SAVE, ENDLESS_UNLOCK, normalizeSave, nextStep } from './save.js';
 import { addLocal, submitPlatform } from './leaderboard.js';
 import { tongueTexture } from './tongues.js';
+import { ART, loadArt } from './art.js';
+import { createJuice } from './juice.js';
 
 const MIDGAME_EVERY = 3; // 每破 3 關，在換關的空檔插一次 midgame（SDK 自己還會限 3 分鐘一次）
 const CELEBRATE = 1.6; // 落荷葉後的慶祝秒數，然後自動進下一關
@@ -24,8 +26,8 @@ const FLIP_NAMES = ['', 'FLIP!', 'DOUBLE FLIP!', 'TRIPLE FLIP!', 'QUAD FLIP!'];
 const canvas = document.getElementById('c');
 const view = createView(canvas);
 const lvView = createLevelView(view.scene);
-const frog = createFrog(view.scene);
-const fx = createFx(view.scene);
+const frog = createFrog(view.scene, view.renderer);
+const fx = createFx(view.scene, view.renderer);
 let save = normalizeSave(DEFAULT_SAVE, LEVEL_COUNT);
 
 const G = {
@@ -36,6 +38,7 @@ const G = {
   cam: { x: 0, y: 7, d: T.CAM_DIST }, resultAt: 0, adBreak: false, lastResult: null, quality: 'high', fps: 60, bestFlip: 0,
   endless: false, coinPts: 0, runCoins: 0, sessionClears: 0, feats: createFeatTracker(), featLog: [], lastWin: null, shopHi: null, bought: null,
 };
+const juice = createJuice({ fx, frog, lvView, view, G, sfx: (n, o) => A.play(n, o), A, slowmo: (t) => slowmo(t), flash: (a) => UI.flash(a), vibrate: (p) => vibrate(p) });
 window.__game = {
   get state() { return G.state; }, get level() { return G.level; }, get score() { return G.score; },
   get attaches() { return G.sim?.attaches ?? 0; }, get attachesTotal() { return G.attachesTotal; }, get flips() { return G.flipsTotal; },
@@ -50,9 +53,12 @@ window.__game = {
   look(skin, trail, tongue) { applyLook(SKINS.find((k) => k.id === skin), TRAILS.find((k) => k.id === trail), TONGUES.find((k) => k.id === tongue)); },
   // 測試用：讓無盡模式直接死（驗結算流程）
   forceDie() { const s = G.sim; if (s && s.mode !== 'dead') { s.mode = 'air'; s.tongue.state = 'idle'; s.y = 0.1; s.vy = -5; } },
+  setLow() { setLowQuality(); }, // 測試用：直接切到低畫質（C 材質）
   autoplay: null, // 巡覽截圖用：設成 [rel, grabVy] 讓自動玩家操作
 
   // 測試用：把青蛙放到終點上方，讓它自然落在荷葉上完成關卡
+  fxFeat(kind) { fxFeat(kind); }, get particles() { return fx.count(); },
+  emit(e) { if (G.sim) onEvent({ x: G.sim.x, y: G.sim.y, ...e }); }, // 測試用：直接觸發一個遊戲事件的特效（例如 {type:'flip', n:7}）
   forceWin() { const s = G.sim, g = G.lv.goal; if (!s) return; s.tongue.state = 'idle'; s.mode = 'air'; s.x = g.x; s.y = g.y + 4; s.vx = 0; s.vy = -4; },
 };
 
@@ -90,7 +96,7 @@ function setEndlessWorld(k, quiet) {
   const w = WORLDS[k];
   view.setTheme(w, Math.max(ENDLESS_SPAN, (G.sim?.x ?? 0) + 4000)); lvView.build(G.lv, w); restoreEaten();
   document.body.style.background = w.sky[0]; A.setWorld(k);
-  if (!quiet) { UI.flash(0.6); sfx('win'); pop(w.name, 0, 0, 'big'); fx.addTrauma(0.2); }
+  if (!quiet) { UI.flash(0.6); sfx('win'); pop(w.name, 0, 0, 'big'); fx.addTrauma(0.2, true); juice.levelIn(G.sim); }
 }
 // lvView.build 會把蒼蠅、圈圈的「被吃掉」狀態清掉：照 sim 補回去
 function restoreEaten() { const s = G.sim; if (!s) return; lvView.st.flyGone = G.lv.flies.map((_, i) => (s.flies[i] ? 1 : 0)); lvView.st.ringGone = G.lv.rings.map((_, i) => (s.rings[i] ? 1 : 0)); }
@@ -117,7 +123,7 @@ function startLevel(n) {
   loadLevel(n);
   save.last = n; persist();
   enterPlaying(); clearHold(); UI.show(null); UI.hint(null);
-  G.cam.x = G.sim.x + 6; G.cam.y = T.CAM_MIN_Y;
+  G.cam.x = G.sim.x + 6; G.cam.y = T.CAM_MIN_Y; juice.levelIn(G.sim);
   UI.popup((n - 1) % 15 === 0 ? `${WORLDS[G.lv.world].name}  ${levelLabel(n)}` : `LEVEL ${levelLabel(n)}`, innerWidth / 2, bigY(), 'big');
 }
 function startEndless() {
@@ -129,16 +135,14 @@ function startEndless() {
   UI.popup(`ENDLESS  BEST ${save.endlessBest} m`, innerWidth / 2, bigY(), 'big');
 }
 // 即時金幣：入帳、HUD 彈一下（存檔在死亡／過關／退回選單時寫）
-function addCoins(n) { if (n <= 0) return; save.coins += n; G.runCoins += n; UI.hudCoins(save.coins); }
+function addCoins(n) { if (n <= 0) return; save.coins += n; G.runCoins += n; UI.hudCoins(save.coins); if (G.sim && G.state === 'playing') { juice.coins(G.sim.x, G.sim.y, n); sfx('coin'); } }
 function onFeat(f, s) {
   const d = featById(f.id), better = recordFeat(save.feats, f.id, f.value);
   G.featLog.push({ id: f.id, value: f.value, t: performance.now() });
   if (f.silent) return;
   addCoins(d.coins); persist();
-  UI.feat(d.name, d.line, d.coins); sfx('ring'); sfx('buy'); A.duckMusic(0.35, 0.8);
-  slowmo(0.5); UI.flash(0.25); G.fovKick -= 4; vibrate([15, 30, 15]);
-  fx.burst(s.x, s.y, 30, { colors: ['#ffd23f', '#ff6fb5', '#7be0ff', '#ffffff'], speed: 11, size: 0.3, grav: 8, shape: 1, life: 1.2 });
-  fx.shock(s.x, s.y, 5, '#ffd23f', 0.5);
+  UI.feat(d.name, d.line, d.coins); sfx('ring'); sfx('buy'); A.duckMusic(0.35, 0.8); vibrate([15, 30, 15]);
+  fxFeat(f.id);
   if (better && save.feats[f.id].count > 1) UI.popup('NEW RECORD!', innerWidth / 2, bigY() + 150, 'gold');
 }
 
@@ -150,6 +154,8 @@ function addScore(v) {
   G.coinPts += s; const c = Math.floor(G.coinPts / COIN_PTS); if (c > 0) { G.coinPts -= c * COIN_PTS; addCoins(c); }
   return s;
 }
+// 成就的場景特效掛鉤（UI 線的 DOM 彈出另外做；kind＝src/feats.js 的成就 id）
+function fxFeat(kind) { const s = G.sim; if (s) juice.feat(kind, s.x, s.y); }
 const bigY = () => Math.max(132, innerHeight * 0.27);
 function pop(text, x, y, cls) {
   if (cls === 'big') { UI.popup(text, innerWidth / 2, bigY(), cls); return; }
@@ -163,30 +169,22 @@ function onEvent(e) {
   switch (e.type) {
     case 'crouch': sfx('tick'); break;
     case 'jump':
-      frog.squash(1.45, Math.atan2(-s.vx, s.vy)); sfx('jump');
-      fx.burst(s.x, s.y - 0.5, 10, { colors: [w.wood, '#f5e6c8'], speed: 5, dir: Math.PI / 2, spread: 2.6, size: 0.22 });
+      juice.jump(s, w); sfx('jump');
       break;
     case 'shoot': sfx('shoot'); G.tongueWob = 0.35; break;
     case 'miss': sfx('miss'); G.tongueWob = 0.5; break;
     case 'attach': {
       G.attachesTotal++; save.grabs++;
-      lvView.wobbleHook(e.hook); sfx('attach', { combo: G.combo });
-      frog.squash(0.72, s.angle); frog.jiggle(4);
+      sfx('attach', { combo: G.combo });
       G.tongueWob = 0.6; G.tipPop = 1.9;
-      fx.burst(e.x, e.y, 8, { colors: [w.petal, w.bud, '#ffffff'], speed: 6, size: 0.24, grav: 6 });
-      fx.shock(e.x, e.y, 2.2, w.petal, 0.3);
-      { const tk = tongueOf(); if (tk.id !== 'tongue') fx.burst(e.x, e.y, 10, { colors: tk.fx, speed: 5, size: 0.22, grav: tk.id === 'vine' ? 9 : 2, shape: tk.fxShape, life: 0.7 }); } // 舌頭種類的黏上特效
-      fx.addTrauma(0.06 + Math.min(0.2, e.speed * 0.006));
+      juice.attach(e, s, w, tongueOf()); // 含舌頭種類的黏上特效
       addCombo(); addScore(T.SCORE_GRAB);
       vibrate(8);
       break;
     }
     case 'release':
       sfx('release'); if (e.speed > 21) sfx('whoosh');
-      frog.squash(1.4, Math.atan2(-s.vx, s.vy)); frog.jiggle(5);
-      G.fovKick = Math.min(9, 2 + e.speed * 0.22); G.tongueWob = 0.7;
-      fx.addTrauma(Math.min(0.25, e.speed * 0.008));
-      if (e.speed > 20) fx.burst(s.x, s.y, 8, { colors: ['#ffffff'], speed: 4, size: 0.2, grav: 0, shape: 3, life: 0.5 });
+      G.tongueWob = 0.7; juice.release(s, e.speed);
       break;
     case 'flip': {
       G.flipsTotal++; G.bestFlip = Math.max(G.bestFlip, e.n);
@@ -194,61 +192,42 @@ function onEvent(e) {
       const pts = addScore(T.SCORE_FLIP * e.n);
       sfx('flip', { n: e.n, combo: G.combo });
       const name = e.n < FLIP_NAMES.length ? FLIP_NAMES[e.n] : `${e.n}x FLIP!!`;
-      if (e.n >= 2) {
-        pop(name, s.x, s.y + 2.6, 'big'); fx.shock(s.x, s.y, 3 + e.n, '#ffd23f', 0.45);
-        fx.burst(s.x, s.y, 10 + e.n * 6, { colors: ['#ffd23f', '#ff6fb5', '#7be0ff', '#2ecc71'], speed: 9, size: 0.3, grav: 8, shape: 1, life: 1 });
-      } else pop(`${name} +${pts}`, s.x, s.y + 2, 'gold');
-      if (e.n === 3 || e.n >= 5) { slowmo(); UI.flash(0.22); G.fovKick -= 6; vibrate(25); }
-      fx.addTrauma(0.05 * e.n);
+      if (e.n >= 2) pop(name, s.x, s.y + 2.6, 'big');
+      else pop(`${name} +${pts}`, s.x, s.y + 2, 'gold');
+      juice.flip(s, e.n);
       break;
     }
     case 'fly': {
-      lvView.eatFly(e.i); sfx('fly'); addCombo();
+      lvView.eatFly(e.i); sfx('fly'); addCombo(); juice.fly(e);
       const pts = addScore(T.SCORE_FLY);
       pop(`+${pts}`, e.x, e.y + 1, 'pink');
-      fx.burst(e.x, e.y, 8, { colors: ['#ffffff', '#ffd23f', '#222233'], speed: 5, size: 0.16, grav: 4, shape: 2 });
       if (s.tongue.state === 'idle' || s.tongue.state === 'retract') { G.lick.x = e.x; G.lick.y = e.y; G.lick.t = 0.13; G.tongueWob = 0.3; }
-      frog.jiggle(3);
       break;
     }
     case 'ring': {
-      lvView.takeRing(e.i); sfx('ring'); addCombo();
+      sfx('ring'); addCombo();
       const pts = addScore(T.SCORE_RING);
       pop(`RING! +${pts}`, e.x, e.y + 2.6, 'big');
-      fx.burst(e.x, e.y, 26, { colors: ['#ffd23f', '#fff6a0', '#ffffff'], speed: 10, size: 0.26, grav: 4, shape: 2 });
-      fx.shock(e.x, e.y, 4.5, '#ffd23f', 0.5);
-      slowmo(e.speed > 16 || e.flips >= 1 ? T.SLOWMO_TIME : 0.45); G.fovKick -= 5; UI.flash(0.15);
+      juice.ring(e, e.speed > 16 || e.flips >= 1 ? T.SLOWMO_TIME : 0.45);
       break;
     }
     case 'bounce': {
-      lvView.squashMush(e.i); sfx('bounce'); addCombo(); addScore(T.SCORE_BOUNCE);
-      frog.squash(0.55, 0); frog.jiggle(8);
+      sfx('bounce'); addCombo(); addScore(T.SCORE_BOUNCE);
       pop('BOING!', e.x, e.y + 1.5, 'gold');
-      fx.burst(e.x, e.y, 14, { colors: [w.cap, w.capSpot, '#ffffff'], speed: 8, dir: Math.PI / 2, spread: 2.2, size: 0.26 });
-      fx.shock(e.x, e.y - 0.2, 3.2, '#ffffff', 0.35, true);
-      fx.addTrauma(0.25); G.hitStop = 0.045; vibrate(15);
+      juice.bounce(e, w); vibrate(15);
       break;
     }
-    case 'fan': sfx('fan'); fx.burst(s.x, s.y - 0.5, 6, { colors: ['#ffffff'], speed: 6, dir: Math.PI / 2, spread: 0.6, size: 0.18, grav: -6, shape: 2 }); break;
+    case 'fan': sfx('fan'); juice.fan(s); break;
     case 'close': {
       const pts = addScore(50); addCombo(); sfx('ring');
-      pop(`CLOSE CALL! +${pts}`, e.x, e.y + 2, 'gold'); slowmo(0.35); frog.jiggle(6);
+      pop(`CLOSE CALL! +${pts}`, e.x, e.y + 2, 'gold'); juice.close(e);
       break;
     }
-    case 'wall': sfx('wall'); fx.addTrauma(0.22); frog.squash(0.6, Math.PI / 2); break;
+    case 'wall': sfx('wall'); juice.wall(s, w); break;
     case 'die': {
       const water = e.cause === 'water';
       sfx(water ? 'splash' : 'spike'); G.deaths++;
-      G.hitStop = water ? 0.06 : 0.11; fx.addTrauma(water ? 0.45 : 0.7); UI.flash(water ? 0.25 : 0.55);
-      view.post.amount = water ? 0.012 : 0.03;
-      if (water) {
-        fx.burst(e.x, 0.2, 34, { colors: [w.water, '#ffffff', w.water], speed: 13, dir: Math.PI / 2, spread: 1.4, size: 0.3, grav: 26 });
-        fx.shock(e.x, 0.15, 4, '#ffffff', 0.5, true);
-      } else {
-        fx.burst(e.x, e.y, 22, { colors: [skinOf().body, skinOf().belly, '#ff3b3b'], speed: 12, size: 0.3, grav: 20 });
-        fx.burst(e.x, e.y, 14, { colors: ['#ffffff', '#ffd23f'], speed: 16, size: 0.3, grav: 0, shape: 2, life: 0.35 });
-        fx.shock(e.x, e.y, 3.5, '#ff5a5a', 0.35);
-      }
+      if (water) juice.dieWater(e, w); else juice.dieHazard(e, skinOf());
       UI.dieText(water ? w.die : 'OUCH!');
       const prog = G.endless ? 0 : Math.min(1, s.maxX / G.lv.goal.x);
       if (prog > 0.6) UI.popup(`SO CLOSE! ${Math.round(prog * 100)}%`, innerWidth / 2, innerHeight * 0.52, 'gold');
@@ -259,12 +238,9 @@ function onEvent(e) {
       break;
     }
     case 'win': {
-      sfx('win'); lvView.bouncePad(); G.winT = CELEBRATE; G.winAnim = 0;
-      frog.squash(0.5, 0);
+      sfx('win'); G.winT = CELEBRATE; G.winAnim = 0;
       const g = G.lv.goal;
-      fx.burst(s.x, s.y, 70, { colors: ['#ff6fb5', '#ffd23f', '#2ecc71', '#7be0ff', '#ffffff', '#9b5de5'], speed: 14, dir: Math.PI / 2, spread: 2.4, size: 0.34, grav: 9, shape: 1, life: 1.8 });
-      fx.shock(s.x, g.y + 0.1, 6, '#ffffff', 0.6, true);
-      slowmo(0.6); fx.addTrauma(0.3); UI.flash(0.3); G.fovKick -= 4; vibrate([20, 30, 60]);
+      juice.win(s, g); vibrate([20, 30, 60]);
       pop(Math.abs(s.x - g.x) < 1.6 ? 'BULLSEYE!' : 'LANDED!', s.x, s.y + 3, 'big');
       if (Math.abs(s.x - g.x) < 1.6) addScore(200);
       levelCleared();
@@ -461,7 +437,7 @@ function frame(now) {
   fpsAcc += realDt; fpsN++;
   if (fpsAcc >= 1) {
     G.fps = Math.round(fpsN / fpsAcc); fpsAcc = 0; fpsN = 0;
-    if (G.state === 'playing' && !document.hidden) { lowSecs = G.fps < 45 ? lowSecs + 1 : 0; if (lowSecs >= 2 && G.quality === 'high') { G.quality = 'low'; view.setQuality(false); } }
+    if (G.state === 'playing' && !document.hidden) { lowSecs = G.fps < 45 ? lowSecs + 1 : 0; if (lowSecs >= 2 && G.quality === 'high') setLowQuality(); }
   }
   // 慢動作與 hit-stop
   if (G.slowT > 0) G.slowT -= realDt;
@@ -575,11 +551,19 @@ function render(realDt, dt) {
   view.render();
 }
 
+// 降畫質：pixelRatio 1、關陰影／後製，模型換成 C 路線材質（Lambert＋邊緣光）重新 dress
+function setLowQuality() {
+  G.quality = 'low'; ART.q = 'low'; view.setQuality(false); fx.setQuality(false);
+  if (!G.lv) return;
+  const w = WORLDS[G.lv.world];
+  view.setTheme(w, G.endless ? Math.max(ENDLESS_SPAN, (G.sim?.x ?? 0) + 4000) : G.lv.length); lvView.build(G.lv, w); restoreEaten(); applyLook();
+}
+
 // 環境粒子：風扇的上升氣流、蒼蠅的嗡嗡點點（只在鏡頭附近生）
 function ambient(s, dt) {
   if (dt <= 0) return;
   const lv = G.lv, cx = G.cam.x;
-  for (const f of lv.fans) if (Math.abs(f.x - cx) < 24 && Math.random() < dt * 14) fx.spawn(f.x + (Math.random() - 0.5) * f.w, f.y0 + 0.5, 0.3, 0, 10 + Math.random() * 6, 0, (f.y1 - f.y0) / 14, 0.3, 0, 0, 2, '#ffffff');
+  for (const f of lv.fans) if (Math.abs(f.x - cx) < 24 && Math.random() < dt * 14) fx.spawn(f.x + (Math.random() - 0.5) * f.w, f.y0 + 0.5, 0.3, 0, 10 + Math.random() * 6, 0, (f.y1 - f.y0) / 14, 0.2, 0, 0, 3, '#ffffff'); // 上升氣流＝小泡泡
   for (let i = 0; i < lv.flies.length; i++) {
     if (s.flies[i] || Math.abs(lv.flies[i].x - cx) > 22 || Math.random() > dt * 5) continue;
     flyPos(lv.flies[i], s.t, tmp);
@@ -598,6 +582,7 @@ function menuIdle(dt) {
 async function boot() {
   cg.loadingStart();
   await cg.init();
+  await loadArt(view.renderer); // 26 個 GLB（約 0.9 MB）；失敗就讓錯誤冒出來，不要默默用空模型
   let raw = null; try { raw = JSON.parse(cg.getItem(SAVE_KEY) || 'null'); } catch { raw = null; }
   save = normalizeSave(raw, LEVEL_COUNT); // 舊存檔（有 stars 欄位）也走這裡
   G.touch = matchMedia?.('(pointer: coarse)').matches ?? false;
