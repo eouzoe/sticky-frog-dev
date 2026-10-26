@@ -22,7 +22,7 @@ export function hud(o) {
   const set = (id, v) => { if (hudCache[id] !== v) { hudCache[id] = v; $(id).textContent = v; } };
   set('hudLevel', o.endless ? `ENDLESS  ${o.dist} m` : `LEVEL ${levelLabel(o.level)}`);
   set('hudScore', String(o.score));
-  set('hudFlies', `${o.flies}/${o.fliesTotal}`);
+  set('hudFlies', o.endless ? String(o.flies) : `${o.flies}/${o.fliesTotal}`);
   set('hudTime', `${o.time.toFixed(1)}s`);
   $('prog').style.display = o.endless ? 'none' : '';
   $('progFill').style.transform = `scaleX(${o.prog.toFixed(3)})`;

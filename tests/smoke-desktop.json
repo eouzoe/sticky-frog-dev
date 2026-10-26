@@ -122,7 +122,7 @@
   "wait": 1500
  },
  {
-  "eval": "(window.__game.state === 'playing' && window.__game.mode !== 'won') ? (window.__game.forceWin(), 'forced') : 'natural:' + window.__game.state"
+  "eval": "(window.__game.state === 'playing' && window.__game.level === 1 && window.__game.mode !== 'won') ? (window.__game.forceWin(), 'forced') : 'natural:' + window.__game.level + ':' + window.__game.mode"
  },
  {
   "wait": 1000
@@ -138,8 +138,8 @@
   "wait": 2000
  },
  {
-  "assert": "window.__game.state === 'playing' && window.__game.level === 2",
-  "msg": "過關後 3 秒內自動進下一關（level 2）"
+  "assert": "window.__game.state === 'playing' && window.__game.level === 2 && window.__game.lastWin.level === 1 && window.__game.startedAt - window.__game.lastWin.at < 3000",
+  "msg": "過關後 3 秒內自動進下一關（level 2，落地到開下一關 < 3000 ms）"
  },
  {
   "assert": "window.__game.lastWin && window.__game.lastWin.level === 1 && window.__game.coins > 0 && Number(document.getElementById('hudCoinN').textContent) === window.__game.coins",

@@ -36,7 +36,7 @@ canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: n
 #logo .b { color: var(--green); transform: rotate(3deg) translateX(18px); }
 @keyframes bob { 50% { transform: translateY(-8px) rotate(1deg); } }
 #menu .col { display: flex; flex-direction: column; gap: 18px; align-items: center; margin-top: 3vh; }
-#menu .row { display: flex; gap: 16px; }
+#menu .row { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; max-width: 96vw; }
 #menuTip { margin-top: 2vh; font-size: 18px; opacity: .95; }
 .coins { position: fixed; top: 14px; right: 16px; font-size: 26px; display: flex; align-items: center; gap: 8px; pointer-events: none; }
 .coin { width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff6a0, #ffc400 60%, #c98a00); border: 3px solid var(--ink); display: inline-block; }
@@ -54,7 +54,7 @@ canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: n
 .lvl:hover { transform: scale(1.08); } .lvl:active { transform: scale(.94); }
 .lvl.locked { background: #9aa8b5; cursor: default; color: #dde3ea; }
 #shop { align-items: flex-start; padding-left: 3vw; } #shop .tabs { margin-left: 0; }
-#shop .cards { max-width: min(600px, 66vw); padding: 0 0 16px; max-height: calc(100vh - 150px); grid-auto-rows: min-content; }
+#shop .cards { max-width: min(760px, 66vw); padding: 12px 0 16px; max-height: calc(100vh - 150px); grid-auto-rows: min-content; }
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; padding: 0 16px 16px; max-width: 900px; width: 100%; overflow: auto; }
 .card { background: #fff; color: var(--ink); border: 4px solid var(--ink); border-radius: 20px; padding: 10px; text-align: center; cursor: pointer; transition: transform .12s cubic-bezier(.3,1.8,.5,1); min-height: 56px; font-family: var(--font); }
 .card:hover { transform: translateY(-4px) scale(1.04); }
@@ -128,7 +128,7 @@ canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: n
 #tut .tutText { font-size: 30px; margin-top: 6px; } #tut .tutSub { font-size: 14px; }
 .recWrap { display: flex; gap: 16px; align-items: flex-start; margin-top: 70px; max-height: calc(100vh - 90px); max-width: 96vw; }
 #featCards { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); max-width: 640px; padding: 0; max-height: calc(100vh - 90px); grid-auto-rows: min-content; }
-#featCards .card { cursor: default; } #featCards .card.lock { opacity: .55; }
+#featCards .card { cursor: default; } #featCards .card.lock { opacity: .8; background: #eef3f6; }
 #featCards .fn { font-size: 16px; color: #e0218a; } #featCards .fl { font-size: 11px; font-family: system-ui, sans-serif; font-weight: 700; margin: 2px 0; } #featCards .fb { font-size: 13px; }
 #lbPanel { min-width: 220px; padding: 12px 18px; } .lbT { font-size: 18px; margin-bottom: 6px; } #lbList { text-align: left; font-size: 15px; padding-left: 26px; }
 #lbList li.me { color: #e0218a; }
@@ -157,6 +157,13 @@ canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: n
   #shop .cards { grid-template-columns: repeat(6, minmax(0, 1fr)); max-width: 80vw; gap: 6px; max-height: calc(100vh - 146px); grid-auto-rows: min-content; }
   .card { padding: 4px 3px; border-radius: 12px; border-width: 3px; min-height: 56px; } .card .nm { font-size: 11px; margin: 2px 0 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .card .pr { font-size: 11px; }
   .swatch { width: 40px; height: 30px; border-width: 3px; } .swatch::before, .swatch::after { width: 14px; height: 14px; top: -7px; border-width: 2px; } .tswatch { margin: 8px 4px; height: 20px; } #hudL .score { font-size: 26px; } #combo { top: 76px; }
+}
+@media (max-height: 460px) { .card .tag { font-size: 9px; padding: 0 4px; top: -8px; } #shop .cards { row-gap: 12px; } }
+/* 直式手機：HUD 分兩層，不互相壓 */
+@media (max-width: 500px) {
+  #hudL { font-size: 16px; } #hudL .score { font-size: 26px; } #hudC { top: 54px; font-size: 18px; gap: 14px; }
+  #prog { top: 86px; width: 180px; margin-left: -90px; } #combo { top: 104px; font-size: 22px; } #feat { top: 112px; }
+  #feat .ftName { font-size: 30px; -webkit-text-stroke: 6px var(--ink); } #feat .ftLine { font-size: 13px; }
 }
 </style>
 </head>

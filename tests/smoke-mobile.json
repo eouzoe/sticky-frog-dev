@@ -112,14 +112,20 @@
   "msg": "觸控操作讓青蛙前進"
  },
  {
-  "eval": "window.__game.state === 'playing' && window.__game.forceWin()"
+  "eval": "(window.__game.state === 'playing' && window.__game.level === 1 && window.__game.mode !== 'won') ? (window.__game.forceWin(), 'forced') : 'natural:' + window.__game.level + ':' + window.__game.mode"
  },
  {
-  "wait": 3000
+  "wait": 1200
  },
  {
-  "assert": "window.__game.state === 'playing' && window.__game.level === 2",
-  "msg": "手機：過關後 3 秒內自動進下一關"
+  "shot": "m03b-celebrate"
+ },
+ {
+  "wait": 1800
+ },
+ {
+  "assert": "window.__game.state === 'playing' && window.__game.level === 2 && window.__game.lastWin.level === 1 && window.__game.startedAt - window.__game.lastWin.at < 3000",
+  "msg": "手機：過關後 3 秒內自動進下一關（level 2，落地到開下一關 < 3000 ms）"
  },
  {
   "shot": "m04-level2"

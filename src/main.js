@@ -44,7 +44,7 @@ window.__game = {
   get fps() { return G.fps; }, get timeScale() { return G.timeScale; }, get result() { return G.lastResult; }, get hold() { return G.hold; },
   get drawCalls() { return view.info.render.calls; }, get length() { return G.lv?.length ?? 0; },
   get frogScreen() { const p = view.project(G.sim?.x ?? 0, G.sim?.y ?? 0, 0); return [p.x, p.y]; }, get dist() { return G.endless ? endlessDist() : 0; },
-  get endless() { return G.endless; }, get feats() { return G.featLog; }, get lastWin() { return G.lastWin; }, get save() { return save; },
+  get endless() { return G.endless; }, get startedAt() { return G.startedAt; }, get feats() { return G.featLog; }, get lastWin() { return G.lastWin; }, get save() { return save; },
   start(n) { startLevel(n); }, startEndless() { startEndless(); },
   // 測試用：直接換造型／拖尾（不改存檔）
   look(skin, trail, tongue) { applyLook(SKINS.find((k) => k.id === skin), TRAILS.find((k) => k.id === trail), TONGUES.find((k) => k.id === tongue)); },
@@ -112,7 +112,7 @@ function resetRun() {
   if (G.state === 'playing') enterPlaying();
 }
 function startLevel(n) {
-  G.ignorePressUntil = performance.now() + 250;
+  G.ignorePressUntil = performance.now() + 250; G.startedAt = performance.now();
   A.initAudio();
   loadLevel(n);
   save.last = n; persist();
@@ -283,7 +283,7 @@ function levelCleared() {
   save.clears++; G.sessionClears++; G.wins++;
   if (n % 15 === 0 && !save.worldsDone.includes(n)) { save.worldsDone.push(n); cg.happytime(); } // 解鎖新世界＝真正的成就
   persist();
-  G.lastWin = { level: n, score: G.score, time: s.time, coins: G.runCoins };
+  G.lastWin = { level: n, score: G.score, time: s.time, coins: G.runCoins, at: performance.now() };
   cg.gameplayStop(); UI.hint(null); UI.tut(null);
 }
 async function advance() {
@@ -561,7 +561,7 @@ function render(realDt, dt) {
     const lx = Math.max(-6, Math.min(9, s.vx * T.CAM_LOOKAHEAD)), ly = Math.max(-4, Math.min(4, s.vy * T.CAM_LOOKAHEAD * 0.6));
     tx = s.x + 3 + lx; ty = Math.max(T.CAM_MIN_Y, s.y + ly + 1.2);
     // 手機橫向（矮螢幕）拉近一點，青蛙才不會太小
-    td = (Math.min(T.CAM_DIST_MAX, T.CAM_DIST + Math.max(0, sp - 9) * T.CAM_DIST_SPEED) - G.slowAmt * 4) * (innerHeight < 500 ? 0.82 : 1);
+    td = (Math.min(T.CAM_DIST_MAX, T.CAM_DIST + Math.max(0, sp - 9) * T.CAM_DIST_SPEED) - G.slowAmt * 4) * (innerHeight < 500 ? 0.82 : cam.aspect < 0.8 ? 1.5 : 1); // 直式（窄螢幕）拉遠，前方的鉤點才看得到
     if (s.mode === 'won') { tx = s.x + 1; ty = Math.max(5, s.y + 2.5); td = 17; }
   }
   const k = 1 - Math.exp(-realDt * 4.5);
