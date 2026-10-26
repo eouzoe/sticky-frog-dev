@@ -90,6 +90,15 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
 .bump { animation: bump .22s var(--settle); }
 @keyframes bump { 0% { transform: scale(1); } 35% { transform: scale(1.14, .88); } 70% { transform: scale(.96, 1.05); } 100% { transform: none; } }
 
+.langT { width: auto; min-width: 52px; padding: 0 12px 0 10px; border-radius: 999px; gap: 5px; display: inline-flex; font-size: 20px; }
+.langT b { font-size: 15px; } .langT::before { display: none; }
+#langMenu { position: fixed; z-index: 70; display: grid; grid-template-columns: repeat(3, auto); gap: 6px; padding: 10px; border-radius: 20px; color: var(--ink-soft);
+  background: linear-gradient(#fff, var(--w-tint)); box-shadow: inset 0 0 0 3px rgba(255,255,255,.9), 0 8px 0 var(--milk-deep), 0 16px 26px rgba(10, 30, 40, .3); animation: drop .4s var(--spring) both; }
+#langMenu.hidden { display: none; }
+#langMenu .lmHead { grid-column: 1 / -1; font-size: 14px; opacity: .6; padding: 0 4px 2px; }
+.lmItem { min-height: 44px; font-size: 16px; padding: 0 14px; border-radius: 14px; background: var(--milk-lo); white-space: nowrap; text-align: left; }
+.lmItem.on { background: var(--sun); box-shadow: 0 3px 0 var(--sun-deep); }
+
 /* ---------- screens ---------- */
 .screen { position: fixed; inset: 0; display: none; pointer-events: auto; }
 .screen.on { display: block; }
@@ -115,8 +124,8 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
 .lt:nth-child(odd) { transform: rotate(-4deg) translateY(.02em); } .lt:nth-child(even) { transform: rotate(3deg); }
 @keyframes breathe { 0%, 80%, 100% { transform: scale(1); } 88% { transform: scale(1.035, .975); } 94% { transform: scale(.99, 1.015); } }
 #nextUp { min-height: 64px; padding: 6px 22px 6px 8px; gap: 12px; font-size: 21px; text-align: left; animation: nudge 3.2s ease-in-out 1.2s infinite; max-width: 100%; }
-#nextUp .pp { width: 50px; height: 50px; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #fff, #ffe9a6); box-shadow: inset 0 0 0 2px rgba(255,255,255,.8), 0 2px 0 var(--sun-deep); overflow: hidden; flex: none; display: grid; place-items: center; font-size: 28px; color: var(--sun-deep); }
-#nextUp .pp img { width: 116%; margin-top: -2px; }
+#nextUp .nuPic { width: 50px; height: 50px; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #fff, #ffe9a6); box-shadow: inset 0 0 0 2px rgba(255,255,255,.8), 0 2px 0 var(--sun-deep); overflow: hidden; flex: none; display: grid; place-items: center; font-size: 28px; color: var(--sun-deep); }
+#nextUp .nuPic img { width: 116%; margin-top: -2px; }
 #nextUp .t { min-width: 0; }
 #nextUp small { display: block; font-size: 14px; opacity: .72; margin-top: 3px; letter-spacing: 0; white-space: nowrap; }
 #nextUp .arr { font-size: 22px; margin-left: 4px; }
@@ -366,7 +375,7 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
   .ttl { font-size: 28px; }
   #menu .wrap { padding: 50px 4vw 10px; } #menu .col { gap: 10px; }
   #logo { font-size: 56px; margin-bottom: 0; }
-  #nextUp { min-height: 52px; font-size: 17px; } #nextUp .pp { width: 40px; height: 40px; } #nextUp small { font-size: 12px; }
+  #nextUp { min-height: 52px; font-size: 17px; } #nextUp .nuPic { width: 40px; height: 40px; } #nextUp small { font-size: 12px; }
   #playBtn { min-width: 230px; }
   .hero img { width: min(30vw, 230px); margin-bottom: 18px; } .hero .pad { height: 44px; bottom: 26px; } .hero .tag { min-height: 44px; font-size: 15px; }
   #menu .toggles { bottom: auto; top: var(--safe-t); left: calc(var(--safe-l) + 58px); }
@@ -470,19 +479,19 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
 
 <div id="hud">
   <div class="plate tx" id="hudL"><div class="meta"><span id="hudLevel">1-1</span><span id="hudC"><span><svg class="i" style="font-size:22px"><use href="#i-fly" /></svg> <span id="hudFlies">0/0</span></span><span id="hudTime" class="num">0.0s</span></span></div><div id="hudScore" class="num">0</div></div>
-  <div id="combo" class="b berry"><span id="comboN" class="num">x2</span>&nbsp;COMBO<i id="comboBar"></i></div>
+  <div id="combo" class="b berry"><span id="comboN" class="num">x2</span>&nbsp;<span data-i18n="hud.combo"></span><i id="comboBar"></i></div>
   <div id="prog"><i id="progFill"></i><i id="progKnob"></i><b id="progBest"></b><svg class="goal"><use href="#i-pad" /></svg></div>
   <div id="hudCoins" class="cap tx num"><svg class="i"><use href="#i-coin" /></svg><span id="hudCoinN">0</span></div>
-  <button id="pauseBtn" class="bub" aria-label="Pause"><svg class="i"><use href="#i-pause" /></svg></button>
-  <div id="hint" class="tx"><span id="hintText">HOLD</span><div class="hand"></div></div>
+  <button id="pauseBtn" class="bub" data-i18n-aria="aria.pause"><svg class="i"><use href="#i-pause" /></svg></button>
+  <div id="hint" class="tx"><span id="hintText"></span><div class="hand"></div></div>
 </div>
-<div id="feat" hidden><div class="shell"><div class="top"><div class="ftName"></div><i class="gl"></i></div><div class="ftLine"></div><div class="b sun chip"><svg class="i"><use href="#i-coin" /></svg><span class="ftN">+25</span></div></div></div>
-<div id="clear" hidden><div class="sticker tx">CLEAR!</div></div>
-<div id="tut"><div class="tutHand"><svg><use href="#i-finger" /></svg></div><div class="tutText tx">HOLD</div></div>
+<div id="feat" hidden><div class="shell"><div class="top"><div class="ftName" data-fit></div><i class="gl"></i></div><div class="ftLine"></div><div class="b sun chip"><svg class="i"><use href="#i-coin" /></svg><span class="ftN">+25</span></div></div></div>
+<div id="clear" hidden><div class="sticker tx" data-fit></div></div>
+<div id="tut"><div class="tutHand"><svg><use href="#i-finger" /></svg></div><div class="tutText tx"></div></div>
 
 <div id="menu" class="screen">
   <div class="topbar">
-    <button id="recordsBtn" class="bub" aria-label="My highlights" data-in><svg class="i"><use href="#i-trophy" /></svg></button>
+    <button id="recordsBtn" class="bub" data-i18n-aria="aria.records" data-in><svg class="i"><use href="#i-trophy" /></svg></button>
     <div class="sp"></div>
     <div class="cap tx num" data-in><svg class="i"><use href="#i-coin" /></svg><span class="coinN">0</span></div>
   </div>
@@ -492,64 +501,64 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
         <div class="w w1"><span class="lt" data-l="S">S</span><span class="lt" data-l="T">T</span><span class="lt" data-l="I">I</span><span class="lt" data-l="C">C</span><span class="lt" data-l="K">K</span><span class="lt" data-l="Y">Y</span></div>
         <div class="w w2"><span class="lt" data-l="F">F</span><span class="lt" data-l="R">R</span><span class="lt" data-l="O">O</span><span class="lt" data-l="G">G</span></div>
       </div>
-      <button id="nextUp" class="b sun" style="display:none" data-in></button>
-      <button id="playBtn" class="b go" data-in><svg class="i"><use href="#i-play" /></svg><span id="playLbl">PLAY</span></button>
-      <div class="row" data-in><button id="levelsBtn" class="b">LEVELS</button><button id="endlessBtn" class="b">ENDLESS</button><button id="shopBtn" class="b">SHOP</button></div>
+      <button id="nextUp" data-fit class="b sun" style="display:none" data-in></button>
+      <button id="playBtn" data-fit class="b go" data-in><svg class="i"><use href="#i-play" /></svg><span id="playLbl"></span></button>
+      <div class="row" data-in><button id="levelsBtn" data-fit class="b" data-i18n="menu.levels"></button><button id="endlessBtn" data-fit class="b"></button><button id="shopBtn" data-fit class="b" data-i18n="menu.shop"></button></div>
     </div>
-    <div class="hero" data-in><div class="pad"></div><img id="heroImg" alt="" /><button id="heroTag" class="b tag"><span id="heroName">TREE FROG</span><small>change</small></button></div>
+    <div class="hero" data-in><div class="pad"></div><img id="heroImg" alt="" data-i18n-aria="aria.hero" /><button id="heroTag" data-fit class="b tag"><span id="heroName"></span><small data-i18n="menu.change"></small></button></div>
   </div>
-  <div class="toggles" data-in><button class="bub musicT" aria-label="Music"><svg class="i"><use href="#i-music" /></svg><i class="slash"></i></button><button class="bub sfxT" aria-label="Sound"><svg class="i"><use href="#i-sound" /></svg><i class="slash"></i></button></div>
+  <div class="toggles" data-in><button class="bub musicT" data-i18n-aria="aria.music"><svg class="i"><use href="#i-music" /></svg><i class="slash"></i></button><button class="bub sfxT" data-i18n-aria="aria.sound"><svg class="i"><use href="#i-sound" /></svg><i class="slash"></i></button><button class="bub langT" data-i18n-aria="set.language" aria-haspopup="true"><svg class="i"><use href="#i-globe" /></svg><b class="langCode"></b></button></div>
 </div>
 
 <div id="levels" class="screen">
-  <div class="topbar"><button class="bub back" aria-label="Back" data-in><svg class="i"><use href="#i-back" /></svg></button><div class="ttl tx" data-in>LEVELS</div><div class="sp"></div><div class="cap tx num" data-in aria-label="Stars"><svg class="i"><use href="#i-star" /></svg><span id="starTotal">0</span></div></div>
+  <div class="topbar"><button class="bub back" data-i18n-aria="aria.back" data-in><svg class="i"><use href="#i-back" /></svg></button><div class="ttl tx" data-in data-i18n="levels.title" data-fit></div><div class="sp"></div><div class="cap tx num" data-in data-i18n-aria="aria.stars"><svg class="i"><use href="#i-star" /></svg><span id="starTotal">0</span></div></div>
   <div class="lvBody"><div id="worldTabs" data-in></div><div id="levelGrid" data-in></div></div>
 </div>
 
 <div id="shop" class="screen">
-  <div class="topbar"><button class="bub back" aria-label="Back" data-in><svg class="i"><use href="#i-back" /></svg></button><div class="ttl tx" data-in>SHOP</div><div class="sp"></div><div class="cap tx num" id="shopCoins" data-in><svg class="i"><use href="#i-coin" /></svg><span class="coinN">0</span></div></div>
+  <div class="topbar"><button class="bub back" data-i18n-aria="aria.back" data-in><svg class="i"><use href="#i-back" /></svg></button><div class="ttl tx" data-in data-i18n="shop.title" data-fit></div><div class="sp"></div><div class="cap tx num" id="shopCoins" data-in><svg class="i"><use href="#i-coin" /></svg><span class="coinN">0</span></div></div>
   <div class="body">
     <div class="show" id="showcase" data-id="cat" data-in>
-      <span class="ribbon">&#9733; STAR</span>
-      <div class="spin" role="img" aria-label="Spinny Cat"></div>
+      <span class="ribbon">&#9733; <span data-i18n="shop.star"></span></span>
+      <div class="spin" role="img" id="showSpin"></div>
       <div class="pedestal"></div>
-      <h2 id="showName">SPINNY CAT</h2>
-      <span class="sub"><i></i><span id="showSub">comes with YARN tongue</span></span>
-      <button class="b sun buy" id="showBuy"></button>
+      <h2 id="showName" data-fit></h2>
+      <span class="sub"><i></i><span id="showSub"></span></span>
+      <button class="b sun buy" id="showBuy" data-fit></button>
     </div>
     <div class="side">
-      <div class="tabs" data-in><button class="b tab on" data-t="skins">HEROES</button><button class="b tab" data-t="tongues">TONGUES</button><button class="b tab" data-t="trails">TRAILS</button></div>
+      <div class="tabs" data-in><button class="b tab on" data-fit data-t="skins" data-i18n="shop.heroes"></button><button class="b tab" data-fit data-t="tongues" data-i18n="shop.tongues"></button><button class="b tab" data-fit data-t="trails" data-i18n="shop.trails"></button></div>
       <div id="cards"></div>
     </div>
   </div>
   <div class="scrim" id="tryNow">
     <div class="panel">
-      <div class="sticker tx" id="tryTitle">YOURS!</div>
+      <div class="sticker tx" id="tryTitle" data-fit></div>
       <div id="tryPic"></div>
       <p id="tryLine"></p>
-      <div class="row"><button class="b" id="tryLater">LATER</button><button class="b go" id="tryPlay"><svg class="i"><use href="#i-play" /></svg><span>PLAY NOW</span></button></div>
+      <div class="row"><button class="b" id="tryLater" data-fit data-i18n="shop.later"></button><button class="b go" id="tryPlay" data-fit><svg class="i"><use href="#i-play" /></svg><span data-i18n="shop.playNow"></span></button></div>
     </div>
   </div>
 </div>
 
 <div id="records" class="screen">
-  <div class="topbar"><button class="bub back" aria-label="Back" data-in><svg class="i"><use href="#i-back" /></svg></button><div class="ttl tx" data-in>MY HIGHLIGHTS</div></div>
-  <div class="recWrap"><div id="featCards" data-in></div><div class="panel" id="lbPanel" data-in><div class="sticker tx">ENDLESS TOP 10</div><ol id="lbList"></ol></div></div>
+  <div class="topbar"><button class="bub back" data-i18n-aria="aria.back" data-in><svg class="i"><use href="#i-back" /></svg></button><div class="ttl tx" data-in data-i18n="records.title" data-fit></div></div>
+  <div class="recWrap"><div id="featCards" data-in></div><div class="panel" id="lbPanel" data-in><div class="sticker tx" data-i18n="records.top" data-fit></div><ol id="lbList"></ol></div></div>
 </div>
 
 <div id="result" class="screen">
   <div class="center">
     <div class="panel" id="resPanel">
-      <div class="sticker tx" id="resTitle">LEVEL CLEAR!</div>
+      <div class="sticker tx" id="resTitle" data-fit></div>
       <div class="rbody">
-        <div id="resLevel" class="rl">LEVEL 1-1</div>
+        <div id="resLevel" class="rl"></div>
         <div id="resStars" class="rstars"></div>
-        <div class="rnums"><div><span>SCORE</span><b id="resScore" class="num">0</b><em id="resBest" style="display:none">NEW BEST!</em></div><div><span>COINS</span><b class="num">+<span id="resCoinsN">0</span><svg class="i"><use href="#i-coin" /></svg></b></div></div>
+        <div class="rnums"><div><span data-i18n="result.score"></span><b id="resScore" class="num">0</b><em id="resBest" style="display:none" data-i18n="result.newBest"></em></div><div><span data-i18n="result.coins"></span><b class="num">+<span id="resCoinsN">0</span><svg class="i"><use href="#i-coin" /></svg></b></div></div>
         <div id="resFeats" class="rfeats"></div>
       </div>
       <div class="ract">
-        <button id="resNext" class="b go"><span>NEXT</span><svg class="i"><use href="#i-play" /></svg></button>
-        <div class="row"><button id="resRetry" class="b"><svg class="i"><use href="#i-loop" /></svg><span>RETRY</span></button><button id="resMenu" class="b">MENU</button></div>
+        <button id="resNext" data-fit class="b go"><span data-i18n="result.next"></span><svg class="i"><use href="#i-play" /></svg></button>
+        <div class="row"><button id="resRetry" data-fit class="b"><svg class="i"><use href="#i-loop" /></svg><span data-i18n="result.retry"></span></button><button id="resMenu" data-fit class="b" data-i18n="result.menu"></button></div>
       </div>
     </div>
   </div>
@@ -558,12 +567,12 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
 <div id="over" class="screen">
   <div class="center">
     <div class="panel" id="overPanel">
-      <div class="sticker tx">RUN OVER</div>
-      <div class="ovDist"><span id="ovDist" class="num">0</span><small>m</small></div>
-      <div id="ovNew" class="newbest" style="display:none">NEW BEST!</div>
+      <div class="sticker tx" data-i18n="over.title" data-fit></div>
+      <div class="ovDist"><span id="ovDist" class="num">0</span><small data-i18n="over.unit"></small></div>
+      <div id="ovNew" class="newbest" style="display:none" data-i18n="over.newBest"></div>
       <div class="stats" id="ovStats"></div>
-      <div class="row"><button id="ovMenu" class="b">MENU</button><button id="ovDouble" class="b sun" style="display:none"><svg class="i vid"><use href="#i-video" /></svg>x2 COINS</button></div>
-      <button id="ovRetry" class="b go"><svg class="i"><use href="#i-loop" /></svg><span>RETRY</span></button>
+      <div class="row"><button id="ovMenu" data-fit class="b" data-i18n="over.menu"></button><button id="ovDouble" data-fit class="b sun" style="display:none"><svg class="i vid"><use href="#i-video" /></svg><span data-i18n="over.double"></span></button></div>
+      <button id="ovRetry" data-fit class="b go"><svg class="i"><use href="#i-loop" /></svg><span data-i18n="over.retry"></span></button>
     </div>
   </div>
 </div>
@@ -571,12 +580,12 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
 <div id="pause" class="screen">
   <div class="center">
     <div class="panel" id="pausePanel">
-      <div class="sticker tx">PAUSED</div>
+      <div class="sticker tx" data-i18n="pause.title" data-fit></div>
       <div id="pMeta"></div>
       <div class="stack">
-        <button id="resumeBtn" class="b go"><svg class="i"><use href="#i-play" /></svg><span>RESUME</span></button>
-        <div class="row"><button id="pRestart" class="b">RESTART</button><button id="pLevels" class="b">LEVELS</button><button id="pMenu" class="b">MENU</button></div>
-        <div class="tg"><button class="bub solid musicT" aria-label="Music"><svg class="i"><use href="#i-music" /></svg><i class="slash"></i></button><button class="bub solid sfxT" aria-label="Sound"><svg class="i"><use href="#i-sound" /></svg><i class="slash"></i></button></div>
+        <button id="resumeBtn" data-fit class="b go"><svg class="i"><use href="#i-play" /></svg><span data-i18n="pause.resume"></span></button>
+        <div class="row"><button id="pRestart" data-fit class="b" data-i18n="pause.restart"></button><button id="pLevels" data-fit class="b" data-i18n="pause.levels"></button><button id="pMenu" data-fit class="b" data-i18n="pause.menu"></button></div>
+        <div class="tg"><button class="bub solid musicT" data-i18n-aria="aria.music"><svg class="i"><use href="#i-music" /></svg><i class="slash"></i></button><button class="bub solid sfxT" data-i18n-aria="aria.sound"><svg class="i"><use href="#i-sound" /></svg><i class="slash"></i></button><button class="bub solid langT" data-i18n-aria="set.language" aria-haspopup="true"><svg class="i"><use href="#i-globe" /></svg><b class="langCode"></b></button></div>
       </div>
     </div>
   </div>

@@ -4,6 +4,7 @@ import { SKINS, TRAILS, TONGUES, WORLDS } from './config.js';
 import { FEATS, featById } from './feats.js';
 import { LEVEL_COUNT, levelLabel, worldOf } from './level.js';
 import * as A from './audio.js';
+import { t, itemName, fit } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
 const screens = ['menu', 'levels', 'shop', 'records', 'result', 'over', 'pause', 'block'];
@@ -37,8 +38,11 @@ export function show(name) {
   if (name) { dieText(null); clearSticker(false); hideFeat(); }
   $('hud').classList.toggle('on', name === null || name === 'pause' || name === 'block');
   if (name !== null && name !== 'block') tut(null);
-  if (name) for (const [i, el] of [...$(name).querySelectorAll('[data-in]')].slice(0, 8).entries()) { el.classList.remove('drop'); void el.offsetWidth; el.style.animationDelay = `${i * 40}ms`; el.classList.add('drop'); }
+  const ins = name ? [...$(name).querySelectorAll('[data-in]')] : [];
+  if (name && !ins.length) ins.push(...$(name).querySelectorAll('.panel')); // 結算／暫停：面板落下
+  for (const [i, el] of ins.slice(0, 8).entries()) { el.classList.remove('drop'); void el.offsetWidth; el.style.animationDelay = `${i * 40}ms`; el.classList.add('drop'); }
   if (name && name !== 'block') A.play('panel_in');
+  if (name) requestAnimationFrame(() => fit($(name)));
 }
 export function showHud(on) { $('hud').classList.toggle('on', on); }
 
@@ -65,10 +69,10 @@ const hudCache = {};
 let comboShown = 0;
 export function hud(o) {
   const set = (id, v) => { if (hudCache[id] !== v) { hudCache[id] = v; $(id).textContent = v; } };
-  set('hudLevel', o.endless ? 'ENDLESS' : levelLabel(o.level));
+  set('hudLevel', o.endless ? t('hud.endless') : levelLabel(o.level));
   set('hudScore', fmt(o.score));
   set('hudFlies', o.endless ? String(o.flies) : `${o.flies}/${o.fliesTotal}`);
-  set('hudTime', o.endless ? `${o.dist} m` : `${o.time.toFixed(1)}s`);
+  set('hudTime', o.endless ? t('hud.dist', { dist: o.dist }) : t('hud.time', { time: o.time.toFixed(1) }));
   $('prog').style.display = o.endless ? 'none' : '';
   $('progFill').style.transform = `scaleX(${o.prog.toFixed(3)})`;
   $('progKnob').style.left = `${(o.prog * 100).toFixed(1)}%`;
@@ -163,7 +167,8 @@ export function feat(name, line, coins) {
   const f = $('feat');
   f.querySelector('.ftName').innerHTML = [...name].map((ch, i) => `<span style="animation-delay:${120 + Math.min(i, 12) * 30}ms">${ch === ' ' ? '&nbsp;' : ch}</span>`).join('');
   f.querySelector('.ftLine').textContent = line; f.querySelector('.ftN').textContent = `+${coins}`;
-  f.hidden = false; f.classList.remove('out', 'in'); void f.offsetWidth; f.classList.add('in'); A.play('feat');
+  $('clear').hidden = true; for (const o of pool) if (o.busy && o.node.classList.contains('big')) free(o); // 畫面上同時只留一個大型橫幅
+  f.hidden = false; fit(f); f.classList.remove('out', 'in'); void f.offsetWidth; f.classList.add('in'); A.play('feat');
   featTimers = [
     setTimeout(() => coinFly(center(f.querySelector('.chip')), $('hudCoins'), 3), 700),
     setTimeout(() => f.classList.add('out'), 2100),
@@ -173,10 +178,12 @@ export function feat(name, line, coins) {
 function hideFeat() { for (const t of featTimers) clearTimeout(t); featTimers = []; featQ.length = 0; featBusy = false; $('feat').hidden = true; }
 
 // ---------- 過關貼紙（落荷葉後的短暫慶祝） ----------
-export function clearSticker(on, text = 'CLEAR!') {
+export function clearSticker(on, text = '') {
   const c = $('clear');
   if (!on) { c.hidden = true; return; }
-  c.querySelector('.sticker').textContent = text; c.hidden = false;
+  if (!$('feat').hidden) return; // 成就膠囊正在捧場：這一刻已經有一個大型橫幅（每事件疊加上限）
+  for (const o of pool) if (o.busy && o.node.classList.contains('big')) free(o); // BULLSEYE／LANDED 這類大跳字讓位給貼紙
+  c.querySelector('.sticker').textContent = text; c.hidden = false; fit(c);
   const s = c.querySelector('.sticker'); s.style.animation = 'none'; void s.offsetWidth; s.style.animation = '';
 }
 
@@ -184,21 +191,21 @@ export function clearSticker(on, text = 'CLEAR!') {
 let tutMode = null;
 export function tut(mode) {
   if (mode === tutMode) return;
-  tutMode = mode; const t = $('tut');
-  t.className = mode ? `on ${mode}` : '';
-  if (mode) t.querySelector('.tutText').textContent = mode === 'hold' ? 'HOLD' : 'LET GO!';
+  tutMode = mode; const el = $('tut');
+  el.className = mode ? `on ${mode}` : '';
+  if (mode) el.querySelector('.tutText').textContent = t(mode === 'hold' ? 'tut.hold' : 'tut.let');
 }
 
 // ---------- 選單 ----------
-export function setPlay(label) { $('playLbl').textContent = label; }
-export function setEndless(ok) { $('endlessBtn').classList.toggle('locked', !ok); $('endlessBtn').innerHTML = ok ? 'ENDLESS' : `ENDLESS ${icon('lock')}`; }
-export function setHero(skin) { const img = $('heroImg'), src = portrait(skin.id); if (!img.src.endsWith(src.slice(1))) img.src = src; $('heroName').textContent = skin.name.toUpperCase(); }
+export function setPlay(label) { $('playLbl').textContent = label; fit($('menu')); }
+export function setEndless(ok) { $('endlessBtn').classList.toggle('locked', !ok); $('endlessBtn').innerHTML = `<span>${t('menu.endless')}</span>${ok ? '' : icon('lock')}`; }
+export function setHero(skin) { const img = $('heroImg'), src = portrait(skin.id); if (!img.src.endsWith(src.slice(1))) img.src = src; $('heroName').textContent = itemName('skins', skin); }
 // 下一步推薦：pic＝{ skin } 或 { icon }
 export function nextUp(text, sub, pic = null) {
   const b = $('nextUp');
   if (!text) { b.style.display = 'none'; return; }
   const p = pic?.skin ? `<img src="${portrait(pic.skin)}" alt="" />` : icon(pic?.icon ?? 'play');
-  b.innerHTML = `<span class="pp">${p}</span><span class="t">${text}${sub ? `<small>${sub}</small>` : ''}</span><span class="arr">&rarr;</span>`;
+  b.innerHTML = `<span class="nuPic">${p}</span><span class="t">${text}${sub ? `<small>${sub}</small>` : ''}</span><span class="arr">&rarr;</span>`;
   if (b.style.display === 'none') A.play('next_up');
   b.style.display = '';
 }
@@ -214,7 +221,7 @@ export function renderLevels(save, onPick) {
     const b = document.createElement('button');
     b.className = `wcard${i === worldTab ? ' on' : ''}${locked ? ' locked' : ''}`;
     b.style.cssText = `--s0:${w.sky[0]};--s1:${w.sky[1]};--d:${WORLD_DEEP[i]};--p:${w.petal}`;
-    b.innerHTML = `<i class="blob"></i>${locked ? `<span class="lk">${icon('lock')}</span>` : ''}<span class="wn">${w.name}</span><span class="wp">${locked ? `CLEAR ${levelLabel(first - 1)} TO OPEN` : `&#9733; ${got}/45`}</span>`;
+    b.innerHTML = `<i class="blob"></i>${locked ? `<span class="lk">${icon('lock')}</span>` : ''}<span class="wn" data-fit>${t(`world.${i}`, null, w.name)}</span><span class="wp" data-fit>${locked ? t('levels.open', { level: levelLabel(first - 1) }) : `&#9733; ${got}/45`}</span>`;
     b.onclick = () => { if (locked) { A.play('ui_nope'); return; } worldTab = i; renderLevels(save, onPick); };
     tabs.appendChild(b);
   });
@@ -226,10 +233,11 @@ export function renderLevels(save, onPick) {
     const b = document.createElement('button'), locked = n > save.unlocked, cur = n === save.unlocked;
     b.className = `lvb${locked ? ' locked' : cur ? ' cur' : ''}`;
     b.innerHTML = locked ? icon('lock') : `<span>${k + 1}</span>${starRow(save.stars[n] ?? 0)}`;
-    b.setAttribute('aria-label', locked ? `Level ${levelLabel(n)} locked` : `Level ${levelLabel(n)}`);
+    b.setAttribute('aria-label', t(locked ? 'aria.levelLocked' : 'aria.level', { level: levelLabel(n) }));
     b.onclick = () => { if (locked) { A.play('ui_nope'); return; } onPick(n); };
     g.appendChild(b);
   }
+  fit(tabs);
 }
 export function setWorldTab(n) { worldTab = worldOf(n); }
 
@@ -260,7 +268,9 @@ export function renderShop(save, onAct, hi = null) {
   // 展示台：旋轉貓咪（看板角色）永遠置頂
   const cat = FEATURED, catOwned = save.owned.includes(cat.id), catEq = save.skin === cat.id, buy = $('showBuy');
   buy.className = `b buy ${catOwned ? 'go owned' : 'sun'}`;
-  buy.innerHTML = catEq ? `${icon('check')}<span>EQUIPPED</span>` : catOwned ? '<span>USE IT</span>' : `${icon('coin')}<span class="num">${cat.price}</span><span>BUY</span>`;
+  buy.innerHTML = catEq ? `${icon('check')}<span>${t('shop.equipped')}</span>` : catOwned ? `<span>${t('shop.useIt')}</span>` : `${icon('coin')}<span class="num">${cat.price}</span><span>${t('shop.buy')}</span>`;
+  $('showName').textContent = itemName('skins', cat); $('showSpin').setAttribute('aria-label', itemName('skins', cat));
+  $('showSub').textContent = t('shop.comesWith', { tongue: itemName('tongues', TONGUES.find((x) => x.id === cat.tongue)) });
   buy.onclick = () => onAct('skins', cat);
   // 只有一樣東西會呼吸：買得起的貓 > 選單推薦的那件 > 這一頁最便宜買得起的
   const catFirst = !catOwned && save.coins >= cat.price;
@@ -274,34 +284,37 @@ export function renderShop(save, onAct, hi = null) {
     const owned = save.owned.includes(it.id), eq = it.id === eqId, poor = !owned && save.coins < it.price;
     const d = document.createElement('button');
     d.className = `card${eq ? ' eq' : ''}${poor ? ' poor' : ''}${it.id === breathe && !owned ? ' afford' : ''}`;
-    const pr = eq ? `<span class="price eq">${icon('check')}ON</span>` : owned ? '<span class="price own">TAP TO USE</span>'
+    const pr = eq ? `<span class="price eq" data-fit>${icon('check')}${t('shop.on')}</span>` : owned ? `<span class="price own" data-fit>${t('shop.tapToUse')}</span>`
       : `<span class="price${poor ? ' no' : ''}">${icon('coin')}<span class="num">${it.price}</span></span>`;
-    const tag = it.tongue ? `<span class="tag">+ ${TONGUES.find((t) => t.id === it.tongue).name.toUpperCase()}</span>` : '';
-    d.innerHTML = `${tag}<div class="pic">${picOf(shopTab, it)}</div><div class="nm">${it.name}</div>${pr}`;
-    d.dataset.id = it.id; d.setAttribute('aria-label', `${it.name}${owned ? '' : `, ${it.price} coins`}`);
+    const tag = it.tongue ? `<span class="tag" data-fit>${t('shop.bundle', { tongue: itemName('tongues', TONGUES.find((x) => x.id === it.tongue)) })}</span>` : '';
+    const nm = itemName(shopTab, it);
+    d.innerHTML = `${tag}<div class="pic">${picOf(shopTab, it)}</div><div class="nm" data-fit>${nm}</div>${pr}`;
+    d.dataset.id = it.id; d.setAttribute('aria-label', owned ? nm : t('aria.itemPrice', { item: nm, price: it.price }));
     d.onclick = () => onAct(shopTab, it);
     c.appendChild(d);
     if (it.id === hi) hiEl = d;
   }
   hiEl?.scrollIntoView?.({ block: 'nearest' });
+  fit($('shop'));
 }
 // 買完：金幣從錢包飛進那件東西 → 東西跳起來＋軟糖泡泡 → 試玩面板落下
 let tryTimer = 0;
 export function tryNow(name, it = null) {
-  const t = $('tryNow');
+  const tn = $('tryNow');
   clearTimeout(tryTimer);
-  if (!name) { t.classList.remove('on'); return; }
+  if (!name) { tn.classList.remove('on'); return; }
   const tab = it?.tab ?? (SKINS.includes(it) ? 'skins' : TONGUES.includes(it) ? 'tongues' : 'trails');
   const target = it === FEATURED ? document.querySelector('#showcase .spin') : document.querySelector(`#cards [data-id="${it?.id}"] .pic`);
   if (target) {
     coinFly(center($('shopCoins')), target, 8);
     setTimeout(() => { target.classList.remove('hop'); void target.offsetWidth; target.classList.add('hop'); goo(center(target), GOO); }, 520);
   }
-  $('tryTitle').textContent = `${name.toUpperCase()}!`;
+  const nm = it ? itemName(tab, it) : name;
+  $('tryTitle').textContent = t('shop.yours', { item: nm });
   $('tryPic').innerHTML = it ? picOf(tab, it).replace(' loading="lazy"', '') : '';
-  $('tryLine').textContent = `${name} is yours. Take it for a swing?`;
+  $('tryLine').textContent = t('shop.tryLine', { item: nm });
   tryTimer = setTimeout(() => {
-    t.classList.add('on'); const p = t.querySelector('.panel'); p.classList.remove('drop'); void p.offsetWidth; p.classList.add('drop'); A.play('panel_in');
+    tn.classList.add('on'); fit(tn); const p = tn.querySelector('.panel'); p.classList.remove('drop'); void p.offsetWidth; p.classList.add('drop'); A.play('panel_in');
   }, target ? 1100 : 0);
 }
 export const tryOpen = () => $('tryNow').classList.contains('on');
@@ -311,12 +324,13 @@ export function renderRecords(save, lastScore) {
   $('featCards').innerHTML = FEATS.map((f) => {
     const r = save.feats[f.id];
     return r
-      ? `<div class="fcard"><div class="fh">${f.name}</div><div class="fl">${f.line}</div><div class="fb">${f.fmt(r.best)}</div><div class="fx">x${r.count} &middot; first ${r.first}</div></div>`
-      : `<div class="fcard lock"><div class="fh">???</div><div class="fl">${f.line}</div><div class="fb">not yet</div><div class="fx">&nbsp;</div></div>`;
+      ? `<div class="fcard"><div class="fh" data-fit>${featName(f.id)}</div><div class="fl">${featLine(f.id)}</div><div class="fb">${featVal(f, r.best)}</div><div class="fx">${t('records.count', { n: r.count, day: r.first })}</div></div>`
+      : `<div class="fcard lock"><div class="fh">${t('records.locked')}</div><div class="fl">${featLine(f.id)}</div><div class="fb">${t('records.notYet')}</div><div class="fx">&nbsp;</div></div>`;
   }).join('');
   $('lbList').innerHTML = save.lb.length
-    ? save.lb.map((e) => `<li class="${e.score === lastScore ? 'me' : ''}">${fmt(e.score)}<span>${e.dist} m</span></li>`).join('')
-    : '<li>Play ENDLESS!</li>';
+    ? save.lb.map((e) => `<li class="${e.score === lastScore ? 'me' : ''}">${fmt(e.score)}<span>${t('hud.dist', { dist: e.dist })}</span></li>`).join('')
+    : `<li>${t('records.empty')}</li>`;
+  fit($('records'));
 }
 
 // ---------- 過關結算：星星一顆顆砸下、分數與金幣累加、這一關的成就；任何「下一步」輸入先把進場動畫跳到結尾 ----------
@@ -324,13 +338,13 @@ let res = null;
 export function showResult(r) {
   const p = $('resPanel');
   $('resTitle').textContent = r.title;
-  $('resLevel').textContent = `LEVEL ${levelLabel(r.level)}`;
-  const conds = [['CLEARED', true], [`${r.flies}/${r.fliesTotal} FLIES`, r.fliesOk], [`${r.time.toFixed(1)}s / ${r.par}s`, r.timeOk]];
+  $('resLevel').textContent = t('result.level', { level: levelLabel(r.level) });
+  const conds = [[t('result.cleared'), true], [t('result.flies', { got: r.flies, total: r.fliesTotal }), r.fliesOk], [t('result.time', { time: r.time.toFixed(1), par: r.par }), r.timeOk]];
   $('resStars').innerHTML = conds.map(([txt, ok], i) => `<div class="rs${ok ? ' got' : ''}"><svg class="rstar"><use href="#i-star" /></svg><span>${txt}</span></div>`).join('');
   $('resScore').textContent = '0'; $('resCoinsN').textContent = '0';
   $('resBest').style.display = r.newBest ? '' : 'none';
-  $('resFeats').innerHTML = r.feats.map((id) => `<span class="rf">${featById(id).name}</span>`).join('');
-  show('result');
+  $('resFeats').innerHTML = r.feats.map((id) => `<span class="rf">${featName(id)}</span>`).join('');
+  show('result'); fit($('result'));
   p.classList.remove('done'); p.querySelectorAll('.rs').forEach((el) => el.classList.remove('hit'));
   const timers = [];
   let i = 0;
@@ -357,7 +371,7 @@ export const resultAnimating = () => !!res && !res.done;
 // ---------- 無盡結算 ----------
 export function showOver(r) {
   $('ovNew').style.display = r.newBest ? '' : 'none';
-  $('ovStats').innerHTML = [['SCORE', fmt(r.score)], ['BEST', `${r.best} m`], ['FLIPS', r.flips], ['RANK', r.rank ? `#${r.rank}` : '-']].map(([a, b]) => `<div><span>${a}</span><b class="num">${b}</b></div>`).join('');
+  $('ovStats').innerHTML = [[t('over.score'), fmt(r.score)], [t('over.best'), t('over.bestVal', { dist: r.best })], [t('over.flips'), r.flips], [t('over.rank'), r.rank ? `#${r.rank}` : '-']].map(([a, b]) => `<div><span data-fit>${a}</span><b class="num">${b}</b></div>`).join('');
   $('ovDouble').style.display = r.offerDouble ? '' : 'none';
   show('over');
   countTo([$('ovDist')], 0, r.dist, 700);
@@ -365,3 +379,9 @@ export function showOver(r) {
 
 // ---------- 暫停 ----------
 export function pauseMeta(text) { $('pMeta').textContent = text; }
+
+// ---------- 成就名稱、稱讚、數值（英文留在 feats.js 當備援；其他語言 feat.<id>／featLine.<id>） ----------
+export const featName = (id) => t(`feat.${id}`, null, featById(id)?.name ?? id);
+export const featLine = (id) => t(`featLine.${id}`, null, featById(id)?.line ?? '');
+const FEAT_VAL = { spin: ['featVal.spins', 0], tornado: ['featVal.spins', 0], flow: ['featVal.stalled', 2], speed: ['featVal.speed', 1], skim: ['featVal.above', 2], shave: ['featVal.gap', 2], clutch: ['featVal.high', 2] };
+function featVal(f, v) { const [k, d] = FEAT_VAL[f.id] ?? []; return k ? t(k, { n: v, v: Number(v).toFixed(d) }) : f.fmt(v); }

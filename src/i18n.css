@@ -1,0 +1,27 @@
+/* Per-language font stacks (ported from BONK BEANS; src/i18n.js sets <html lang>). Baloo 2 ExtraBold ships as a Basic-Latin
+   subset (public/fonts): en uses it as-is; es / pt / fr / de / id need Latin-1 accents the subset lacks, so their accented
+   letters fall back glyph-by-glyph to Arial Rounded / Arial Black (same weight class). ru (Cyrillic) and tr (ğ ş İ) use one
+   system stack for the whole text — no font mixing inside a word. CJK keeps Baloo for Latin letters and digits and takes
+   kana / hangul / hanzi from the system (no CJK font is downloaded). [lang]:lang() outranks index.html's :root --font. */
+[lang]:lang(en), [lang]:lang(es), [lang]:lang(pt), [lang]:lang(fr), [lang]:lang(de), [lang]:lang(id), [lang]:lang(xx) { --font: 'Baloo SF', 'Arial Rounded MT Bold', 'Arial Black', system-ui, sans-serif; }
+[lang]:lang(ru), [lang]:lang(tr) { --font: ui-rounded, 'Arial Rounded MT Bold', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Roboto, 'Noto Sans', Arial, sans-serif; }
+[lang]:lang(ja) { --font: 'Baloo SF', 'Hiragino Maru Gothic ProN', 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo', 'Noto Sans JP', 'Noto Sans CJK JP', sans-serif; }
+[lang]:lang(ko) { --font: 'Baloo SF', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', 'Noto Sans CJK KR', sans-serif; }
+[lang]:lang(zh-Hant) { --font: 'Baloo SF', 'PingFang TC', 'Microsoft JhengHei', 'Noto Sans TC', 'Noto Sans CJK TC', sans-serif; }
+[lang]:lang(zh-Hans) { --font: 'Baloo SF', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'Noto Sans CJK SC', sans-serif; }
+/* the logo is the brand: always Baloo, always English */
+#logo { font-family: 'Baloo SF', 'Arial Rounded MT Bold', 'Arial Black', sans-serif; }
+/* CJK: no extra letter-spacing; system CJK fonts have tall line boxes — pin lines so panels keep their height */
+[lang]:lang(ja) :is(body, button), [lang]:lang(ko) :is(body, button), [lang]:lang(zh-Hant) :is(body, button), [lang]:lang(zh-Hans) :is(body, button) { letter-spacing: 0; line-height: 1.15; }
+/* names come from data in Title Case; the vinyl look is all caps (CSS uppercase respects <html lang>, e.g. Turkish İ) */
+#heroName, #showName, #tryTitle, .card .nm, .card .tag, #nextUp .t, .rf, .fcard .fh, .ftName { text-transform: uppercase; }
+#nextUp small { text-transform: none; }
+/* longer languages (DE / FR run ~40 % longer): row buttons share their row and shrink their text (data-fit, i18n.js);
+   titles and stickers may not grow past their panel */
+.row > .b, .tabs > .tab { flex: 1 1 auto; min-width: 0; }
+.b { max-width: 100%; }
+.panel .sticker { max-width: calc(100% + 24px); }
+#clear .sticker { max-width: 92vw; }
+.ttl { min-width: 0; flex: 0 1 auto; }
+.price, .wcard .wn, .wcard .wp, .card .tag { max-width: 100%; }
+.card .tag { max-width: calc(100% - 16px); }

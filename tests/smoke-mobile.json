@@ -112,7 +112,7 @@
   "msg": "觸控操作讓青蛙前進"
  },
  {
-  "eval": "(window.__game.state === 'playing' && window.__game.level === 1 && window.__game.mode !== 'won') ? (window.__game.forceWin(), 'forced') : 'natural:' + window.__game.level + ':' + window.__game.mode"
+  "eval": "(window.__game.state === 'playing' && window.__game.level === 1 && window.__game.mode !== 'won') ? (window.__game.forceWin(), 'forced') : (window.__game.start(1), window.__game.forceWin(), 'restarted+forced')"
  },
  {
   "wait": 1000

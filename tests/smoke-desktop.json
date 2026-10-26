@@ -122,14 +122,14 @@
   "wait": 1500
  },
  {
-  "eval": "(window.__game.state === 'playing' && window.__game.level === 1 && window.__game.mode !== 'won') ? (window.__game.forceWin(), 'forced') : 'natural:' + window.__game.level + ':' + window.__game.mode"
+  "eval": "(window.__game.state === 'playing' && window.__game.level === 1 && window.__game.mode !== 'won') ? (window.__game.forceWin(), 'forced') : (window.__game.start(1), window.__game.forceWin(), 'restarted+forced')"
  },
  {
   "wait": 600
  },
  {
-  "assert": "window.__game.state === 'playing' && !document.getElementById('result').classList.contains('on') && !document.getElementById('clear').hidden",
-  "msg": "落荷葉後先短暫慶祝（CLEAR 貼紙，還沒進結算）"
+  "assert": "window.__game.state === 'playing' && !document.getElementById('result').classList.contains('on') && (!document.getElementById('clear').hidden || !document.getElementById('feat').hidden)",
+  "msg": "落荷葉後先短暫慶祝（CLEAR 貼紙或成就膠囊，還沒進結算）"
  },
  {
   "shot": "05-celebrate"
