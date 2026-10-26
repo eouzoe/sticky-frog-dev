@@ -67,7 +67,7 @@ export function createJuice(c) {
     // 金幣入帳：3D 金幣從角色身上蹦出來、轉著往上掉（一次最多 8 枚）
     coins(x, y, n) {
       const k = Math.min(8, n);
-      for (let i = 0; i < k; i++) fx.spawn(x, y + 0.6, 0.8, (Math.random() - 0.5) * 6, 9 + Math.random() * 5, 0, 0.9, 0.85, 22, 0.8, SH.COIN, '#ffd23f');
+      for (let i = 0; i < k; i++) fx.spawn(x, y + 0.6, 0.8, (Math.random() - 0.5) * 6, 9 + Math.random() * 5, 0, 0.9, 0.6, 22, 0.8, SH.COIN, '#ffd23f');
     },
     ring(e, slow) {
       lvView.takeRing(e.i); frog.jelly(4);

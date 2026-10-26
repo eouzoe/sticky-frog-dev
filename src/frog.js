@@ -63,6 +63,8 @@ export function createFrog(scene, renderer) {
     if (char) model.remove(char);
     char = dressCharacter(ART.models, id, ART.q);
     model.add(char);
+    // 只讓身體輪廓的網格投影（眼睛、反光、嘴都在身體剪影裡，投影只是多畫幾次）
+    char.traverse((o) => { if (o.isMesh) o.castShadow = ['skin', 'band', 'gold', 'metal', 'accent'].includes(o.material.name); });
     kind = sk.kind ?? 'frog';
     eyes = ['L', 'R'].map((s) => ({ g: char.getObjectByName(`eye_${s}`), p: char.getObjectByName(`pupil_${s}`) }));
     legs = ['leg_BR', 'leg_FR', 'leg_BL', 'leg_FL'].map((n) => char.getObjectByName(n)); // 跟舊版順序一樣：先 −X 邊

@@ -46,10 +46,10 @@ export function createFx(scene, renderer) {
   const geos = [new THREE.SphereGeometry(0.5, 14, 10), confettiGeo(), null, new THREE.SphereGeometry(0.5, 16, 12), starGeo()];
   const makeMats = (high) => [
     candyMat(renderer, high),
-    candyMat(renderer, high, { rough: 0.45, rim: 0.2, glow: 0.35, extra: { side: THREE.DoubleSide } }),
+    candyMat(renderer, high, { rough: 0.45, rim: 0.15, glow: 0.18, extra: { side: THREE.DoubleSide } }),
     null,
     candyMat(renderer, high, { rough: 0.05, rim: 1.1, glow: 0.05, extra: { transparent: true, opacity: 0.32, depthWrite: false } }),
-    candyMat(renderer, high, { rough: 0.18, rim: 0.6, glow: 0.45 }),
+    candyMat(renderer, high, { rough: 0.18, rim: 0.3, glow: 0.2 }),
   ];
   let mats = makeMats(true);
   const meshes = [0, 1, 3, 4].map((k) => {

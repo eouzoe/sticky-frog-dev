@@ -62,6 +62,8 @@ export function createLevelView(scene) {
     add('saw', splitProp('prop-saw', wi).main, level.saws.length);
     simple('track', GEO.track, mats.track, level.saws.length);
     fan = splitProp('prop-fan', wi, ['blades']);
+    // 扇葉原本是白色、底座頂面也是白：傾斜後讀成一個白盤子 → 扇葉換成世界花瓣色，轉起來才看得出是風扇
+    for (const p of fan.sub.blades.parts) { const u = p.material.userData.uniforms; if (u) { u.uBase.value.set(P.petal); u.uSec.value.set(P.bud); } }
     add('fanBase', fan.main, level.fans.length); add('blade', fan.sub.blades.parts, level.fans.length);
     simple('column', GEO.column, mats.column, level.fans.length);
     add('ring', splitProp('prop-ring', wi).main, level.rings.length);
@@ -82,11 +84,12 @@ export function createLevelView(scene) {
     const g = level.goal;
     const goal = dressProp(ART.models, 'prop-goal', wi, q); goal.position.set(g.x, g.y, 0); goal.scale.x = g.w / 12; group.add(goal); st.pad = goal;
     // 葉牆：遠看像一根綠柱（美術線提醒）→ 加寬、前後兩片錯開、往鏡頭轉一點，讀起來是一整片葉簾
-    for (const [dx, dz, sx, ry] of [[0.9, -0.2, 1.5, -0.35], [2.6, -1.6, 1.3, 0.3]]) {
-      const wall = dressProp(ART.models, 'prop-goalWall', wi, q); wall.position.set(g.wall + dx, 0, dz); wall.scale.set(sx, 1.05, 1); wall.rotation.y = ry; group.add(wall);
+    // 一根會讀成綠柱，所以做成高低錯落的一叢（往後排、越後越矮），前面那片貼著碰撞面
+    for (const [dx, dz, sx, sy, ry] of [[0.8, -0.6, 1.1, 1.0, -0.25], [2.2, -3.2, 1.25, 0.72, 0.5], [0.4, -5.6, 1.3, 0.85, 1.4], [3.4, -7.4, 1.2, 0.58, -0.8]]) {
+      const wall = dressProp(ART.models, 'prop-goalWall', wi, q); wall.position.set(g.wall + dx, 0, dz); wall.scale.set(sx, sy, sx); wall.rotation.y = ry; group.add(wall);
     }
     const pole = new THREE.Mesh(GEO.flagPole, softMaterial('#ffffff', q, { rough: 0.3 })); pole.position.set(g.x - 1.5, g.y + 3, -1.6); pole.castShadow = true; group.add(pole);
-    const flagMat = softMaterial(P.accent ?? '#ff6fb5', q, { rough: 0.35 }).clone(); flagMat.side = THREE.DoubleSide;
+    const flagMat = softMaterial(P.accent ?? '#ff6fb5', q, { rough: 0.35 }); flagMat.side = THREE.DoubleSide; // 只有旗子用這個色
     const flag = new THREE.Mesh(GEO.flag, flagMat); flag.position.set(g.x - 0.4, g.y + 5.2, -1.6); flag.castShadow = true; group.add(flag); st.flag = flag;
     reset();
   }

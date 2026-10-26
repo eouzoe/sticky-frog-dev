@@ -69,7 +69,8 @@ export function createView(canvas) {
     bgSets.push(A, B);
     for (let i = 0; i < nA; i++) {
       const s = 0.8 + rnd() * 0.7;
-      dummy.position.set(-50 + (i / nA) * span + rnd() * 4, 0, -22 - rnd() * 26); dummy.rotation.set(0, wi === 1 ? (rnd() - 0.5) * 0.6 : rnd() * 6, 0); dummy.scale.set(s, s * (0.8 + rnd() * 0.5), s);
+      // 大樓、火山又高又暗：往後推，角色前面不要壓一大塊深色
+      dummy.position.set(-50 + (i / nA) * span + rnd() * 4, 0, (wi >= 2 ? -30 : -22) - rnd() * 26); dummy.rotation.set(0, wi === 1 ? (rnd() - 0.5) * 0.6 : rnd() * 6, 0); dummy.scale.set(s, s * (0.8 + rnd() * 0.5), s);
       dummy.updateMatrix(); A.set(i, dummy.matrix);
     }
     for (let i = 0; i < nB; i++) {

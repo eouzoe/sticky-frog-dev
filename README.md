@@ -4,7 +4,7 @@
 
 ## 玩法
 
-- 側視 2.5D（青蛙只在 XY 平面動，世界是 3D low-poly＋景深視差）。
+- 側視 2.5D（青蛙只在 XY 平面動，世界是 3D＋景深視差）。美術是「軟膠公仔」：亮面糖果色、邊緣光、黑亮大眼、圓滾滾（Blender 做的 GLB，來源 `hook-hero-art` d0f791d）；低畫質自動換成 Lambert＋邊緣光的便宜材質。
 - **按住**：舌頭射向前方最近的鉤點花（目標會先出現白色光環），黏住後做單擺；按住期間舌頭會慢慢收短「打氣」，越擺越快。
 - **放開**：帶著擺盪的速度飛出去，並依速度自動翻滾；轉滿一圈＝FLIP，兩圈 DOUBLE、三圈 TRIPLE FLIP（慢動作＋FOV 推近＝招牌時刻）。
 - 蒼蠅靠近時舌頭自動舔掉；穿過金色圈圈加分＋慢動作；彈跳蘑菇把你彈回空中；風扇往上吹；尖刺球、鋸片碰到就失敗；掉進水（糖漿、霓虹運河、岩漿）＝失敗，0.5 秒內從頭重來。
@@ -36,17 +36,17 @@
 
 | # | 項目 | 做在哪 |
 |---|---|---|
-| 1 | 創傷值式畫面震動（平方曲線、衰減、含微旋轉） | `src/fx.js` `shake`／`addTrauma`；`src/main.js` 各事件 |
+| 1 | 創傷值式畫面震動（平方曲線、衰減、含微旋轉；**分級**：高頻小事件取 max、大事件累加；強度 `SHAKE_SCALE`、衰減 `SHAKE_DECAY`） | `src/fx.js` `shake`／`addTrauma`；`src/juice.js` 各事件配方 |
 | 2 | Hit-stop（蘑菇 45 ms、落水 60 ms、尖刺 110 ms） | `src/main.js` `G.hitStop` |
 | 3 | 慢動作（TRIPLE FLIP、穿圈、落荷葉；timeScale 漸變） | `src/main.js` `slowmo()`、`frame()` |
 | 4 | 擠壓伸展（起跳、黏住、放開、彈跳、撞牆、落地；沿速度方向） | `src/frog.js` `squash()`（三層 pivot 沿任意軸縮放） |
-| 5 | 粒子爆發（木屑、花瓣、水花、碎片、火花、彩帶；物件池＋InstancedMesh） | `src/fx.js` `burst()` |
+| 5 | 粒子爆發（軟膠語彙：亮面糖果碎片、圓角彩紙、圓潤閃星、泡泡、3D 金幣；物件池＋InstancedMesh；7 圈翻滾有天上彩紙雨） | `src/fx.js` `burst()`、`src/juice.js` |
 | 6 | 跳字（FLIP!、+50、BOING!、RING!、TRIPLE FLIP!，彈出縮放） | `src/ui.js` `popup()`、`index.html` `.pp` |
 | 7 | 連擊（2.8 秒內沒新動作就斷；音高、字級、倍率隨連擊升高） | `src/main.js` `addCombo()`、`src/audio.js` flip／attach |
 | 8 | 鏡頭：平滑跟隨＋速度前瞻＋隨速度拉遠＋放開時 FOV 衝擊＋慢動作推近 | `src/main.js` `render()` |
 | 9 | 死亡閃白、大事件全螢幕閃光 | `src/ui.js` `flash()` |
 | 10 | 速度拖尾緞帶＋高速速度線 | `src/fx.js` trail／lines |
-| 11 | 衝擊波環（黏住、蘑菇、圈圈、落荷葉、落水） | `src/fx.js` `shock()` |
+| 11 | 果凍衝擊環（圓管、衝過頭回彈；可延遲連發，7 圈翻滾四圈彩色） | `src/fx.js` `shock()` |
 | 12 | 每個動作都有音效（多層合成、音高隨機 ±7%） | `src/audio.js` `play()` |
 | 13 | 程序音樂循環（每世界不同調）＋大時刻 ducking | `src/audio.js` `startMusic()`／`duckMusic()` |
 | 14 | UI 動畫（按鈕 hover／按下彈跳、面板 overshoot 彈入、成就大字彈入、HUD 金幣跳動、無盡距離累加） | `index.html` CSS、`src/ui.js` `feat()`／`hudCoins()`／`showOver()` |
@@ -67,7 +67,7 @@
 
 - `src/sim.js`：純物理（不依賴 three），可在 Node 跑。
 - `src/level.js`：60 關種子程序產生＋`SALT` 換種子表。
-- `src/scene.js`、`src/levelview.js`、`src/frog.js`、`src/fx.js`：渲染。
+- `src/scene.js`、`src/levelview.js`、`src/frog.js`、`src/fx.js`：渲染。`src/artkit.js`（美術線的執行時模組：載入、換色、高低畫質材質）、`src/art.js`（開機載入 26 個 GLB、把道具拆成 InstancedMesh 組）、`src/juice.js`（每個事件的特效配方：果凍、粒子、停格、慢動作、震動、音效層）。模型在 `public/models/`。
 - `src/audio.js`：WebAudio 合成。`src/ui.js`：DOM 介面。`src/main.js`：主迴圈與狀態機。`src/cg.js`：CrazyGames SDK 包裝（未改）。
 - `tests/sim-check.mjs`：自動玩家跑 60 關（12 組參數），全部可破才 exit 0。
 - `tests/endless-check.mjs`：無盡模式自動玩家接力，12 個種子都要跑完四個世界（1800 單位）。`tests/feats-check.mjs`：成就偵測（每種達成／差一點）。`tests/save-check.mjs`：舊存檔相容、下一步推薦、本機榜。`tests/feat-dist.mjs`：成就門檻分布。`tests/smoke-*.json`：冒煙步驟。
