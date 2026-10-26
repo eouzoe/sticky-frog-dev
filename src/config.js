@@ -79,7 +79,10 @@ export const WORLDS = [
 ];
 
 // 外層進度：可解鎖項（價格單位：金幣）
+// 角色：kind＝模型種類（cat／ape／silkfrog 的模型由美術線提供，現在先用青蛙換色當佔位）；tongue＝買角色送的招牌舌頭。
+// 旋轉貓咪是看板角色：商店置頂（featured）、價格約 6–8 關的金幣。
 export const SKINS = [
+  { id: 'cat', kind: 'cat', name: 'Spinny Cat', price: 300, featured: true, tongue: 'yarn', body: '#ffa94d', belly: '#fff1d6', eye: '#3cd070', cheek: '#ff9fb2', spots: '#d9772b' },
   { id: 'tree', name: 'Tree Frog', price: 0, body: '#2ecc71', belly: '#d4f7a8', eye: '#ff3b3b', cheek: '#ff8fb5' },
   { id: 'dart', name: 'Poison Dart', price: 60, body: '#2f6bff', belly: '#9cc4ff', eye: '#111111', cheek: '#7fd0ff', spots: '#111133' },
   { id: 'tomato', name: 'Tomato Frog', price: 120, body: '#ff5a3c', belly: '#ffc29a', eye: '#ffd23f', cheek: '#ffd0c0' },
@@ -89,6 +92,16 @@ export const SKINS = [
   { id: 'gold', name: 'Golden Frog', price: 600, body: '#ffc93c', belly: '#fff0b0', eye: '#2b2b2b', cheek: '#ff9f43', shiny: true },
   { id: 'astro', name: 'Astro Frog', price: 800, body: '#7ad151', belly: '#ffffff', eye: '#111111', cheek: '#ff8fb5', helmet: true },
   { id: 'king', name: 'Toad King', price: 1200, body: '#9c6b3c', belly: '#e8c89a', eye: '#ffcc00', cheek: '#c05a3c', spots: '#6b4422', crown: true },
+  { id: 'ape', kind: 'ape', name: 'Vine Ape', price: 650, tongue: 'vine', body: '#8a5a3c', belly: '#e8c39e', eye: '#3b2a1a', cheek: '#d98b6a', band: '#3fae4a' },
+  { id: 'silkfrog', kind: 'silkfrog', name: 'Silk Frog', price: 900, tongue: 'silk', body: '#7d5cff', belly: '#f0eaff', eye: '#ffffff', cheek: '#c9b8ff', spots: '#ffffff' },
+];
+
+// 舌頭種類：顏色、粗細（width 倍率）、彎曲（wave：靜態的捲曲幅度）、材質貼圖（tex，src/tongues.js 畫）、舌尖（tip 色、tipScale）、黏上時的小特效（fx 粒子色、fxShape）
+export const TONGUES = [
+  { id: 'tongue', name: 'Frog Tongue', price: 0, color: '#ff4f7a', tip: '#ff3d6e', width: 1, wave: 0, tex: null, tipScale: 1, fx: ['#ff6fb5', '#ffffff'], fxShape: 0 },
+  { id: 'yarn', name: 'Yarn', price: 180, color: '#ffffff', tip: '#ff6fb5', width: 0.62, wave: 0.1, tex: 'yarn', tipScale: 1.6, fx: ['#ff6fb5', '#ffd0e8', '#ffffff'], fxShape: 2 },
+  { id: 'vine', name: 'Jungle Vine', price: 260, color: '#ffffff', tip: '#7ad151', width: 0.85, wave: 0.28, tex: 'vine', tipScale: 1.25, fx: ['#2ecc71', '#7ad151', '#c8f59a'], fxShape: 1 },
+  { id: 'silk', name: 'Silk Thread', price: 340, color: '#ffffff', tip: '#ffffff', width: 0.3, wave: 0, tex: 'silk', tipScale: 0.75, fx: ['#ffffff', '#e6e9ff'], fxShape: 3 },
 ];
 
 export const TRAILS = [
@@ -98,3 +111,6 @@ export const TRAILS = [
   { id: 'bubble', name: 'Bubbles', price: 350, colors: ['#bff4ff', '#7be0ff'] },
   { id: 'star', name: 'Stardust', price: 500, colors: ['#fff6a0', '#ffd23f', '#ff9ff3'] },
 ];
+
+// CrazyGames 排行榜加密金鑰（Developer Portal 產生；排行榜只開放受邀遊戲）。空字串＝不送分，只用本機前 10 名。見 src/leaderboard.js。
+export const LB_KEY = '';

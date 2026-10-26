@@ -69,6 +69,8 @@ export function createFrog(scene) {
   const idx = [];
   for (let i = 0; i < N; i++) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
   tGeo.setIndex(idx);
+  tGeo.setAttribute('uv', new THREE.BufferAttribute(Float32Array.from({ length: (N + 1) * 4 }, (_, i) => (i % 2 ? (i >> 1) % 2 : (i >> 2) / N)), 2)); // 玩法線掛鉤：舌頭材質 uv
+  let tk = { width: 1, wave: 0 }; // 玩法線掛鉤：目前的舌頭種類（src/config.js TONGUES）
   const tMat = new THREE.MeshBasicMaterial({ color: '#ff4f7a', side: THREE.DoubleSide });
   const tongue = new THREE.Mesh(tGeo, tMat); tongue.frustumCulled = false; scene.add(tongue);
   const tip = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 6), new THREE.MeshLambertMaterial({ color: '#ff3d6e' })); scene.add(tip);
@@ -78,6 +80,7 @@ export function createFrog(scene) {
     pvx: 0, pvy: 0, wob: 0, wobPhase: 0, tongueLen: 0, mouthOpen: 0, tuck: 0,
   };
 
+  function setTongue(spec, tex) { tk = spec; tMat.color.set(spec.color); tMat.map = tex; tMat.needsUpdate = true; tip.material.color.set(spec.tip); } // 玩法線掛鉤
   function setSkin(sk) {
     mats.body.color.set(sk.body); mats.belly.color.set(sk.belly); mats.iris.color.set(sk.eye); mats.cheek.color.set(sk.cheek);
     mats.body.transparent = !!sk.glass; mats.body.opacity = sk.glass ? 0.7 : 1;
@@ -156,19 +159,19 @@ export function createFrog(scene) {
       const amp = mood.tongueWob * Math.min(1, len * 0.15);
       for (let i = 0; i <= N; i++) {
         const u = i / N;
-        const w = 0.14 * (1 - u * 0.35);
-        const off = Math.sin(u * Math.PI) * Math.sin(u * 9 - t * 38) * amp;
+        const w = 0.14 * tk.width * (1 - u * 0.35);
+        const off = Math.sin(u * Math.PI) * (Math.sin(u * 9 - t * 38) * amp + Math.sin(u * len * 1.3) * tk.wave); // 玩法線掛鉤：wave＝藤蔓／毛線的靜態捲曲
         const cx = mouthW.x + dx * u + px * off, cy = mouthW.y + dy * u + py * off, cz = mouthW.z * (1 - u) + 0.1 * u;
         const o = i * 6;
         tPos[o] = cx + px * w; tPos[o + 1] = cy + py * w; tPos[o + 2] = cz;
         tPos[o + 3] = cx - px * w; tPos[o + 4] = cy - py * w; tPos[o + 5] = cz;
       }
-      tGeo.attributes.position.needsUpdate = true;
+      tGeo.attributes.position.needsUpdate = true; if (tMat.map) tMat.map.repeat.x = len / 1.4; // 玩法線掛鉤
       tongue.visible = true; tip.visible = true;
       tip.position.set(tongueTip.x, tongueTip.y, 0.15);
-      const ts = mood.tipPop ?? 1; tip.scale.setScalar(ts);
+      const ts = (mood.tipPop ?? 1) * (tk.tipScale ?? 1); tip.scale.setScalar(ts); // 玩法線掛鉤：tipScale
     } else { tongue.visible = false; tip.visible = false; }
   }
 
-  return { root, setSkin, squash, jiggle, update, mouthWorld, st };
+  return { root, setSkin, setTongue, squash, jiggle, update, mouthWorld, st };
 }
