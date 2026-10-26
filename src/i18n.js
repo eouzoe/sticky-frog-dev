@@ -119,7 +119,8 @@ function fitText(el) {
   el.style.fontSize = '';
   let fs = parseFloat(getComputedStyle(el).fontSize);
   const min = fs * 0.55; // never below 55 % of the designed size
-  while ((el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1) && fs > min) { fs -= 1; el.style.fontSize = fs + 'px'; }
+  // height: 4 px slack — tall rounded glyphs poke a little out of a tight line box, that is not an overflow
+  while ((el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 4) && fs > min) { fs -= 1; el.style.fontSize = fs + 'px'; }
 }
 const fitObs = typeof ResizeObserver === 'function' ? new ResizeObserver((list) => { for (const e of list) fitText(e.target); }) : null;
 
