@@ -39,4 +39,5 @@ export default {
   'feat.skim': '파도와 뽀뽀!', 'featLine.skim': '물에 닿고도 살아남았다.',
   'feat.shave': '털끝 차이!', 'featLine.shave': '가시와 머리카락 한 올 차이.',
   'feat.clutch': '막판 구출!', 'featLine.clutch': '마지막 1초에 붙잡았다!',
+  'new.title': 'NEW!', 'new.mush': '점프 버섯', 'new.swarm': '파리 떼', 'new.ring': '황금 링', 'new.move': '움직이는 고리', 'new.spikeLow': '낮은 가시', 'new.mushChain': '연속 버섯', 'new.ringArc': '더블 링', 'new.fan': '선풍기', 'new.saw': '톱날', 'new.spikeHigh': '높은 가시', 'new.tunnel': '위아래 가시',
 };

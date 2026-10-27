@@ -128,4 +128,17 @@ export default {
   'aria.levelLocked': 'Level {level}, locked',
   'aria.itemPrice': '{item}, {price} coins',
   'aria.hero': 'Your hero',
+  // NEW card (first level where a basic element can appear)
+  'new.title': 'NEW!',
+  'new.mush': 'Bounce Mushroom',
+  'new.swarm': 'Fly Swarm',
+  'new.ring': 'Gold Ring',
+  'new.move': 'Moving Hook',
+  'new.spikeLow': 'Low Spikes',
+  'new.mushChain': 'Mushroom Chain',
+  'new.ringArc': 'Double Ring',
+  'new.fan': 'Fan',
+  'new.saw': 'Saw Blade',
+  'new.spikeHigh': 'High Spikes',
+  'new.tunnel': 'Spike Squeeze',
 };

@@ -70,7 +70,8 @@ const srcAll = ['src/ui.js', 'src/main.js', 'index.html'].map(read).join('\n'); 
 const used = new Set();
 for (const m of srcAll.matchAll(/\bt\(\s*'([\w.]+)'/g)) used.add(m[1]);
 for (const m of srcAll.matchAll(/data-i18n(?:-aria|-html)?="([\w.]+)"/g)) used.add(m[1]);
-for (const m of srcAll.matchAll(/'((?:pop|featVal|hint|tut|clear|result|shop|menu|next|over|pause|hud|records|levels|aria|set)\.[\w.]+)'/g)) used.add(m[1]);
+for (const m of srcAll.matchAll(/'((?:pop|new|featVal|hint|tut|clear|result|shop|menu|next|over|pause|hud|records|levels|aria|set)\.[\w.]+)'/g)) used.add(m[1]);
+{ const { NEW_AT } = await import(new URL('src/level.js', root)); for (const k of Object.keys(NEW_AT)) used.add(`new.${k}`); } // NEW 字卡的 key 在 main.js 用 t(`new.${id}`) 動態組
 const DATA = /^(it\.|world\.|die\.|feat\.|featLine\.)/;
 for (const k of used) if (!(k in en) && !DATA.test(k)) errs.push(`key used but missing in en.js: ${k}`);
 for (const k of Object.keys(en)) if (!used.has(k)) errs.push(`en.js key never used: ${k}`);

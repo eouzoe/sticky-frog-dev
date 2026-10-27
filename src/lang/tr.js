@@ -39,4 +39,5 @@ export default {
   'feat.skim': 'DALGA ÖPÜCÜĞÜ!', 'featLine.skim': 'Suya dokundun ve kurtuldun.',
   'feat.shave': 'KIL PAYI!', 'featLine.shave': 'Dikenlerden bir tüy farkla.',
   'feat.clutch': 'SON SANİYE KURTARIŞI!', 'featLine.clutch': 'Tam son saniyede yakaladın!',
+  'new.title': 'YENİ!', 'new.mush': 'Zıplayan Mantar', 'new.swarm': 'Sinek Sürüsü', 'new.ring': 'Altın Halka', 'new.move': 'Hareketli Kanca', 'new.spikeLow': 'Alçak Dikenler', 'new.mushChain': 'Mantar Zinciri', 'new.ringArc': 'Çift Halka', 'new.fan': 'Fan', 'new.saw': 'Testere', 'new.spikeHigh': 'Yüksek Dikenler', 'new.tunnel': 'Alt-Üst Dikenler',
 };

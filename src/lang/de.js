@@ -39,4 +39,5 @@ export default {
   'feat.skim': 'WELLENKÜSSER!', 'featLine.skim': 'Wasser berührt und überlebt.',
   'feat.shave': 'HAARSCHARF!', 'featLine.shave': 'Nur ein Haar von den Stacheln entfernt.',
   'feat.clutch': 'RETTUNG IM LETZTEN MOMENT!', 'featLine.clutch': 'In der allerletzten Sekunde gegriffen!',
+  'new.title': 'NEU!', 'new.mush': 'Sprungpilz', 'new.swarm': 'Fliegenschwarm', 'new.ring': 'Goldring', 'new.move': 'Wanderhaken', 'new.spikeLow': 'Bodenstacheln', 'new.mushChain': 'Pilzkette', 'new.ringArc': 'Doppelring', 'new.fan': 'Ventilator', 'new.saw': 'Sägeblatt', 'new.spikeHigh': 'Deckenstacheln', 'new.tunnel': 'Stachelzange',
 };

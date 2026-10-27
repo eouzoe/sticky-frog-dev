@@ -39,4 +39,5 @@ export default {
   'feat.skim': 'BEIJA-ONDA!', 'featLine.skim': 'Tocou na água e sobreviveu.',
   'feat.shave': 'BARBA FEITA!', 'featLine.shave': 'Por um fio dos espinhos.',
   'feat.clutch': 'SALVOU NA HORA H!', 'featLine.clutch': 'Agarrou no último segundo!',
+  'new.title': 'NOVO!', 'new.mush': 'Cogumelo saltitante', 'new.swarm': 'Enxame de moscas', 'new.ring': 'Anel dourado', 'new.move': 'Gancho móvel', 'new.spikeLow': 'Espinhos baixos', 'new.mushChain': 'Fila de cogumelos', 'new.ringArc': 'Anel duplo', 'new.fan': 'Ventilador', 'new.saw': 'Serra', 'new.spikeHigh': 'Espinhos altos', 'new.tunnel': 'Espinhos em cima e embaixo',
 };

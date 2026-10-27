@@ -39,4 +39,5 @@ export default {
   'feat.skim': 'ПОЦЕЛУЙ ВОЛНЫ!', 'featLine.skim': 'Коснулся воды и выжил.',
   'feat.shave': 'ВОЛОСОК ОТ БЕДЫ!', 'featLine.shave': 'На волосок от шипов.',
   'feat.clutch': 'СПАСЕНИЕ В ПОСЛЕДНИЙ МИГ!', 'featLine.clutch': 'Схватился в самую последнюю секунду!',
+  'new.title': 'НОВОЕ!', 'new.mush': 'Грибы-батуты', 'new.swarm': 'Рой мух', 'new.ring': 'Золотое кольцо', 'new.move': 'Движущийся крюк', 'new.spikeLow': 'Низкие шипы', 'new.mushChain': 'Цепочка грибов', 'new.ringArc': 'Двойное кольцо', 'new.fan': 'Вентилятор', 'new.saw': 'Пила', 'new.spikeHigh': 'Высокие шипы', 'new.tunnel': 'Шипы сверху и снизу',
 };

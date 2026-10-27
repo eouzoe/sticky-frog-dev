@@ -40,4 +40,5 @@ export default {
   'feat.skim': '¡BESO A LAS OLAS!', 'featLine.skim': 'Tocaste el agua y lo contaste.',
   'feat.shave': '¡AFEITADO AL RAS!', 'featLine.shave': 'A un pelo de los pinchos.',
   'feat.clutch': '¡SALVADA EN EL ÚLTIMO SEGUNDO!', 'featLine.clutch': '¡Te agarraste justo a tiempo!',
+  'new.title': '¡NUEVO!', 'new.mush': 'Seta saltarina', 'new.swarm': 'Enjambre de moscas', 'new.ring': 'Aro dorado', 'new.move': 'Gancho móvil', 'new.spikeLow': 'Pinchos bajos', 'new.mushChain': 'Cadena de setas', 'new.ringArc': 'Aro doble', 'new.fan': 'Ventilador', 'new.saw': 'Sierra', 'new.spikeHigh': 'Pinchos altos', 'new.tunnel': 'Pinchos arriba y abajo',
 };

@@ -1,7 +1,7 @@
 // 開機、主迴圈、狀態機、輸入、存檔、事件 → 手感回饋（音效／粒子／震動／慢動作／跳字）。
 import { cg } from './cg.js';
 import { TUNE as T, WORLDS, SKINS, TRAILS, TONGUES, FULL_LAUNCH } from './config.js';
-import { generateLevel, LEVEL_COUNT, levelLabel, createEndless, extendEndless, endlessWorld, ENDLESS_WORLD_LEN } from './level.js';
+import { generateLevel, newElements, LEVEL_COUNT, levelLabel, createEndless, extendEndless, endlessWorld, ENDLESS_WORLD_LEN } from './level.js';
 import { createSim, step, movePos, flyPos } from './sim.js';
 import { makeBot } from './bot.js';
 import { createView } from './scene.js';
@@ -132,6 +132,7 @@ function startLevel(n) {
   save.last = n; persist();
   enterPlaying(); clearHold(); UI.show(null); UI.hint(null);
   G.cam.x = G.sim.x + 6; G.cam.y = T.CAM_MIN_Y; juice.levelIn(G.sim);
+  const ne = newElements(n)[0]; UI.newCard(ne ? t(`new.${ne}`) : null);
   UI.popup((n - 1) % 15 === 0 ? t('pop.worldLevel', { world: t(`world.${G.lv.world}`, null, WORLDS[G.lv.world].name), level: levelLabel(n) }) : t('pop.level', { level: levelLabel(n) }), innerWidth / 2, bigY(), 'big');
 }
 function startEndless() {
@@ -330,7 +331,7 @@ let menuStep = null;
 function toMenu() {
   if (G.state === 'playing' || G.state === 'paused') cg.gameplayStop();
   persist();
-  G.state = 'menu'; clearHold(); UI.tryNow(null);
+  G.state = 'menu'; clearHold(); UI.tryNow(null); UI.newCard(null);
   loadLevel(Math.min(save.last, save.unlocked));
   UI.show('menu'); UI.setCoins(save.coins); UI.hint(null);
   UI.setPlay(t('menu.play', { level: levelLabel(Math.min(save.unlocked, LEVEL_COUNT)) })); UI.setHero(skinOf());

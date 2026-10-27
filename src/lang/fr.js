@@ -39,4 +39,5 @@ export default {
   'feat.skim': 'BAISER DE VAGUE !', 'featLine.skim': 'Tu as touché l’eau et tu t’en es sorti.',
   'feat.shave': 'RASAGE DE PRÈS !', 'featLine.shave': 'À un poil des pointes.',
   'feat.clutch': 'SAUVÉ DE JUSTESSE !', 'featLine.clutch': 'Accroché à la toute dernière seconde !',
+  'new.title': 'NOUVEAU !', 'new.mush': 'Champignon rebondissant', 'new.swarm': 'Essaim de mouches', 'new.ring': 'Anneau doré', 'new.move': 'Crochet mobile', 'new.spikeLow': 'Piques basses', 'new.mushChain': 'Chaîne de champignons', 'new.ringArc': 'Double anneau', 'new.fan': 'Ventilateur', 'new.saw': 'Scie', 'new.spikeHigh': 'Piques hautes', 'new.tunnel': 'Piques haut et bas',
 };

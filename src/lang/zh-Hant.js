@@ -39,4 +39,5 @@ export default {
   'feat.skim': '親吻浪花！', 'featLine.skim': '碰到水還活得好好的。',
   'feat.shave': '擦邊球！', 'featLine.shave': '離尖刺只差一根頭髮。',
   'feat.clutch': '絕地救援！', 'featLine.clutch': '最後一秒死命抓住了！',
+  'new.title': '新！', 'new.mush': '彈跳蘑菇', 'new.swarm': '蒼蠅串', 'new.ring': '金圈', 'new.move': '移動鉤點', 'new.spikeLow': '低處尖刺', 'new.mushChain': '連續蘑菇', 'new.ringArc': '雙圈', 'new.fan': '風扇', 'new.saw': '鋸片', 'new.spikeHigh': '高處尖刺', 'new.tunnel': '上下夾擊',
 };

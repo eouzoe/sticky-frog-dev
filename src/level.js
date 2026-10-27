@@ -14,10 +14,18 @@ function mulberry32(a) {
   };
 }
 
+// 基本元素的解鎖關卡（第一次可能出現的關）；開場「NEW」字卡就看這張表。風扇、鋸片、高處尖刺、上下夾擊往後挪（MECHANICS §16）
+export const UNLOCK = { mush: 3, swarm: 4, ring: 5, move: 6, spikeLow: 8, mushChain: 9, ringArc: 12, fan: 18, saw: 22, spikeHigh: 25, tunnel: 33 };
+// NEW 字卡出現的關卡＝元素「實際第一次出現」的關（tests/unlock-check.mjs 掃 generateLevel 驗證）。
+// 跟 UNLOCK 不同的兩個（move 6→7、spikeLow 8→9）是解鎖那關剛好沒骰到，不改種子（前 10 關要保持不變）
+export const NEW_AT = { ...UNLOCK, move: 7, spikeLow: 9 };
+// 這一關要顯示 NEW 字卡的元素 id 清單（沒有＝[]）
+export const newElements = (n) => Object.keys(NEW_AT).filter((k) => NEW_AT[k] === n);
+
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 // 部分關卡換種子（tests/sim-check.mjs 的自動玩家破不了或太難的）
-export const SALT = { 20: 1, 26: 1, 44: 1, 50: 1, 57: 1 };
+export const SALT = { 20: 1, 26: 1, 44: 1, 50: 1, 57: 1, 25: 2, 33: 1 };
 
 export function generateLevel(n, salt = SALT[n] ?? 0) {
   const r = mulberry32(n * 7919 + 1013 + salt * 100003);
@@ -53,19 +61,20 @@ export function addSegment(L, g, n, diff) {
   const hook = hookOf(L), fly = flyOf(L, r);
   let x = g.x, y = g.y, prevType = g.prevType;
   // 依關卡解鎖段落種類
-  const types = ['hook', 'hook'];
-  if (n >= 3) types.push('mush');
-  if (n >= 5) types.push('ring');
-  if (n >= 6) types.push('move');
-  if (n >= 8) types.push('spikeLow');
-  if (n >= 11) types.push('fan');
-  if (n >= 14) types.push('saw');
-  if (n >= 20) types.push('spikeHigh', 'move');
-  if (n >= 26) types.push('saw', 'spikeLow');
-  if (n >= 4) types.push('swarm');
-  if (n >= 9) types.push('mushChain');
-  if (n >= 12) types.push('ringArc');
-  if (n >= 24) types.push('tunnel');
+  const U = UNLOCK, types = ['hook', 'hook'];
+  if (n >= U.mush) types.push('mush');
+  if (n >= U.ring) types.push('ring');
+  if (n >= U.move) types.push('move');
+  if (n >= U.spikeLow) types.push('spikeLow');
+  if (n >= U.fan) types.push('fan');
+  if (n >= U.saw) types.push('saw');
+  if (n >= U.spikeHigh) types.push('spikeHigh');
+  if (n >= 27) types.push('spikeHigh', 'move'); // 加權：後段多一份
+  if (n >= 30) types.push('saw', 'spikeLow');
+  if (n >= U.swarm) types.push('swarm');
+  if (n >= U.mushChain) types.push('mushChain');
+  if (n >= U.ringArc) types.push('ringArc');
+  if (n >= U.tunnel) types.push('tunnel');
   let type = pick(types);
   if (type === prevType && type !== 'hook') type = 'hook';
   prevType = type;

@@ -94,6 +94,14 @@ export function hint(text, x, y) {
   if ($('hintText').textContent !== text) $('hintText').textContent = text;
 }
 
+// 新元素字卡（NEW）：關卡開場在關名下面顯示 2.6 秒；不含新元素的關傳 null
+export function newCard(name) {
+  const c = $('newCard');
+  if (!name) { c.hidden = true; c.classList.remove('on'); return; }
+  $('newName').textContent = name; c.hidden = false; c.classList.remove('on'); void c.offsetWidth; c.classList.add('on');
+  fit?.(c);
+}
+
 // 跳字：同時最多 3 個；大字一次只留一個
 const pool = [];
 export function popup(text, x, y, cls = '') {

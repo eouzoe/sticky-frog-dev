@@ -39,4 +39,5 @@ export default {
   'feat.skim': 'CIUM OMBAK!', 'featLine.skim': 'Nyentuh air dan masih selamat.',
   'feat.shave': 'TIPIS SEKALI!', 'featLine.shave': 'Sehelai rambut dari duri.',
   'feat.clutch': 'SELAMAT DI DETIK AKHIR!', 'featLine.clutch': 'Nyangkut di detik terakhir!',
+  'new.title': 'BARU!', 'new.mush': 'Jamur Pantul', 'new.swarm': 'Kawanan Lalat', 'new.ring': 'Cincin Emas', 'new.move': 'Kait Bergerak', 'new.spikeLow': 'Duri Rendah', 'new.mushChain': 'Rantai Jamur', 'new.ringArc': 'Cincin Ganda', 'new.fan': 'Kipas', 'new.saw': 'Gergaji', 'new.spikeHigh': 'Duri Tinggi', 'new.tunnel': 'Duri Atas-Bawah',
 };
