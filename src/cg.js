@@ -5,6 +5,7 @@
 // v2 (2026-10-25): the SDK console.errors "call throttled" when gameplayStart/Stop or happytime fire < 1 s apart,
 // so gameplay calls are coalesced to >= 1.1 s apart and happytime to >= 10 s; midgame is skipped in a break where
 // a rewarded ad already played (ads policy: never combine both in the same break).
+// v2.1: loadingStart/gameplayStart called before init() are replayed once the SDK is ready.
 const sdk = () => window.CrazyGames?.SDK;
 const GAP_MS = 1100;
 const HAPPY_GAP_MS = 10000;
@@ -15,6 +16,7 @@ let lastGameplayCall = -Infinity;
 let syncTimer = 0;
 let lastHappy = -Infinity;
 let rewardedThisBreak = false;
+let loading = false;
 let adMuted = false;
 const muteFns = new Set();
 
@@ -41,13 +43,17 @@ export const cg = {
     try {
       await Promise.race([sdk().init(), new Promise((_, rej) => setTimeout(() => rej(new Error('SDK init timeout')), 4000))]);
       ready = true;
+      // replay what the game asked for before the SDK was ready
+      if (loading) call((s) => s.game.loadingStart());
+      sdkPlaying = false;
+      syncGameplay(true);
       sdk().game.addSettingsChangeListener?.(emitMute);
       emitMute();
     } catch (e) { console.warn('[cg] init failed, running without SDK', e); }
   },
   get ready() { return ready; },
-  loadingStart() { call((s) => s.game.loadingStart()); },
-  loadingStop() { call((s) => s.game.loadingStop()); },
+  loadingStart() { loading = true; call((s) => s.game.loadingStart()); },
+  loadingStop() { loading = false; call((s) => s.game.loadingStop()); },
   // Call when play begins/resumes (round start, revive, next level). Deduped and rate-limited.
   gameplayStart() { if (playing) return; playing = true; rewardedThisBreak = false; syncGameplay(); },
   // Call at every break (pause, menu, game over, level end). Deduped and rate-limited.
