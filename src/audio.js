@@ -105,6 +105,8 @@ export function play(name, o = {}) {
 const WORLD_MUSIC = [
   { root: 196, bpm: 112, prog: [0, 5, 3, 4] }, { root: 220, bpm: 120, prog: [0, 3, 5, 4] },
   { root: 174.6, bpm: 124, prog: [0, 0, 3, 4] }, { root: 164.8, bpm: 128, prog: [0, 3, 1, 4] },
+  // 冰峰：慢（84 bpm）、D 小調（自然小調音階）、鈴音（正弦＋非整數倍泛音）當旋律、細碎的雪沙取代 hi-hat，和弦墊用三角波長音；沒有 bandpass 的軍鼓
+  { root: 293.7, bpm: 84, prog: [0, 5, 2, 6], scale: [0, 2, 3, 5, 7, 8, 10], bell: true, mel: [0, 3, 7, 3, 10, 7, 3, 7, 0, 7, 10, 12, 10, 7, 3, 0] },
 ];
 const SCALE = [0, 2, 4, 5, 7, 9, 11];
 // 現在的拍位（四分音符為單位的小數）。音樂排程超前播放，所以扣掉還沒到的部分；音樂沒起來就用牆鐘照該世界的 bpm 推（視覺照樣有節奏）
@@ -121,7 +123,15 @@ function startMusic() {
     while (nextT < ctx.currentTime + 0.15) {
       const bar = Math.floor(step16 / 16) % 4, s = step16 % 16, deg = m.prog[bar];
       const when = nextT - ctx.currentTime;
-      const chord = (k) => m.root * Math.pow(2, (SCALE[(deg + k) % 7] + 12 * Math.floor((deg + k) / 7)) / 12);
+      const chord = (k) => m.root * Math.pow(2, ((m.scale ?? SCALE)[(deg + k) % 7] + 12 * Math.floor((deg + k) / 7)) / 12);
+      if (m.bell) {
+        if (s % 8 === 0) { tone('sine', chord(0) / 2, chord(0) / 2, sp * 7, 0.34, when, music); tone('sine', 70, 38, 0.16, 0.2, when, music); }
+        if (s % 4 === 2) noise(0.05, 9500, 8500, 0.035, 1, 'highpass', when, music);
+        if (s % 8 === 6) noise(0.2, 6000, 3000, 0.03, 2, 'bandpass', when, music);
+        if ((s * 5 + bar) % 3 !== 1) { const f = chord(0) * 4 * Math.pow(2, m.mel[(s + bar * 5) % 16] / 12); tone('sine', f, f, sp * 3.2, 0.075, when, music); tone('sine', f * 2.76, f * 2.76, sp * 1.1, 0.022, when, music); }
+        if (s === 0) [0, 2, 4].forEach((k) => tone('triangle', chord(k), chord(k), sp * 15, 0.045, when, music));
+        nextT += sp; step16++; continue;
+      }
       if (s % 4 === 0) tone('triangle', chord(0) / 2, chord(0) / 2, sp * 3.5, 0.3, when, music);
       if (s % 8 === 4) noise(0.08, 1800, 900, 0.12, 1, 'bandpass', when, music);
       if (s % 2 === 1) noise(0.03, 8000, 7000, 0.05, 1, 'highpass', when, music);

@@ -4,7 +4,7 @@ import { TUNE as T } from './config.js';
 import { BG_SETS, initEnv } from './artkit.js';
 import { ART, splitProp, PartSet } from './art.js';
 
-const WI = { jungle: 0, candy: 1, city: 2, volcano: 3 };
+const WI = { jungle: 0, candy: 1, city: 2, volcano: 3, frost: 4 };
 
 export function createView(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
@@ -70,6 +70,32 @@ export function createView(canvas) {
     });
   }
 
+  // 冰峰極光帶（純視覺）：遠處一張半透明的簾幕，三色漸層＋慢慢飄的亮暗條紋；整張跟著鏡頭走一點點（視差）
+  const auroraMat = new THREE.ShaderMaterial({
+    uniforms: { uT: { value: 0 }, uX: { value: 0 }, c0: { value: new THREE.Color() }, c1: { value: new THREE.Color() }, c2: { value: new THREE.Color() } },
+    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    fragmentShader: `uniform float uT, uX; uniform vec3 c0, c1, c2; varying vec2 vUv;
+      void main(){
+        float x = vUv.x * 28.0 + uX;
+        float v = vUv.y + sin(x * 0.9 + uT * 0.35) * 0.1 + sin(x * 0.37 - uT * 0.22) * 0.12;
+        float band = smoothstep(0.0, 0.3, v) * pow(clamp(1.0 - v, 0.0, 1.0), 1.6);
+        float rays = 0.65 + 0.35 * sin(x * 7.0 + sin(x * 1.3 + uT * 0.5) * 2.0);
+        float drift = 0.6 + 0.4 * sin(x * 0.5 + uT * 0.18);
+        vec3 col = v < 0.5 ? mix(c0, c1, v * 2.0) : mix(c1, c2, (v - 0.5) * 2.0);
+        gl_FragColor = vec4(col, band * rays * drift * 1.2);
+      }`,
+    transparent: true, depthWrite: false, fog: false,
+  });
+  const aurora = new THREE.Mesh(new THREE.PlaneGeometry(440, 46, 1, 1), auroraMat);
+  aurora.position.set(0, 50, -118); aurora.visible = false; aurora.frustumCulled = false; scene.add(aurora);
+
+  // 冰面浮冰（冰峰）：低多邊形的扁柱，白到淺藍，漂在水上（純視覺）
+  const floeGeo = new THREE.CylinderGeometry(1, 1.12, 0.42, 7, 1);
+  { const pa = floeGeo.attributes.position, jr = mulberry(7);
+    for (let i = 0; i < pa.count; i++) { const k = 0.84 + jr() * 0.3; pa.setX(i, pa.getX(i) * k); pa.setZ(i, pa.getZ(i) * k); }
+    floeGeo.computeVertexNormals(); }
+  const floeHi = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.25, envMap: initEnv(renderer), envMapIntensity: 0.5 }), floeLo = new THREE.MeshLambertMaterial({ color: '#ffffff' });
+
   // 背景視差層
   const bg = new THREE.Group(); scene.add(bg);
   const hillGeo = new THREE.SphereGeometry(1, 40, 20);
@@ -100,6 +126,8 @@ export function createView(canvas) {
     winMats = wi === 2 ? A.meshes.map((m) => m.material).filter((m) => /^window/.test(m.name)) : [];
     for (const m of winMats) m.userData.eBase ??= m.emissive.clone();
     bubMesh.visible = wi === 3;
+    aurora.visible = wi === 4;
+    if (wi === 4) { const ac = w.aurora; auroraMat.uniforms.c0.value.set(ac[0]); auroraMat.uniforms.c1.value.set(ac[1]); auroraMat.uniforms.c2.value.set(ac[2]); }
     for (let i = 0; i < nA; i++) {
       const s = 0.8 + rnd() * 0.7;
       // 大樓、火山又高又暗：往後推，角色前面不要壓一大塊深色
@@ -116,6 +144,23 @@ export function createView(canvas) {
       for (let i = 0; i < nP; i++) {
         dummy.position.set(-46 + (i / nP) * span + rnd() * 4, 0.06, -3.5 - rnd() * 9); dummy.rotation.set(0, rnd() * 6, 0); dummy.scale.setScalar(1.1 + rnd() * 1.1);
         dummy.updateMatrix(); Pd.set(i, dummy.matrix);
+      }
+    }
+    if (wi === 4) {
+      // 冰峰：浮冰（水面）＋積雪的松樹（中景）。亂數接在其他件之後抽，不影響前四個世界的排法
+      const nF = Math.ceil(span / 7), nT = Math.ceil(span / 11);
+      const F = new THREE.InstancedMesh(floeGeo, ART.q === 'high' ? floeHi : floeLo, nF);
+      const fc = [new THREE.Color('#ffffff'), new THREE.Color('#d8f2ff'), new THREE.Color('#bfe8f8')];
+      for (let i = 0; i < nF; i++) {
+        dummy.position.set(-46 + (i / nF) * span + rnd() * 5, 0.04, -3.2 - rnd() * 11); dummy.rotation.set((rnd() - 0.5) * 0.12, rnd() * 6, (rnd() - 0.5) * 0.12);
+        const fs = 1.0 + rnd() * rnd() * 3.2; dummy.scale.set(fs, 1, fs * (0.7 + rnd() * 0.5)); dummy.updateMatrix(); F.setMatrixAt(i, dummy.matrix); F.setColorAt(i, fc[i % 3]);
+      }
+      bgMeshes.push(F);
+      const Tr = new PartSet(bg, splitProp(BG_SETS[4][2], wi).main, nT, { shadow: false, receive: false }); bgSets.push(Tr);
+      for (let i = 0; i < nT; i++) {
+        const ts = 0.9 + rnd() * 0.9;
+        dummy.position.set(-50 + (i / nT) * span + rnd() * 6, -0.3, -15 - rnd() * 13); dummy.rotation.set(0, rnd() * 6, 0); dummy.scale.set(ts, ts * (0.9 + rnd() * 0.4), ts);
+        dummy.updateMatrix(); Tr.set(i, dummy.matrix);
       }
     }
     const H = new THREE.InstancedMesh(hillGeo, ART.q === 'high' ? hillHi : hillLo, nH);
@@ -169,6 +214,7 @@ export function createView(canvas) {
   function update(t, focusX, focusY, beat = 0) {
     if (winMats.length) updateWindows(beat);
     if (bubMesh.visible) updateBubbles(t, focusX);
+    if (aurora.visible) { auroraMat.uniforms.uT.value = t; auroraMat.uniforms.uX.value = focusX * 0.012; aurora.position.x = focusX * 0.94; }
     // 水面波浪
     water.position.x = Math.round(focusX / 3) * 3;
     const p = waterGeo.attributes.position.array;

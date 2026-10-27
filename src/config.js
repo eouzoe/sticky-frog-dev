@@ -53,7 +53,7 @@ export const TUNE = {
   PAR_SPEED: 10.5, // 3 星時間：關卡長度 / 這個速度 + 3 秒
 };
 
-// 世界：每 15 關換一個（色盤、背景、障礙外觀）
+// 世界：每 15 關換一個（目前 5 個、75 關）（色盤、背景、障礙外觀）
 export const WORLDS = [
   {
     name: 'JUNGLE', sky: ['#a8e6ff', '#fff3b0'], fog: '#d6f2d8', water: '#2ec4c4', waterEm: '#000000',
@@ -78,6 +78,14 @@ export const WORLDS = [
     petal: '#ffb020', bud: '#2b2020', vine: '#3b2b2b', cap: '#ff7a00', capSpot: '#2b2020', stem: '#5a4040',
     hazard: '#2b2020', hazardTip: '#ff5a1f', saw: '#ffcf40', wood: '#4a3030', pad: '#56b870',
     hemi: ['#ffd0a0', '#5a1a1a'], props: 'volcano', die: 'SIZZLE!', bgHill: '#5a2a24', bgHill2: '#7a3a2a',
+  },
+  {
+    name: 'FROSTBITE PEAKS', sky: ['#74b6ec', '#f6fcff'], fog: '#e3f2fc', water: '#6fe0e4', waterEm: '#0d5663',
+    petal: '#8fdcff', bud: '#e0305a', vine: '#6fb4e0', cap: '#e0305a', capSpot: '#ffffff', stem: '#eaf6ff',
+    hazard: '#24385e', hazardTip: '#ff3b6b', saw: '#dfeaf5', wood: '#7f9bb8', pad: '#8ee6e6',
+    hemi: ['#ffffff', '#86b4dc'], props: 'frost', die: 'BRRR!', bgHill: '#b7d8f2', bgHill2: '#e2f1fb',
+    // 極光帶（scene.js）：三個色停靠點
+    aurora: ['#4dffc0', '#5ad8ff', '#c08cff'],
   },
 ];
 

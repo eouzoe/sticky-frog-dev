@@ -10,7 +10,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 export const MODELS = ['char-frog', 'char-cat', 'char-ape', 'acc-band', 'acc-helmet', 'acc-crown', 'prop-hook', 'prop-pad', 'prop-goal', 'prop-goalWall',
   'prop-mush', 'prop-fan', 'prop-geyser', 'prop-spike', 'prop-saw', 'prop-ring', 'prop-coin', 'prop-fly', 'bg-cloud', 'bg-jungle-a', 'bg-jungle-b', 'bg-candy-a', 'bg-candy-b',
-  'bg-city-a', 'bg-city-b', 'bg-volcano-a', 'bg-volcano-b'];
+  'bg-city-a', 'bg-city-b', 'bg-volcano-a', 'bg-volcano-b', 'bg-frost-a', 'bg-frost-b', 'bg-frost-c'];
 
 // ------------------------------------------------------------------ characters (ids = hook-hero SKINS)
 const S = (o) => o;
@@ -60,6 +60,12 @@ export const WORLD_PAL = [
     cap: '#ff7a00', capSpot: '#3a2420', capUnder: '#ffd2a0', stem: '#7a5a50', wood: '#4a3030', blade: '#ffcf40',
     hazard: '#1e1416', hazardTip: '#ffdd33', saw: '#ffcf40', sawStripe: '#1e1416', hub: '#ff3a00', glow: 1,
     rock: '#2e2224', rock2: '#55444a', lava: '#ff6a1a', accent: '#ff6a1a', cloud: '#6a3a30' },
+  // 冰峰：冰藍、白、莓紅點綴。鉤點是冰藍花瓣＋莓紅花苞；危險物是深藍核心＋莓紅尖（跟冰面分開）
+  { name: 'FROSTBITE PEAKS', petal: '#7fd2ff', petal2: '#f2fcff', bud: '#e0305a', leaf: '#4aa8d8', leaf2: '#e0f6ff', vine: '#68b0de', pad: '#8ee6e6', pad2: '#4fb8c8', vein: '#f6ffff',
+    cap: '#e0305a', capSpot: '#ffffff', capUnder: '#eaf6ff', stem: '#eaf6ff', wood: '#7f9bb8', blade: '#e8f6ff',
+    hazard: '#22365c', hazardTip: '#ff3b6b', saw: '#dfeaf5', sawStripe: '#e0305a', hub: '#e0305a', glow: 0,
+    trunk: '#7a5a4c', crown: '#2f8c88', crown2: '#ffffff', accent: '#ff4f7a', cloud: '#ffffff',
+    rock: '#6f9fcc', rock2: '#ffffff', lava: '#ffffff', ice: '#7fe0ff', ice2: '#ffffff', ice3: '#d6f6ff' },
 ];
 
 function worldPalette(w) {
@@ -80,6 +86,7 @@ function worldPalette(w) {
     building: { c: [w.building ?? '#2a1f4a', w.building2 ?? '#ff2bd6'], rough: 0.45 },
     neon: { c: [w.neon ?? '#ff2bd6'], emis: w.neon ?? '#ff2bd6', emisK: 1.2, rough: 0.3 }, neon2: { c: [w.neon2 ?? '#00f0ff'], emis: w.neon2 ?? '#00f0ff', emisK: 1.3, rough: 0.3 },
     rock: { c: [w.rock ?? '#4a2c26', w.rock2 ?? '#7a4a3a', w.lava ?? '#ff6a1a'], rough: 0.6, glowAcc: 1.6 },
+    ice: { c: [w.ice ?? '#7fe0ff', w.ice2 ?? '#ffffff', w.ice3 ?? '#ffffff'], rough: 0.08, env: 1.3, emis: w.ice ?? '#7fe0ff', emisK: 0.2 },
     window: { c: ['#3a2c10'], emis: w.window ?? '#ffe36b', emisK: 0.9, rough: 0.3 },
     // 霓虹窗戶分三組（同色、不同材質；底色壓暗，亮度幾乎全來自自發光，閃的幅度才不會被光照飽和吃掉）：scene.js 照音樂拍子輪流閃，只動這三個材質的自發光
     window2: { c: ['#3a2c10'], emis: w.window ?? '#ffe36b', emisK: 0.9, rough: 0.3 },
@@ -165,7 +172,7 @@ export function dressProp(models, name, worldIndex, quality = 'high') {
   return dressTree(models[name].clone(true), worldPalette(WORLD_PAL[worldIndex]), quality);
 }
 
-export const BG_SETS = [['bg-jungle-a', 'bg-jungle-b'], ['bg-candy-a', 'bg-candy-b'], ['bg-city-a', 'bg-city-b'], ['bg-volcano-a', 'bg-volcano-b']];
+export const BG_SETS = [['bg-jungle-a', 'bg-jungle-b'], ['bg-candy-a', 'bg-candy-b'], ['bg-city-a', 'bg-city-b'], ['bg-volcano-a', 'bg-volcano-b'], ['bg-frost-a', 'bg-frost-b', 'bg-frost-c']];
 
 /** For InstancedMesh: every mesh of a dressed object with its matrix relative to the object's root
  *  (includes meshopt dequantization scale/offset on the mesh node — never assume mesh.matrix is identity).

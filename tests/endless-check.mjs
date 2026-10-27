@@ -3,7 +3,7 @@
 // 方法見下面「接力」註解。
 // 用法：node tests/endless-check.mjs [種子數]
 import { TUNE as T } from '../src/config.js';
-import { createEndless, extendEndless, endlessDiff, ENDLESS_WORLD_LEN } from '../src/level.js';
+import { createEndless, extendEndless, endlessDiff, endlessWorld, ENDLESS_WORLD_LEN } from '../src/level.js';
 import { createSim, step } from '../src/sim.js';
 import { makeBot } from '../src/bot.js';
 
@@ -51,6 +51,12 @@ for (let seed = 1; seed <= SEEDS; seed++) {
   const ok = stuck === null;
   if (!ok) fails++;
   console.log(`seed ${String(seed).padStart(2)} ${ok ? `OK reached ${front.maxX.toFixed(0)} in ${legs} legs` : `FAIL all 12 bots die after x=${stuck.toFixed(0)} (diff ${endlessDiff(stuck).toFixed(2)})`}`);
+}
+// 輪替：預設前四個世界；count=5（打過第 60 關）冰峰（世界 4）要出現，而且四個世界時不會出現
+{
+  const seq = (c) => Array.from({ length: c * 3 }, (_, i) => endlessWorld(i * ENDLESS_WORLD_LEN + 10, c));
+  const ok4 = seq(4).every((w) => w >= 0 && w <= 3) && new Set(seq(4)).size === 4, ok5 = new Set(seq(5)).size === 5 && seq(5).includes(4);
+  if (!ok4 || !ok5) { fails++; console.log(`FAIL 世界輪替 4 個=${ok4} 5 個=${ok5}`); } else console.log('OK 世界輪替：4 個世界不含冰峰、5 個世界含冰峰');
 }
 console.log(`target=${TARGET} failed=${fails}/${SEEDS}  (single-param best run reached ${soloBest.toFixed(0)})`);
 process.exit(fails ? 1 : 0);

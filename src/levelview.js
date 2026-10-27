@@ -48,7 +48,7 @@ export function createLevelView(scene) {
 
   let fan = null, mush = null, fly = null, geyser = false;
   function build(level, w) {
-    lv = level; wi = Math.max(0, Math.min(3, level.world ?? 0));
+    lv = level; wi = Math.max(0, Math.min(4, level.world ?? 0));
     const P = WORLD_PAL[wi], q = ART.q;
     for (const s of sets) s.dispose(group);
     for (const o of [...group.children]) group.remove(o);
