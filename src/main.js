@@ -63,7 +63,8 @@ window.__game = {
   // 測試用：把青蛙放到終點上方，讓它自然落在荷葉上完成關卡
   fxFeat(kind) { fxFeat(kind); }, get particles() { return fx.count(); },
   emit(e) { if (G.sim) onEvent({ x: G.sim.x, y: G.sim.y, ...e }); }, // 測試用：直接觸發一個遊戲事件的特效（例如 {type:'flip', n:7}）
-  forceWin() { const s = G.sim, g = G.lv.goal; if (!s) return; s.tongue.state = 'idle'; s.mode = 'air'; s.x = g.x; s.y = g.y + 4; s.vx = 0; s.vy = -4; },
+  // 剛落水還在等重生（restartT）時強制過關：先取消重生，不然慶祝到一半被 resetRun 洗掉、永遠進不了結算
+  forceWin() { const s = G.sim, g = G.lv.goal; if (!s) return; G.restartT = 0; UI.dieText(null); s.tongue.state = 'idle'; s.mode = 'air'; s.x = g.x; s.y = g.y + 4; s.vx = 0; s.vy = -4; },
 };
 
 // ---------- 存檔 ----------

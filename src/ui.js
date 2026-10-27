@@ -337,6 +337,7 @@ export function renderRecords(save, lastScore) {
 // ---------- 過關結算：星星一顆顆砸下、分數與金幣累加、這一關的成就；任何「下一步」輸入先把進場動畫跳到結尾 ----------
 let res = null;
 export function showResult(r) {
+  if (res) for (const t of res.timers) clearTimeout(t); // 重播時先停掉上一輪的計時器
   const p = $('resPanel');
   $('resTitle').textContent = r.title;
   $('resLevel').textContent = t('result.level', { level: levelLabel(r.level) });

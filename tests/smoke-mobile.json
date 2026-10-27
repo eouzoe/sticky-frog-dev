@@ -108,8 +108,8 @@
   "msg": "觸控按住真的讓舌頭黏上（≥2 次）"
  },
  {
-  "assert": "window.__game.maxX > 8",
-  "msg": "觸控操作讓青蛙前進"
+  "assert": "window.__game.furthest > 8",
+  "msg": "觸控操作讓青蛙前進（這一關最遠，落水重生前的也算）"
  },
  {
   "eval": "(window.__game.state === 'playing' && window.__game.level === 1 && window.__game.mode !== 'won') ? (window.__game.forceWin(), 'forced') : (window.__game.start(1), window.__game.forceWin(), 'restarted+forced')"
@@ -121,11 +121,14 @@
   "shot": "m03b-celebrate"
  },
  {
-  "wait": 1300
+  "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => (window.__game.state === 'result' || performance.now() - t0 > 6000) ? r(window.__game.state) : setTimeout(f, 30); f(); })"
  },
  {
   "assert": "window.__game.state === 'result' && document.getElementById('result').classList.contains('on') && window.__game.levelResult.level === 1",
   "msg": "手機：慶祝完進結算畫面"
+ },
+ {
+  "eval": "window.__game.ui.showResult(window.__game.levelResult); window.__game.ui.resultAnimating()"
  },
  {
   "tap": [

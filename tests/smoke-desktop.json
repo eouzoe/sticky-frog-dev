@@ -135,11 +135,14 @@
   "shot": "05-celebrate"
  },
  {
-  "wait": 1700
+  "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => (window.__game.state === 'result' || performance.now() - t0 > 6000) ? r(window.__game.state) : setTimeout(f, 30); f(); })"
  },
  {
   "assert": "window.__game.state === 'result' && document.getElementById('result').classList.contains('on') && window.__game.levelResult.level === 1",
   "msg": "慶祝完進結算畫面、停在那裡等玩家"
+ },
+ {
+  "eval": "window.__game.ui.showResult(window.__game.levelResult); window.__game.ui.resultAnimating()"
  },
  {
   "key": "Enter"
@@ -268,10 +271,13 @@
   "msg": "無盡模式前進（距離 > 40 m）"
  },
  {
+  "eval": "window.__overAt = 0; new MutationObserver(() => { if (document.getElementById('over').classList.contains('on') && !window.__overAt) window.__overAt = performance.now(); }).observe(document.getElementById('over'), { attributes: true }); 'watching #over'"
+ },
+ {
   "eval": "window.__game.autoplay = null; window.__game.forceDie(); window.__game.dist"
  },
  {
-  "wait": 1800
+  "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => { const on = window.__overAt > 0; if ((on && performance.now() - window.__overAt >= 900) || performance.now() - t0 > 10000) r({ overShownMs: on ? Math.round(performance.now() - window.__overAt) : -1, dieToOverMs: on ? Math.round(window.__overAt - t0) : -1 }); else setTimeout(f, 50); }; f(); })"
  },
  {
   "assert": "window.__game.state === 'over' && document.getElementById('over').classList.contains('on') && window.__game.result.dist > 0 && window.__game.result.rank >= 1",
