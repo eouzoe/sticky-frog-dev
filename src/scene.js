@@ -40,6 +40,36 @@ export function createView(canvas) {
   const water = new THREE.Mesh(waterGeo, waterMat);
   water.position.z = -6; water.receiveShadow = true; scene.add(water);
 
+  // 岩漿冒泡（火山，純視覺）：軟膠泡泡從岩漿面鼓起來、啵一聲破掉。位置掛在世界座標上、超出鏡頭才換位置，所以不會跟著鏡頭滑
+  const BUB_N = 34, BUB_SPAN = 90;
+  const bubMesh = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 14, 10), new THREE.MeshLambertMaterial({ color: '#ffc861', emissive: '#ff7a1a' }), BUB_N);
+  bubMesh.frustumCulled = false; bubMesh.visible = false; scene.add(bubMesh);
+  const hash = (a, b) => { let h = Math.imul(a * 374761393 + b * 668265263, 1274126177); h ^= h >>> 13; h = Math.imul(h, 1103515245); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+  const bubDummy = new THREE.Object3D();
+  function updateBubbles(t, focusX) {
+    for (let i = 0; i < BUB_N; i++) {
+      const per = 1.7 + hash(i, 1) * 1.8, tt = t + hash(i, 2) * per, cyc = Math.floor(tt / per), u = (tt / per) - cyc;
+      const bx = hash(i, 10 + cyc) * BUB_SPAN, x = focusX + ((((bx - focusX) % BUB_SPAN) + BUB_SPAN * 1.5) % BUB_SPAN) - BUB_SPAN / 2;
+      const r = 0.35 + hash(i, 20 + cyc) * 0.55, z = -2.5 - hash(i, 30 + cyc) * 10;
+      const grow = u < 0.78 ? 1 - Math.pow(1 - u / 0.78, 3) : 1;
+      const pop = u < 0.78 ? 1 : (u < 0.86 ? 1 + (u - 0.78) / 0.08 * 0.35 : Math.max(0, 1.35 * (1 - (u - 0.86) / 0.06)));
+      const k = r * grow * pop, wob = 1 + Math.sin(t * 7 + i) * 0.06 * grow;
+      bubDummy.position.set(x, -0.05 + k * 0.3, z); bubDummy.scale.set(k * wob, k * 0.82 / wob, k); bubDummy.updateMatrix();
+      bubMesh.setMatrixAt(i, bubDummy.matrix);
+    }
+    bubMesh.instanceMatrix.needsUpdate = true;
+  }
+
+  // 霓虹窗戶（純視覺）：三組同色材質照音樂拍子輪流亮一下，每個四分音符換下一組，小節頭整片微亮。只動這三個材質的自發光，鉤點與危險物是別的材質
+  let winMats = [];
+  function updateWindows(beat) {
+    const b = Math.floor(beat), f = beat - b, hit = 1 - f;
+    winMats.forEach((m, g) => {
+      const k = 0.62 + (b % 3 === g ? 0.85 * hit * hit : 0) + (b % 4 === 0 ? 0.25 * hit * hit : 0);
+      m.emissive.copy(m.userData.eBase).multiplyScalar(k);
+    });
+  }
+
   // 背景視差層
   const bg = new THREE.Group(); scene.add(bg);
   const hillGeo = new THREE.SphereGeometry(1, 40, 20);
@@ -67,6 +97,9 @@ export function createView(canvas) {
     const A = new PartSet(bg, splitProp(nameA, wi).main, nA, { shadow: false, receive: false });
     const B = new PartSet(bg, splitProp(nameB, wi).main, nB, { shadow: false, receive: false });
     bgSets.push(A, B);
+    winMats = wi === 2 ? A.meshes.map((m) => m.material).filter((m) => /^window/.test(m.name)) : [];
+    for (const m of winMats) m.userData.eBase ??= m.emissive.clone();
+    bubMesh.visible = wi === 3;
     for (let i = 0; i < nA; i++) {
       const s = 0.8 + rnd() * 0.7;
       // 大樓、火山又高又暗：往後推，角色前面不要壓一大塊深色
@@ -133,7 +166,9 @@ export function createView(canvas) {
     scene.traverse((o) => { if (o.material && !Array.isArray(o.material)) o.material.needsUpdate = true; });
   }
 
-  function update(t, focusX, focusY) {
+  function update(t, focusX, focusY, beat = 0) {
+    if (winMats.length) updateWindows(beat);
+    if (bubMesh.visible) updateBubbles(t, focusX);
     // 水面波浪
     water.position.x = Math.round(focusX / 3) * 3;
     const p = waterGeo.attributes.position.array;

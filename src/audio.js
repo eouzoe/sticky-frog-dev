@@ -107,6 +107,12 @@ const WORLD_MUSIC = [
   { root: 174.6, bpm: 124, prog: [0, 0, 3, 4] }, { root: 164.8, bpm: 128, prog: [0, 3, 1, 4] },
 ];
 const SCALE = [0, 2, 4, 5, 7, 9, 11];
+// 現在的拍位（四分音符為單位的小數）。音樂排程超前播放，所以扣掉還沒到的部分；音樂沒起來就用牆鐘照該世界的 bpm 推（視覺照樣有節奏）
+export function beatPos() {
+  const bpm = WORLD_MUSIC[worldI].bpm;
+  if (ctx && ctx.state === 'running') return (step16 - (nextT - ctx.currentTime) / (60 / bpm / 4)) / 4;
+  return (performance.now() / 1000) * bpm / 60;
+}
 function startMusic() {
   nextT = ctx.currentTime + 0.1;
   musicTimer = setInterval(() => {

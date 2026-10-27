@@ -9,7 +9,7 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 export const MODELS = ['char-frog', 'char-cat', 'char-ape', 'acc-band', 'acc-helmet', 'acc-crown', 'prop-hook', 'prop-pad', 'prop-goal', 'prop-goalWall',
-  'prop-mush', 'prop-fan', 'prop-spike', 'prop-saw', 'prop-ring', 'prop-coin', 'prop-fly', 'bg-cloud', 'bg-jungle-a', 'bg-jungle-b', 'bg-candy-a', 'bg-candy-b',
+  'prop-mush', 'prop-fan', 'prop-geyser', 'prop-spike', 'prop-saw', 'prop-ring', 'prop-coin', 'prop-fly', 'bg-cloud', 'bg-jungle-a', 'bg-jungle-b', 'bg-candy-a', 'bg-candy-b',
   'bg-city-a', 'bg-city-b', 'bg-volcano-a', 'bg-volcano-b'];
 
 // ------------------------------------------------------------------ characters (ids = hook-hero SKINS)
@@ -81,6 +81,9 @@ function worldPalette(w) {
     neon: { c: [w.neon ?? '#ff2bd6'], emis: w.neon ?? '#ff2bd6', emisK: 1.2, rough: 0.3 }, neon2: { c: [w.neon2 ?? '#00f0ff'], emis: w.neon2 ?? '#00f0ff', emisK: 1.3, rough: 0.3 },
     rock: { c: [w.rock ?? '#4a2c26', w.rock2 ?? '#7a4a3a', w.lava ?? '#ff6a1a'], rough: 0.6, glowAcc: 1.6 },
     window: { c: [w.window ?? '#ffe36b'], emis: w.window ?? '#ffe36b', emisK: 0.9, rough: 0.3 },
+    // 霓虹窗戶分三組（同色、不同材質）：scene.js 照音樂拍子輪流閃，只動這三個材質的自發光
+    window2: { c: [w.window ?? '#ffe36b'], emis: w.window ?? '#ffe36b', emisK: 0.9, rough: 0.3 },
+    window3: { c: [w.window ?? '#ffe36b'], emis: w.window ?? '#ffe36b', emisK: 0.9, rough: 0.3 },
   };
 }
 
