@@ -112,6 +112,18 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
 /* MENU */
 #menu .wrap { position: absolute; inset: 0; display: grid; grid-template-columns: 1.08fr .92fr; align-items: center; padding: 70px 5vw 40px; gap: 2vw; }
 #menu .col { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+/* ---------- 載入畫面（DESIGN.md §4.1）：Logo 充氣進場＋旋轉貓咪＋軟膠進度條，不放文字；boot() 完成後移除 ---------- */
+#boot { position: fixed; inset: 0; z-index: 90; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  background: radial-gradient(ellipse at 50% 40%, #d9f6ff, #a8e6ff 70%); transition: opacity .35s, transform .35s var(--deflate); }
+#boot.out { opacity: 0; transform: scale(1.06); pointer-events: none; }
+#bootLogo { display: flex; flex-direction: column; align-items: center; line-height: .86; font-size: clamp(56px, 11vw, 112px); animation: inflate .6s var(--spring) both; transform-origin: 50% 90%; }
+#bootLogo .w { display: flex; } #bootLogo .w2 { margin-top: -.06em; margin-left: .7em; }
+#boot .spin { width: 180px; height: 180px; margin: 0; animation: turn 1.6s steps(16) infinite; }
+#bootBar { width: min(260px, 60vw); height: 22px; border-radius: 999px; background: rgba(255,255,255,.65); box-shadow: inset 0 0 0 2px rgba(255,255,255,.9), inset 0 4px 0 rgba(0,0,0,.08), 0 5px 0 rgba(40,120,150,.35); overflow: hidden; }
+#bootBar i { display: block; height: 100%; width: 8%; border-radius: 999px; background: linear-gradient(var(--go-hi), var(--go) 55%, var(--go-lo)); box-shadow: inset 0 -4px 0 rgba(0,0,0,.08); animation: bootFill 2.4s var(--settle) forwards; }
+#boot.done #bootBar i { animation: none; width: 100%; transition: width .2s; }
+@keyframes bootFill { to { width: 88%; } }
+@media (orientation: portrait) and (max-width: 600px) { #bootLogo { font-size: 74px; } #boot .spin { width: 150px; height: 150px; } }
 #logo { display: flex; flex-direction: column; align-items: center; line-height: .86; font-size: clamp(56px, 8.4vw, 112px); animation: breathe 4s ease-in-out infinite; transform-origin: 50% 90%; margin-bottom: 6px; }
 #logo .w { display: flex; }
 #logo .w2 { margin-top: -.06em; margin-left: .7em; }
@@ -200,7 +212,9 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
   background: radial-gradient(circle, rgba(42, 35, 64, .10) 0 2px, transparent 2.5px) 0 0 / 12px 12px, radial-gradient(circle at 50% 40%, #e7f9ff, #c9ecf7 70%); box-shadow: inset 0 -4px 0 rgba(0,0,0,.05); }
 .card .pic img, .card .pic svg { position: relative; z-index: 1; width: 88%; height: auto; aspect-ratio: 1; }
 .card .pic svg.tsw { aspect-ratio: 1.5; }
-.card .nm { font-size: 17px; margin: 2px 0 6px; white-space: nowrap; max-width: 100%; }
+/* 舌頭／拖尾的圖是 1.5:1 的扁圖：底盤跟著變成同比例圓角板，不然圓盤會長到蓋住卡片名稱 */
+.card .pic:has(svg.tsw)::before { width: 88%; aspect-ratio: 1.5; border-radius: 22%; }
+.card .nm { position: relative; z-index: 2; font-size: 17px; margin: 2px 0 6px; white-space: nowrap; max-width: 100%; }
 .card .tag { position: absolute; top: 8px; left: 8px; z-index: 2; font-size: 11px; padding: 2px 8px; border-radius: 999px; color: #fff; background: var(--berry); box-shadow: 0 2px 0 var(--berry-deep); white-space: nowrap; }
 .price { display: inline-flex; align-items: center; gap: 5px; height: 32px; padding: 0 12px 0 6px; border-radius: 999px; font-size: 18px; color: var(--ink-soft);
   background: linear-gradient(var(--sun-hi), var(--sun) 60%); box-shadow: 0 3px 0 var(--sun-deep), inset 0 0 0 2px rgba(255,255,255,.5); white-space: nowrap; }
@@ -419,7 +433,7 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
   #nextUp { order: 3; width: 100%; justify-content: flex-start; margin-top: 4px; } #nextUp .arr { margin-left: auto; }
   #playBtn { order: 4; width: 100%; margin-top: 10px; min-width: 0; }
   #menu .row { order: 5; width: 100%; gap: 10px; margin-top: 10px; } #menu .row .b { flex: 1; padding: 0 8px; }
-  .lvBody { top: 74px; } #worldTabs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } .wcard { height: 74px; }
+  .lvBody { top: 74px; } #worldTabs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } .wcard { height: auto; min-height: 74px; }
   #levelGrid { grid-template-columns: repeat(4, 64px); gap: 14px 18px; } .lvb { width: 64px; height: 64px; font-size: 24px; } .lvb::before { left: 12px; top: 7px; transform: scale(.8); }
   #shop .body { display: flex; flex-direction: column; top: 72px; bottom: 0; gap: 14px; }
   .show { flex: none; display: grid; grid-template-columns: 136px 1fr; grid-template-rows: auto auto auto 1fr; column-gap: 12px; padding: 12px 14px 14px; align-items: start; justify-items: start; text-align: left; }
@@ -443,6 +457,11 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
 </style>
 </head>
 <body data-world="0" data-screen="boot">
+<div id="boot" aria-hidden="true">
+  <div id="bootLogo"><div class="w w1"><span class="lt" data-l="S">S</span><span class="lt" data-l="T">T</span><span class="lt" data-l="I">I</span><span class="lt" data-l="C">C</span><span class="lt" data-l="K">K</span><span class="lt" data-l="Y">Y</span></div>
+    <div class="w w2"><span class="lt" data-l="F">F</span><span class="lt" data-l="R">R</span><span class="lt" data-l="O">O</span><span class="lt" data-l="G">G</span></div></div>
+  <div class="spin"></div><div id="bootBar"><i></i></div>
+</div>
 <canvas id="c"></canvas>
 <div id="vignette" class="ov"></div>
 <div id="frost" class="ov"></div>

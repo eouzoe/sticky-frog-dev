@@ -630,6 +630,7 @@ async function boot() {
   A.setMusic(save.music); A.setSfx(save.sfx); UI.setToggles(save);
   cg.onMute((m) => A.setMuted(m));
   toMenu();
+  const ld = document.getElementById('boot'); ld?.classList.add('done'); setTimeout(() => ld?.classList.add('out'), 120); setTimeout(() => ld?.remove(), 600); // 載入畫面收掉
   cg.loadingStop();
   requestAnimationFrame((t) => { last = t; frame(t); });
 }
