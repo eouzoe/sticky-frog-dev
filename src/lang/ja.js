@@ -39,5 +39,5 @@ export default {
   'feat.skim': '波にキス！', 'featLine.skim': '水に触れたのに生還！',
   'feat.shave': 'ヒゲそりギリギリ！', 'featLine.shave': 'トゲまであとほんの少し。',
   'feat.clutch': '土壇場セーブ！', 'featLine.clutch': 'ラスト1秒でつかんだ！',
-  'new.title': 'NEW！', 'new.mush': 'バウンドキノコ', 'new.swarm': 'ハエの群れ', 'new.ring': '金のリング', 'new.move': '動くフック', 'new.spikeLow': '低いトゲ', 'new.mushChain': '連続キノコ', 'new.ringArc': 'ダブルリング', 'new.fan': 'ファン', 'new.saw': 'ノコギリ', 'new.spikeHigh': '高いトゲ', 'new.tunnel': '上下トゲ',
+  'new.title': '新登場！', 'new.mush': 'バウンドキノコ', 'new.swarm': 'ハエの群れ', 'new.ring': '金のリング', 'new.move': '動くフック', 'new.spikeLow': '低いトゲ', 'new.mushChain': '連続キノコ', 'new.ringArc': 'ダブルリング', 'new.fan': 'ファン', 'new.saw': 'ノコギリ', 'new.spikeHigh': '高いトゲ', 'new.tunnel': '上下トゲ',
 };

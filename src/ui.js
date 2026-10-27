@@ -29,7 +29,7 @@ addEventListener('pointerdown', (e) => {
   };
   addEventListener('pointerup', up); addEventListener('pointercancel', up);
 });
-addEventListener('animationend', (e) => { if (e.animationName === 'rel' || e.animationName === 'relB') e.target.classList.remove('rel'); });
+addEventListener('animationend', (e) => { if (e.animationName === 'newIn') { e.target.hidden = true; e.target.classList.remove('on'); } if (e.animationName === 'rel' || e.animationName === 'relB') e.target.classList.remove('rel'); });
 
 // ---------- 畫面 ----------
 export function show(name) {
@@ -99,7 +99,6 @@ export function newCard(name) {
   const c = $('newCard');
   if (!name) { c.hidden = true; c.classList.remove('on'); return; }
   $('newName').textContent = name; c.hidden = false; c.classList.remove('on'); void c.offsetWidth; c.classList.add('on');
-  fit?.(c);
 }
 
 // 跳字：同時最多 3 個；大字一次只留一個

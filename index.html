@@ -324,7 +324,7 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
 #newCard { position: fixed; left: 50%; top: calc(var(--safe-t) + 118px); transform: translateX(-50%); z-index: 4; pointer-events: none; display: flex; flex-direction: column; align-items: center; max-width: calc(100vw - 32px); }
 #newCard[hidden] { display: none; }
 #newCard small { font-size: 22px; padding: 2px 16px; border-radius: 999px; color: #fff; background: var(--berry, #ff4f9a); -webkit-text-stroke: 4px var(--berry-deep, #a01058); paint-order: stroke fill; }
-#newCard b { font-size: 40px; line-height: 1.1; text-align: center; color: #fff; -webkit-text-stroke: 8px var(--w-deep); paint-order: stroke fill; text-shadow: 0 4px 0 var(--w-deep); }
+#newCard b { font-size: 40px; overflow-wrap: anywhere; max-width: calc(100vw - 48px); line-height: 1.1; text-align: center; color: #fff; -webkit-text-stroke: 8px var(--w-deep); paint-order: stroke fill; text-shadow: 0 4px 0 var(--w-deep); }
 #newCard.on { animation: newIn 2.6s var(--spring) both; }
 @keyframes newIn { 0% { transform: translateX(-50%) scale(.3); opacity: 0; } 12% { transform: translateX(-50%) scale(1.12, .9); opacity: 1; } 20% { transform: translateX(-50%); } 80% { opacity: 1; } 100% { transform: translateX(-50%) translateY(-18px); opacity: 0; } }
 #dieText { position: fixed; left: 50%; top: 40%; transform: translate(-50%, -50%); font-size: 76px; -webkit-text-stroke: 11px var(--w-deep); display: none; pointer-events: none; z-index: 4; }
@@ -455,7 +455,7 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
 <div id="frost" class="ov"></div>
 <div id="popups"></div>
 <div id="dieText" class="tx"></div>
-<div id="newCard" class="tx" hidden><small data-i18n="new.title"></small><b id="newName" data-fit></b></div>
+<div id="newCard" class="tx" hidden><small data-i18n="new.title"></small><b id="newName"></b></div>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
