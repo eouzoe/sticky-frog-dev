@@ -2,6 +2,10 @@
 
 **一句話賣點**：按住，青蛙的長舌頭黏上鉤點；放開，帶著擺盪的動量飛出去——空中翻滾賺分、順便吃蒼蠅，一路不碰水衝上終點荷葉。
 
+## 語言
+
+介面支援 12 種語言（`src/lang/` 每種一個檔，清單與順序在 `src/i18n.js` 的 `LANGS`）：English（en）、Español（es）、Português BR（pt）、Français（fr）、Deutsch（de）、Türkçe（tr）、Русский（ru）、日本語（ja）、한국어（ko）、Indonesia（id）、繁體中文（zh-Hant）、简体中文（zh-Hans）。偵測順序：`?lang=` > 玩家自選 > CrazyGames locale > 瀏覽器語言 > English；檢查用 `node tests/i18n-check.mjs`。
+
 ## 玩法
 
 - 側視 2.5D（青蛙只在 XY 平面動，世界是 3D＋景深視差）。美術是「軟膠公仔」：亮面糖果色、邊緣光、黑亮大眼、圓滾滾（Blender 做的 GLB，來源 `hook-hero-art` d0f791d）；低畫質自動換成 Lambert＋邊緣光的便宜材質。

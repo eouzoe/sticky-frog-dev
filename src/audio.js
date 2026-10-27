@@ -87,6 +87,16 @@ export function play(name, o = {}) {
       lfo.frequency.value = 18; lg.gain.setValueAtTime(40, t); lg.gain.exponentialRampToValueAtTime(1, t + 0.35); lfo.connect(lg); lg.connect(o2.frequency);
       g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.3, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.38);
       o2.connect(g); g.connect(sfx); o2.start(t); lfo.start(t); o2.stop(t + 0.4); lfo.stop(t + 0.4); break; }
+    // 第二輪 UI 接點（ui.js 呼叫）：音量小、短，音色沿用 click / tick 的 sine+triangle
+    case 'ui_press': tone('sine', 420 * p, 300 * p, 0.06, 0.14); break; // 按下：軟膠被壓
+    case 'ui_pop': tone('triangle', 520 * p, 880 * p, 0.08, 0.14); noise(0.03, 2500, 1500, 0.06, 2); break; // 放開：彈回
+    case 'ui_nope': tone('sine', 230 * p, 170, 0.1, 0.2); tone('sine', 200 * p, 140, 0.1, 0.16, 0.08); break; // 鎖住／不能按：兩下悶聲
+    case 'panel_in': noise(0.22, 500, 1800, 0.12, 0.7); tone('sine', 330 * p, 560 * p, 0.14, 0.1); break; // 面板滑入
+    case 'tab': tone('triangle', 740 * p, 740 * p, 0.05, 0.12); tone('sine', 1110 * p, 1110 * p, 0.04, 0.06, 0.03); break; // 分頁切換
+    case 'coin_tick': tone('square', (1500 + Math.random() * 300), 1500, 0.025, 0.035); break; // 金幣數字跳動
+    case 'coin_land': { const i = Math.min(o.n ?? 0, 8); tone('square', 1320 * Math.pow(2, i / 12), 1320 * Math.pow(2, i / 12), 0.05, 0.06); tone('square', 1760 * Math.pow(2, i / 12), 1760 * Math.pow(2, i / 12), 0.08, 0.05, 0.04); break; } // 飛幣落進錢包，逐顆升半音
+    case 'feat': [0, 4, 7, 12].forEach((st, i) => tone('triangle', 660 * Math.pow(2, st / 12), 660 * Math.pow(2, st / 12), 0.16, 0.14, i * 0.05)); noise(0.2, 5000, 9000, 0.06, 1, 'highpass', 0.1); break; // 成就橫幅
+    case 'next_up': tone('sine', 440 * p, 660 * p, 0.1, 0.16); tone('triangle', 880 * p, 1320 * p, 0.12, 0.1, 0.07); break; // 「下一關」按鈕浮出
     case 'pop': for (let i = 0; i < 4; i++) tone('sine', (500 + i * 220) * p, (900 + i * 300) * p, 0.06, 0.12, i * 0.06); break; // 泡泡啵啵（換關出場）
   }
 }
