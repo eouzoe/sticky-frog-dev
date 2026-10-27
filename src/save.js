@@ -19,6 +19,7 @@ const obj = (v) => (typeof v === 'object' && v && !Array.isArray(v) ? { ...v } :
 export function normalizeSave(raw, levelCount) {
   const r = obj(raw), s = { ...DEFAULT_SAVE };
   s.unlocked = int(r.unlocked, 1, levelCount, 1); s.last = int(r.last, 1, levelCount, 1);
+  const unlocked0 = s.unlocked;
   s.coins = int(r.coins, 0, 1e9, 0); s.grabs = int(r.grabs, 0, 1e9, 0); s.clears = int(r.clears ?? r.results, 0, 1e9, 0);
   s.endlessBest = int(r.endlessBest, 0, 1e9, 0); s.endlessRuns = int(r.endlessRuns, 0, 1e9, 0);
   s.music = r.music !== false; s.sfx = r.sfx !== false; s.tutTouch = r.tutTouch === true;
@@ -36,7 +37,9 @@ export function normalizeSave(raw, levelCount) {
   s.lb = Array.isArray(r.lb) ? r.lb.filter((e) => e && Number.isFinite(e.score)).slice(0, 10).map((e) => ({ score: e.score, dist: int(e.dist, 0, 1e9, 0), day: String(e.day ?? '') })) : [];
   const seen = obj(r.seen);
   // 舊存檔：已經解鎖的東西當作看過（不要一升級就推一堆）
-  s.seen = { endless: seen.endless ?? s.unlocked > ENDLESS_UNLOCK, world: int(seen.world, 0, 3, Math.floor((s.unlocked - 1) / 15)) };
+  // 60 關時代的存檔：第 60 關破了但 unlocked 被舊上限壓在 60 → 補成 61（第 5 世界開放）；seen.world 用補之前的算，這樣冰峰會被推薦成新世界
+  if (levelCount > 60 && s.unlocked === 60 && s.stars[60]) s.unlocked = 61;
+  s.seen = { endless: seen.endless ?? s.unlocked > ENDLESS_UNLOCK, world: int(seen.world, 0, Math.floor((levelCount - 1) / 15), Math.floor((unlocked0 - 1) / 15)) };
   return s;
 }
 

@@ -112,7 +112,7 @@ function restoreEaten() { const s = G.sim; if (!s) return; lvView.st.flyGone = G
 function updateEndless() {
   const s = G.sim, L = G.lv;
   if (L.gen.x < s.x + 120 && extendEndless(L, s.x + 250)) { lvView.build(L, WORLDS[G.world]); restoreEaten(); }
-  const k = endlessWorld(s.x);
+  const k = endlessWorld(s.x, save.unlocked > 60 ? 5 : 4); // 打過 4-15 才輪到冰峰
   if (k !== G.world && s.mode !== 'dead') setEndlessWorld(k);
 }
 const endlessDist = () => Math.floor(Math.max(0, (G.sim?.maxX ?? 0) - G.lv.start.x));

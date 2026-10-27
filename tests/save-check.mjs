@@ -33,5 +33,17 @@ check('新的星數比舊的低時不會覆蓋', (() => { const sv = normalizeSa
 check('新的星數比較高才覆蓋', (() => { const sv = normalizeSave(old, 60); return recordStars(sv, 3, 2) === true && sv.stars[3] === 2 && recordStars(sv, 5, 1) && sv.stars[5] === 1; })());
 check('評星：過關 1、蒼蠅 ≥ 70% +1、標準時間內 +1', rateStars({ flies: 0, fliesTotal: 6, time: 99, par: 20 }).stars === 1 && rateStars({ flies: 5, fliesTotal: 6, time: 99, par: 20 }).stars === 2
   && rateStars({ flies: 4, fliesTotal: 6, time: 20, par: 20 }).stars === 2 && rateStars({ flies: 5, fliesTotal: 6, time: 19, par: 20 }).stars === 3 && rateStars({ flies: 0, fliesTotal: 0, time: 1, par: 20 }).stars === 3);
+// 8f3974b（60 關上限）格式的存檔：60 關全破＋星數，載入到 75 關的版本
+const old60 = { unlocked: 60, stars: Object.fromEntries(Array.from({ length: 60 }, (_, i) => [i + 1, 1 + (i % 3)])), best: { 60: 999 }, coins: 5000, skin: 'tree', trail: 'none', owned: ['tree', 'none', 'tongue'], worldsDone: [15, 30, 45, 60], last: 60, seen: { endless: true, world: 3 }, clears: 70 };
+const n60 = normalizeSave(JSON.parse(JSON.stringify(old60)), 75);
+check('60 關舊存檔：前 60 關星數逐關不變', Array.from({ length: 60 }, (_, i) => n60.stars[i + 1] === 1 + (i % 3)).every(Boolean) && Object.keys(n60.stars).length === 60);
+check('60 關舊存檔：第 5 世界解鎖（unlocked=61）', n60.unlocked === 61);
+check('60 關舊存檔：下一步推薦冰峰 5-1', (() => { const n = nextStep(n60); return n?.kind === 'world' && n.world === 4 && n.level === 61; })());
+check('60 關舊存檔：金幣、最佳分數、已完成世界保留', n60.coins === 5000 && n60.best[60] === 999 && n60.worldsDone.join() === '15,30,45,60');
+check('59 關進度的舊存檔：不會被多開世界', normalizeSave({ unlocked: 59, stars: { 58: 2 } }, 75).unlocked === 59);
+check('第 60 關沒破（unlocked=60 但沒星）：不開第 5 世界', normalizeSave({ unlocked: 60, stars: { 59: 3 } }, 75).unlocked === 60);
+check('新存檔正規化到 75 關：從 1 開始、seen.world=0', (() => { const n = normalizeSave({}, 75); return n.unlocked === 1 && n.seen.world === 0; })());
+check('75 關上限：unlocked 超過 75 會被夾回', normalizeSave({ unlocked: 99 }, 75).unlocked === 75 && normalizeSave({ stars: { 75: 2, 76: 3 } }, 75).stars[75] === 2);
+check('已進第 5 世界的新存檔：不重複推薦', nextStep({ ...n60, coins: 0, unlocked: 63, seen: { endless: true, world: 4 } }) === null);
 console.log(fails ? `FAILED ${fails}` : 'all ok');
 process.exit(fails ? 1 : 0);

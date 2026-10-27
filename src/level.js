@@ -1,8 +1,8 @@
-// 60 關程序產生（種子固定）：同一關每次長一樣。難度＝全域進度 + 世界內進度。
+// 75 關程序產生（種子固定）：同一關每次長一樣。難度＝全域進度 + 世界內進度。
 import { TUNE } from './config.js';
 
-export const LEVEL_COUNT = 60;
-export const worldOf = (n) => Math.min(3, Math.floor((n - 1) / 15));
+export const LEVEL_COUNT = 75;
+export const worldOf = (n) => Math.min(7, Math.floor((n - 1) / 15));
 export const levelLabel = (n) => `${worldOf(n) + 1}-${((n - 1) % 15) + 1}`;
 
 function mulberry32(a) {
@@ -22,15 +22,23 @@ export const NEW_AT = { ...UNLOCK, move: 7, spikeLow: 9 };
 // 這一關要顯示 NEW 字卡的元素 id 清單（沒有＝[]）
 export const newElements = (n) => Object.keys(NEW_AT).filter((k) => NEW_AT[k] === n);
 
+// 61 關以後每個世界內第幾關的節奏（MECHANICS §12）：teach＝招牌教學關（原本給冰舌的位置：diff 0.1、不放危險物），calm＝喘息（diff −0.1、危險段落機率減半）。
+// 冰舌、荷葉、加速圈這一階段都不做，所以沒有 NEW 標籤，只套節奏。
+const PLAN = { 1: { teach: true }, 2: { calm: true }, 4: { calm: true }, 6: { calm: true }, 8: { calm: true }, 11: { calm: true }, 14: { calm: true } };
+const HAZARD = new Set(['spikeLow', 'spikeHigh', 'fan', 'saw', 'tunnel']);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 // 部分關卡換種子（tests/sim-check.mjs 的自動玩家破不了或太難的）
-export const SALT = { 12: 7, 19: 3, 31: 11, 50: 14, 20: 1, 23: 1, 25: 2, 26: 1, 29: 1, 32: 1, 33: 1, 37: 2, 38: 3, 41: 1, 42: 4, 43: 1, 44: 1, 46: 5, 51: 1, 54: 3, 56: 1, 58: 1, 60: 3 };
+export const SALT = { 12: 7, 19: 3, 31: 11, 50: 14, 20: 1, 23: 1, 25: 2, 26: 1, 29: 1, 32: 1, 33: 1, 37: 2, 38: 3, 41: 1, 42: 4, 43: 1, 44: 1, 46: 5, 51: 1, 54: 3, 56: 1, 58: 1, 60: 3, 61: 2, 62: 1, 65: 5, 66: 1, 67: 1, 68: 1, 69: 6, 70: 3, 71: 1, 74: 12 };
 
 export function generateLevel(n, salt = SALT[n] ?? 0) {
   const r = mulberry32(n * 7919 + 1013 + salt * 100003);
   const local = ((n - 1) % 15) / 14;
-  const diff = clamp(((n - 1) / (LEVEL_COUNT - 1)) * 0.75 + local * 0.3, 0, 1);
+  // 前 60 關寫死 /59（LEVEL_COUNT 變動不能讓它們重新產生）；61 關以後每個世界從 0.45 爬到 0.85（MECHANICS §9.1）
+  let diff = n <= 60 ? clamp(((n - 1) / 59) * 0.75 + local * 0.3, 0, 1) : 0.45 + local * 0.4;
+  const plan = n > 60 ? PLAN[(n - 1) % 15 + 1] : null;
+  if (plan?.teach) diff = 0.1;
+  else if (plan?.calm) diff = Math.max(0.1, diff - 0.1);
   const L = {
     n, world: worldOf(n), diff,
     start: { x: 0, y: 3 },
@@ -39,8 +47,8 @@ export function generateLevel(n, salt = SALT[n] ?? 0) {
   };
   const g = { r, x: 7, y: 11, prevType: 'hook' };
   firstHook(L, g);
-  const targetLen = n === 1 ? 46 : 52 + n * 3.4;
-  while (g.x < targetLen) addSegment(L, g, n, diff);
+  const targetLen = n === 1 ? 46 : 52 + Math.min(n, 60) * 3.4;
+  while (g.x < targetLen) addSegment(L, g, n, diff, plan);
   const x = g.x;
 
   const gx = x + 12;
@@ -73,7 +81,7 @@ const flyOf = (L, r) => (x, y) => L.flies.push({ x, y, ph: r() * 6.28 });
 function firstHook(L, g) { hookOf(L)(g.x, g.y); flyOf(L, g.r)(g.x + 4.5, g.y - 5.5); }
 
 // 一個段落（關卡與無盡模式共用）：g＝{ r, x, y, prevType } 產生器游標；n 決定解鎖哪些段落種類，diff 決定間距與危險度
-export function addSegment(L, g, n, diff) {
+export function addSegment(L, g, n, diff, plan = null) {
   const r = g.r, pick = (arr) => arr[Math.floor(r() * arr.length)];
   const hook = hookOf(L), fly = flyOf(L, r);
   let x = g.x, y = g.y, prevType = g.prevType;
@@ -93,6 +101,9 @@ export function addSegment(L, g, n, diff) {
   if (n >= U.ringArc) types.push('ringArc');
   if (n >= U.tunnel) types.push('tunnel');
   let type = pick(types);
+  // 節奏關（只有 61 關以後會帶 plan，前 60 關與無盡模式不經過這兩行，亂數序列不變）
+  if (plan?.teach && HAZARD.has(type)) type = 'hook';
+  else if (plan?.calm && HAZARD.has(type) && r() < 0.5) type = 'hook';
   if (type === prevType && type !== 'hook') type = 'hook';
   prevType = type;
 
@@ -171,7 +182,8 @@ export function addSegment(L, g, n, diff) {
 // ---------- 無盡模式 ----------
 // 同一個段落產生器無限往後接：難度隨距離上升（上限＝第 60 關的難度，sim-check 驗過的範圍內），每 ENDLESS_WORLD_LEN 換一個世界。
 export const ENDLESS_WORLD_LEN = 450;
-export const endlessWorld = (x) => Math.floor(Math.max(0, x) / ENDLESS_WORLD_LEN) % 4;
+// 輪替幾個世界：預設前四個；打過第 60 關（解鎖了冰峰）之後 main.js 傳 5（MECHANICS §15）
+export const endlessWorld = (x, count = 4) => Math.floor(Math.max(0, x) / ENDLESS_WORLD_LEN) % count;
 export const endlessDiff = (x) => clamp(0.12 + x / 2600, 0, 1);
 export const endlessUnlockN = (x) => clamp(Math.floor(3 + x / 22), 3, 60);
 export function createEndless(seed) {
