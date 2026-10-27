@@ -13,6 +13,9 @@
 #logo { font-family: 'Baloo SF', 'Arial Rounded MT Bold', 'Arial Black', sans-serif; }
 /* CJK: no extra letter-spacing; system CJK fonts have tall line boxes — pin lines so panels keep their height */
 [lang]:lang(ja) :is(body, button), [lang]:lang(ko) :is(body, button), [lang]:lang(zh-Hant) :is(body, button), [lang]:lang(zh-Hans) :is(body, button) { letter-spacing: 0; line-height: 1.15; }
+/* the fit loop shrinks proportionally, so a system CJK font whose glyph box is taller than the 1.15 line box never fits and ends at 55 %:
+   titles, names and stickers get a roomier line box in CJK */
+[lang]:lang(ja) :is(.ttl, #showName, .sticker, .ftName, .fh, .card .nm, .wcard .wn), [lang]:lang(ko) :is(.ttl, #showName, .sticker, .ftName, .fh, .card .nm, .wcard .wn), [lang]:lang(zh-Hant) :is(.ttl, #showName, .sticker, .ftName, .fh, .card .nm, .wcard .wn), [lang]:lang(zh-Hans) :is(.ttl, #showName, .sticker, .ftName, .fh, .card .nm, .wcard .wn) { line-height: 1.4; }
 /* names come from data in Title Case; the vinyl look is all caps (CSS uppercase respects <html lang>, e.g. Turkish İ) */
 #heroName, #showName, #tryTitle, .card .nm, .card .tag, #nextUp .t, .rf, .fcard .fh, .ftName { text-transform: uppercase; }
 #nextUp small { text-transform: none; }
