@@ -1,12 +1,12 @@
 // 關卡物件的 3D 外觀（GLB 軟膠素材，同種物件全部 InstancedMesh）：鉤點花、蘑菇、尖刺、鋸片、風扇、圈圈、蒼蠅、終點荷葉＋葉牆。
 import * as THREE from 'three';
-import { movePos, flyPos } from './sim.js';
+import { movePos, flyPos, burstOn, burstWarn } from './sim.js';
 import { dressProp, softMaterial, WORLD_PAL } from './artkit.js';
 import { ART, splitProp, PartSet } from './art.js';
 
 const tmp = { x: 0, y: 0 };
 const dummy = new THREE.Object3D();
-const M4 = new THREE.Matrix4(), N4 = new THREE.Matrix4();
+const M4 = new THREE.Matrix4(), N4 = new THREE.Matrix4(), INV = new THREE.Matrix4();
 const FAN_TILT = 0.5; // 風扇往鏡頭傾一點：側視角也看得到轉動的扇葉（美術線提醒）
 
 const GEO = {
@@ -16,6 +16,7 @@ const GEO = {
   column: new THREE.BoxGeometry(1, 1, 0.1),
   ripple: new THREE.TorusGeometry(1.35, 0.09, 8, 40),
   stump: new THREE.CylinderGeometry(1.1, 1.3, 4.5, 24),
+  leaf: (() => { const g = new THREE.SphereGeometry(0.5, 12, 8); g.scale(1.5, 0.42, 0.8); g.translate(0.55, 0, 0); return g; })(), // 藤蔓上的葉子（軟膠橢圓，根在原點）
   flagPole: new THREE.CylinderGeometry(0.1, 0.1, 6, 12),
   flag: new THREE.PlaneGeometry(2.2, 1.4, 8, 2),
 };
@@ -45,7 +46,7 @@ export function createLevelView(scene) {
   };
   const popK = (x) => elastic(st.intro - Math.max(0, Math.min(0.7, (x - st.introX) * 0.01)));
 
-  let fan = null, mush = null, fly = null;
+  let fan = null, mush = null, fly = null, geyser = false;
   function build(level, w) {
     lv = level; wi = Math.max(0, Math.min(3, level.world ?? 0));
     const P = WORLD_PAL[wi], q = ART.q;
@@ -55,16 +56,23 @@ export function createLevelView(scene) {
     const H = level.hooks.length;
     add('hook', splitProp('prop-hook', wi).main, H);
     simple('vine', GEO.vine, softMaterial(P.vine, q, { rough: 0.5 }), H);
+    if (wi === 0) { // 叢林：藤蔓分三節晃（只動球上方；球與錨點不動），再掛幾片葉子
+      simple('vine2', GEO.vine, softMaterial(P.vine, q, { rough: 0.5 }), H);
+      simple('vine3', GEO.vine, softMaterial(P.vine, q, { rough: 0.5 }), H);
+      simple('leaf', GEO.leaf, softMaterial(P.leaf, q, { rough: 0.4 }), H * 3);
+    }
     mush = splitProp('prop-mush', wi, ['stem']);
     add('cap', mush.main, level.mush.length); add('stem', mush.sub.stem.parts, level.mush.length);
     add('spike', splitProp('prop-spike', wi).main, level.spikes.length);
     simple('pole', GEO.pole, softMaterial(P.hazard, q, { rough: 0.3 }), level.spikes.length, true);
     add('saw', splitProp('prop-saw', wi).main, level.saws.length);
     simple('track', GEO.track, mats.track, level.saws.length);
-    fan = splitProp('prop-fan', wi, ['blades']);
+    fan = wi === 3 ? splitProp('prop-geyser', wi) : splitProp('prop-fan', wi, ['blades']);
+    geyser = wi === 3;
     // 扇葉原本是白色、底座頂面也是白：傾斜後讀成一個白盤子 → 扇葉換成世界花瓣色，轉起來才看得出是風扇
-    for (const p of fan.sub.blades.parts) { const u = p.material.userData.uniforms; if (u) { u.uBase.value.set(P.petal); u.uSec.value.set(P.bud); } }
-    add('fanBase', fan.main, level.fans.length); add('blade', fan.sub.blades.parts, level.fans.length);
+    if (!geyser) for (const p of fan.sub.blades.parts) { const u = p.material.userData.uniforms; if (u) { u.uBase.value.set(P.petal); u.uSec.value.set(P.bud); } }
+    add('fanBase', fan.main, level.fans.length);
+    if (!geyser) add('blade', fan.sub.blades.parts, level.fans.length);
     simple('column', GEO.column, mats.column, level.fans.length);
     add('ring', splitProp('prop-ring', wi).main, level.rings.length);
     fly = splitProp('prop-fly', wi, ['wing_L', 'wing_R']);
@@ -100,6 +108,17 @@ export function createLevelView(scene) {
     st.hookWob.fill(0); st.hookWobV.fill(0); st.mushK.fill(0); st.mushKV.fill(0);
   }
 
+  // 叢林藤蔓：三節，每節在上一節的角度上再晃一點；第一節的根固定在 (bx, by)＝球上緣，所以球與錨點完全不動
+  function vineSway(i, bx, by, a0, t, len) {
+    const l0 = 4, l1 = 6, l2 = Math.max(1, len - l0 - l1);
+    const a1 = a0 + Math.sin(t * 0.9 + i * 1.7) * 0.03, a2 = a1 + Math.sin(t * 1.3 + i * 2.1 + 1) * 0.05, a3 = a2 + Math.sin(t * 1.7 + i * 0.9 + 2) * 0.06;
+    const x1 = bx - Math.sin(a1) * l0, y1 = by + Math.cos(a1) * l0, x2 = x1 - Math.sin(a2) * l1, y2 = y1 + Math.cos(a2) * l1;
+    S.vine.set(i, mat(bx, by, -0.3, 0, 0, a1, 1, l0, 1)); S.vine2.set(i, mat(x1, y1, -0.3, 0, 0, a2, 1, l1, 1)); S.vine3.set(i, mat(x2, y2, -0.3, 0, 0, a3, 1, l2, 1));
+    // 三片葉子：貼在藤蔓上，跟著晃（葉子自己再多搖一點）
+    const lf = [[bx - Math.sin(a1) * 2.1, by + Math.cos(a1) * 2.1, a1 + 0.8], [x1 - Math.sin(a2) * 2.6, y1 + Math.cos(a2) * 2.6, a2 + 2.3], [x2 - Math.sin(a3) * 3, y2 + Math.cos(a3) * 3, a3 + 0.9]];
+    for (let k = 0; k < 3; k++) S.leaf.set(i * 3 + k, mat(lf[k][0], lf[k][1], -0.2, 0, 0, lf[k][2] + Math.sin(t * 2.2 + i + k * 2) * 0.12, 1));
+  }
+
   function update(s, t, dt, mouth) {
     if (!lv) return;
     st.intro += dt;
@@ -111,9 +130,11 @@ export function createLevelView(scene) {
       const big = i === st.target ? 1.12 : 1;
       // 果凍：橫向擠、縱向拉（體積守恆的感覺）
       S.hook.set(i, mat(tmp.x, tmp.y, 0, 0, 0, sw, 1.15 * big * (1 - st.hookWob[i] * 0.4) * popK(tmp.x), 1.15 * big * k, 1.15 * big * popK(tmp.x)));
-      S.vine.set(i, mat(tmp.x, tmp.y + 0.55, -0.3, 0, 0, sw * 0.08, 1, vineTop - tmp.y, 1));
+      if (wi === 0) vineSway(i, tmp.x, tmp.y + 0.55, sw * 0.08, t, vineTop - tmp.y);
+      else S.vine.set(i, mat(tmp.x, tmp.y + 0.55, -0.3, 0, 0, sw * 0.08, 1, vineTop - tmp.y, 1));
     }
     S.hook.commit(); S.vine.commit();
+    if (wi === 0) { S.vine2.commit(); S.vine3.commit(); S.leaf.commit(); }
     lv.mush.forEach((m, i) => {
       st.mushKV[i] += (-st.mushK[i] * 260 - st.mushKV[i] * 7) * dt; st.mushK[i] += st.mushKV[i] * dt;
       const k = st.mushK[i], sc = (m.r / 1.5) * popK(m.x);
@@ -127,10 +148,16 @@ export function createLevelView(scene) {
     S.saw.commit();
     lv.fans.forEach((f, i) => {
       const sc = (f.w / 3.2) * popK(f.x);
+      if (geyser) { // 噴泉口：預兆時抖一抖、噴發時被撐高（果凍擠壓）
+        const w = f.burst ? burstWarn(f.burst, s.t) : false, on = f.burst ? burstOn(f.burst, s.t) : false;
+        const sq = on ? 0.22 : w ? Math.sin(t * 38) * 0.06 : 0;
+        N4.copy(mat(f.x, f.y0, 0, FAN_TILT, 0, 0, sc * (1 - sq * 0.4), sc * (1 + sq), sc * (1 - sq * 0.4))); S.fanBase.set(i, N4);
+        return;
+      }
       N4.copy(mat(f.x, f.y0, 0, FAN_TILT, 0, 0, sc)); S.fanBase.set(i, N4);
       M4.copy(N4).multiply(fan.sub.blades.node).multiply(mat(0, 0, 0, 0, t * 14, 0, 1)); S.blade.set(i, M4);
     });
-    S.fanBase.commit(); S.blade.commit();
+    S.fanBase.commit(); if (!geyser) S.blade.commit();
     lv.rings.forEach((g, i) => {
       st.ringJ[i] *= Math.exp(-dt * 3);
       let k;
@@ -174,7 +201,13 @@ export function createLevelView(scene) {
   }
 
   return {
-    build, reset, update, st,
+    build, reset, update, st, isGeyser: () => geyser,
+    // 測試用：鉤點球「實際畫出來」的世界座標＝hook 的 InstancedMesh 實例矩陣 × 模型原點（扣掉模型自帶矩陣），跟 sim 錨點比對
+    ballPos(i) {
+      const m = sets.length ? S.hook.meshes[0] : null; if (!m) return null;
+      m.getMatrixAt(i, M4); M4.multiply(INV.copy(m.userData.pm).invert());
+      return [M4.elements[12], M4.elements[13]];
+    },
     wobbleHook(i) { st.hookWobV[i] += 11; },
     squashMush(i) { st.mushK[i] = -0.5; st.mushKV[i] = 0; },
     eatFly(i) { st.flyGone[i] = 0.001; },

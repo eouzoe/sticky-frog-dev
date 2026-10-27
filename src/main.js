@@ -2,12 +2,12 @@
 import { cg } from './cg.js';
 import { TUNE as T, WORLDS, SKINS, TRAILS, TONGUES, FULL_LAUNCH } from './config.js';
 import { generateLevel, newElements, LEVEL_COUNT, levelLabel, createEndless, extendEndless, endlessWorld, ENDLESS_WORLD_LEN } from './level.js';
-import { createSim, step, movePos, flyPos } from './sim.js';
+import { createSim, step, movePos, flyPos, burstOn, burstWarn } from './sim.js';
 import { makeBot } from './bot.js';
 import { createView } from './scene.js';
 import { createLevelView } from './levelview.js';
 import { createFrog } from './frog.js';
-import { createFx } from './fx.js';
+import { createFx, SH } from './fx.js';
 import * as A from './audio.js';
 import * as UI from './ui.js';
 import { createFeatTracker, featById, recordFeat } from './feats.js';
@@ -59,6 +59,7 @@ window.__game = {
   get sim() { return G.sim; }, // 測試用：冒煙直接調時間／蒼蠅數來造 1、2 星
   audio: A, ui: UI, i18n: { audit, setLang, t }, // 截圖／測試用：直接叫 UI（例如成就膠囊）、語言稽核
   setLow() { setLowQuality(); }, // 測試用：直接切到低畫質（C 材質）
+  ballPos(i) { return lvView.ballPos(i); }, // 測試用：鉤點球實際畫出來的世界座標（藤蔓晃動驗收：必須等於 sim 錨點）
   autoplay: null, // 巡覽截圖用：設成 [rel, grabVy] 讓自動玩家操作
 
   // 測試用：把青蛙放到終點上方，讓它自然落在荷葉上完成關卡
@@ -583,7 +584,7 @@ function render(realDt, dt) {
   if (Math.abs(cam.fov - fov) > 0.01) { cam.fov = fov; cam.updateProjectionMatrix(); }
   cam.position.set(c.x + fx.shake.x, c.y + fx.shake.y, c.d);
   cam.rotation.set(-0.04, 0, fx.shake.roll);
-  view.update(tReal, c.x, Math.max(4, s.y));
+  view.update(tReal, c.x, Math.max(4, s.y), A.beatPos());
   view.render();
 }
 
@@ -599,7 +600,19 @@ function setLowQuality() {
 function ambient(s, dt) {
   if (dt <= 0) return;
   const lv = G.lv, cx = G.cam.x;
-  for (const f of lv.fans) if (Math.abs(f.x - cx) < 24 && Math.random() < dt * 14) fx.spawn(f.x + (Math.random() - 0.5) * f.w, f.y0 + 0.5, 0.3, 0, 10 + Math.random() * 6, 0, (f.y1 - f.y0) / 14, 0.2, 0, 0, 3, '#ffffff'); // 上升氣流＝小泡泡
+  if (lvView.isGeyser()) { // 火山：蒸汽噴泉。平常口上飄細細的圓蒸汽、預兆（0.6 秒）小蒸汽團變密、噴發時一柱圓胖的蒸汽團往上衝
+    const PUFF = ['#fff4ea', '#ffe0cc', '#ffd9a8'];
+    for (const f of lv.fans) {
+      if (Math.abs(f.x - cx) > 26) continue;
+      const on = f.burst && burstOn(f.burst, s.t), warn = f.burst && burstWarn(f.burst, s.t);
+      const n = Math.floor(dt * (on ? 70 : warn ? 26 : 3.5) + Math.random());
+      for (let k = 0; k < n; k++) {
+        const big = on ? 1 : warn ? 0.55 : 0.4;
+        fx.spawn(f.x + (Math.random() - 0.5) * f.w * (on ? 0.7 : 0.4), f.y0 + 0.7, 0.4 + Math.random() * 0.5, (Math.random() - 0.5) * (on ? 2.5 : 1.2),
+          (on ? 15 + Math.random() * 9 : warn ? 4 + Math.random() * 3 : 2.5 + Math.random() * 2), 0, on ? 0.7 + Math.random() * 0.3 : 1.1, (0.75 + Math.random() * 0.6) * big, 0, 0.6, SH.BUBBLE, PUFF[k % 3]);
+      }
+    }
+  } else for (const f of lv.fans) if (Math.abs(f.x - cx) < 24 && Math.random() < dt * 14) fx.spawn(f.x + (Math.random() - 0.5) * f.w, f.y0 + 0.5, 0.3, 0, 10 + Math.random() * 6, 0, (f.y1 - f.y0) / 14, 0.2, 0, 0, 3, '#ffffff'); // 上升氣流＝小泡泡
   for (let i = 0; i < lv.flies.length; i++) {
     if (s.flies[i] || Math.abs(lv.flies[i].x - cx) > 22 || Math.random() > dt * 5) continue;
     flyPos(lv.flies[i], s.t, tmp);
