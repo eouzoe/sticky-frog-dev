@@ -14,7 +14,7 @@ import { createFeatTracker, featById, recordFeat } from './feats.js';
 import { SAVE_KEY, DEFAULT_SAVE, ENDLESS_UNLOCK, normalizeSave, nextStep, rateStars, recordStars } from './save.js';
 import { addLocal, submitPlatform } from './leaderboard.js';
 import { tongueTexture } from './tongues.js';
-import { t, itemName, setLang, detect, urlLang, navLangs, sdkInfo, mountPicker, enablePseudo, audit } from './i18n.js';
+import { t, itemName, setLang, onLang, detect, urlLang, navLangs, sdkInfo, mountPicker, enablePseudo, audit } from './i18n.js';
 import './i18n.css';
 import { ART, loadArt } from './art.js';
 import { createJuice } from './juice.js';
@@ -381,7 +381,10 @@ function tryBought() {
 function pause() {
   if (G.state !== 'playing') return;
   G.state = 'paused'; clearHold(); cg.gameplayStop();
-  UI.pauseMeta(G.endless ? t('pause.endless', { dist: endlessDist() }) : t('pause.level', { level: levelLabel(G.level), score: G.score.toLocaleString('en-US') })); UI.show('pause');
+  pauseMeta(); UI.show('pause');
+}
+function pauseMeta() {
+  UI.pauseMeta(G.endless ? t('pause.endless', { dist: endlessDist() }) : t('pause.level', { level: levelLabel(G.level), score: G.score.toLocaleString('en-US') }));
 }
 function resume() {
   if (G.state !== 'paused') return;
@@ -619,7 +622,9 @@ async function boot() {
   // 介面語言：?lang= > 玩家自己選的 > CrazyGames locale > 瀏覽器 > English（src/i18n.js detect）；?lang=xx 是版面測試用的加長假語言
   if (urlLang() === 'xx') enablePseudo();
   setLang(detect({ url: urlLang(), saved: save.lang, sdk: sdkInfo(), nav: navLangs() }));
-  mountPicker((code) => { save.lang = code; persist(); if (G.state === 'menu') toMenu(); });
+  mountPicker((code) => { save.lang = code; persist(); });
+  // 換語言時重算 JS 拼出來的字（選單的 PLAY 1-2、推薦鈕；暫停的關卡與分數），不管是從語言鈕還是直接 setLang
+  onLang(() => { if (G.state === 'menu') toMenu(); else if (G.state === 'paused') pauseMeta(); });
   G.touch = matchMedia?.('(pointer: coarse)').matches ?? false;
   applyLook(); UI.hudCoins(save.coins);
   A.setMusic(save.music); A.setSfx(save.sfx); UI.setToggles(save);
