@@ -3,6 +3,12 @@
   "wait": 2500
  },
  {
+  "eval": "window.__game.i18n.setLang('en')"
+ },
+ {
+  "wait": 300
+ },
+ {
   "assert": "window.__game.state === 'menu'",
   "msg": "直式開機進選單"
  },
