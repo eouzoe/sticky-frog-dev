@@ -117,3 +117,7 @@ export const TRAILS = [
 
 // CrazyGames 排行榜加密金鑰（Developer Portal 產生；排行榜只開放受邀遊戲）。空字串＝不送分，只用本機前 10 名。見 src/leaderboard.js。
 export const LB_KEY = '';
+
+// CrazyGames Basic Launch 期間廣告是關的，看得見卻按了沒效果的 rewarded 按鈕違反廣告規則，
+// 所以「看影片 x2」只在 Full Launch 版出現：`VITE_FULL_LAUNCH=1 npm run build`。
+export const FULL_LAUNCH = (import.meta.env ?? {}).VITE_FULL_LAUNCH === '1';
