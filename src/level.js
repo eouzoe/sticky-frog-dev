@@ -25,7 +25,7 @@ export const newElements = (n) => Object.keys(NEW_AT).filter((k) => NEW_AT[k] ==
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 // 部分關卡換種子（tests/sim-check.mjs 的自動玩家破不了或太難的）
-export const SALT = { 20: 1, 26: 1, 44: 1, 50: 1, 57: 1, 25: 2, 33: 1 };
+export const SALT = { 12: 7, 19: 3, 31: 11, 50: 14, 20: 1, 23: 1, 25: 2, 26: 1, 29: 1, 32: 1, 33: 1, 37: 2, 38: 3, 41: 1, 42: 4, 43: 1, 44: 1, 46: 5, 51: 1, 54: 3, 56: 1, 58: 1, 60: 3 };
 
 export function generateLevel(n, salt = SALT[n] ?? 0) {
   const r = mulberry32(n * 7919 + 1013 + salt * 100003);
