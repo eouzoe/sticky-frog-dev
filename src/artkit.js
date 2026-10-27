@@ -80,10 +80,10 @@ function worldPalette(w) {
     building: { c: [w.building ?? '#2a1f4a', w.building2 ?? '#ff2bd6'], rough: 0.45 },
     neon: { c: [w.neon ?? '#ff2bd6'], emis: w.neon ?? '#ff2bd6', emisK: 1.2, rough: 0.3 }, neon2: { c: [w.neon2 ?? '#00f0ff'], emis: w.neon2 ?? '#00f0ff', emisK: 1.3, rough: 0.3 },
     rock: { c: [w.rock ?? '#4a2c26', w.rock2 ?? '#7a4a3a', w.lava ?? '#ff6a1a'], rough: 0.6, glowAcc: 1.6 },
-    window: { c: [w.window ?? '#ffe36b'], emis: w.window ?? '#ffe36b', emisK: 0.9, rough: 0.3 },
-    // 霓虹窗戶分三組（同色、不同材質）：scene.js 照音樂拍子輪流閃，只動這三個材質的自發光
-    window2: { c: [w.window ?? '#ffe36b'], emis: w.window ?? '#ffe36b', emisK: 0.9, rough: 0.3 },
-    window3: { c: [w.window ?? '#ffe36b'], emis: w.window ?? '#ffe36b', emisK: 0.9, rough: 0.3 },
+    window: { c: ['#3a2c10'], emis: w.window ?? '#ffe36b', emisK: 0.9, rough: 0.3 },
+    // 霓虹窗戶分三組（同色、不同材質；底色壓暗，亮度幾乎全來自自發光，閃的幅度才不會被光照飽和吃掉）：scene.js 照音樂拍子輪流閃，只動這三個材質的自發光
+    window2: { c: ['#3a2c10'], emis: w.window ?? '#ffe36b', emisK: 0.9, rough: 0.3 },
+    window3: { c: ['#3a2c10'], emis: w.window ?? '#ffe36b', emisK: 0.9, rough: 0.3 },
   };
 }
 

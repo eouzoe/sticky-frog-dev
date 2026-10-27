@@ -65,7 +65,7 @@ export function createView(canvas) {
   function updateWindows(beat) {
     const b = Math.floor(beat), f = beat - b, hit = 1 - f;
     winMats.forEach((m, g) => {
-      const k = 0.62 + (b % 3 === g ? 0.85 * hit * hit : 0) + (b % 4 === 0 ? 0.25 * hit * hit : 0);
+      const k = 0.45 + (b % 3 === g ? 1.1 * hit * hit : 0) + (b % 4 === 0 ? 0.35 * hit * hit : 0);
       m.emissive.copy(m.userData.eBase).multiplyScalar(k);
     });
   }
