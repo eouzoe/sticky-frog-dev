@@ -56,7 +56,7 @@ window.__game = {
   look(skin, trail, tongue) { applyLook(SKINS.find((k) => k.id === skin), TRAILS.find((k) => k.id === trail), TONGUES.find((k) => k.id === tongue)); },
   // 測試用：讓無盡模式直接死（驗結算流程）
   forceDie() { const s = G.sim; if (s && s.mode !== 'dead') { s.mode = 'air'; s.tongue.state = 'idle'; s.y = 0.1; s.vy = -5; } },
-  ui: UI, i18n: { audit, setLang, t }, // 截圖／測試用：直接叫 UI（例如成就膠囊）、語言稽核
+  audio: A, ui: UI, i18n: { audit, setLang, t }, // 截圖／測試用：直接叫 UI（例如成就膠囊）、語言稽核
   setLow() { setLowQuality(); }, // 測試用：直接切到低畫質（C 材質）
   autoplay: null, // 巡覽截圖用：設成 [rel, grabVy] 讓自動玩家操作
 
