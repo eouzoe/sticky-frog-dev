@@ -42,8 +42,11 @@ export function createView(canvas) {
 
   // 岩漿冒泡（火山，純視覺）：軟膠泡泡從岩漿面鼓起來、啵一聲破掉。位置掛在世界座標上、超出鏡頭才換位置，所以不會跟著鏡頭滑
   const BUB_N = 34, BUB_SPAN = 90;
-  const bubMesh = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 14, 10), new THREE.MeshLambertMaterial({ color: '#ffc861', emissive: '#ff7a1a' }), BUB_N);
-  bubMesh.frustumCulled = false; bubMesh.visible = false; scene.add(bubMesh);
+  const bubGeo = new THREE.SphereGeometry(1, 14, 10);
+  // 紅橘底（跟金幣的金黃拉開色相）＋一顆亮橘高光小泡，都是軟膠泡
+  const bubMesh = new THREE.InstancedMesh(bubGeo, new THREE.MeshLambertMaterial({ color: '#d02a10', emissive: '#c8300c' }), BUB_N);
+  const bubHi = new THREE.InstancedMesh(bubGeo, new THREE.MeshBasicMaterial({ color: '#ff9a3c' }), BUB_N);
+  bubMesh.frustumCulled = false; bubMesh.visible = false; bubHi.frustumCulled = false; bubHi.visible = false; scene.add(bubMesh, bubHi);
   const hash = (a, b) => { let h = Math.imul(a * 374761393 + b * 668265263, 1274126177); h ^= h >>> 13; h = Math.imul(h, 1103515245); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
   const bubDummy = new THREE.Object3D();
   function updateBubbles(t, focusX) {
@@ -56,8 +59,10 @@ export function createView(canvas) {
       const k = r * grow * pop, wob = 1 + Math.sin(t * 7 + i) * 0.06 * grow;
       bubDummy.position.set(x, -0.05 + k * 0.3, z); bubDummy.scale.set(k * wob, k * 0.82 / wob, k); bubDummy.updateMatrix();
       bubMesh.setMatrixAt(i, bubDummy.matrix);
+      bubDummy.position.x = x - k * 0.34; bubDummy.position.y += k * 0.3; bubDummy.position.z = z + k * 0.7; bubDummy.scale.setScalar(k * 0.36); bubDummy.updateMatrix();
+      bubHi.setMatrixAt(i, bubDummy.matrix);
     }
-    bubMesh.instanceMatrix.needsUpdate = true;
+    bubMesh.instanceMatrix.needsUpdate = true; bubHi.instanceMatrix.needsUpdate = true;
   }
 
   // 霓虹窗戶（純視覺）：三組同色材質照音樂拍子輪流亮一下，每個四分音符換下一組，小節頭整片微亮。只動這三個材質的自發光，鉤點與危險物是別的材質
@@ -65,7 +70,7 @@ export function createView(canvas) {
   function updateWindows(beat) {
     const b = Math.floor(beat), f = beat - b, hit = 1 - f;
     winMats.forEach((m, g) => {
-      const k = 0.45 + (b % 3 === g ? 1.1 * hit * hit : 0) + (b % 4 === 0 ? 0.35 * hit * hit : 0);
+      const k = 0.12 + (b % 3 === g ? 2.6 * hit * hit : 0) + (b % 4 === 0 ? 0.3 * hit * hit : 0);
       m.emissive.copy(m.userData.eBase).multiplyScalar(k);
     });
   }
@@ -99,7 +104,7 @@ export function createView(canvas) {
     bgSets.push(A, B);
     winMats = wi === 2 ? A.meshes.map((m) => m.material).filter((m) => /^window/.test(m.name)) : [];
     for (const m of winMats) m.userData.eBase ??= m.emissive.clone();
-    bubMesh.visible = wi === 3;
+    bubMesh.visible = bubHi.visible = wi === 3;
     for (let i = 0; i < nA; i++) {
       const s = 0.8 + rnd() * 0.7;
       // 大樓、火山又高又暗：往後推，角色前面不要壓一大塊深色
@@ -198,7 +203,7 @@ export function createView(canvas) {
     return scr;
   }
 
-  return { renderer, scene, camera, setTheme, update, render, project, post, setQuality, info: renderer.info };
+  return { renderer, scene, camera, bubMesh, setTheme, update, render, project, post, setQuality, info: renderer.info };
 }
 
 export function mulberry(a) {
