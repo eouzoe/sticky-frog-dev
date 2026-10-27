@@ -10,7 +10,7 @@ const dummy = new THREE.Object3D();
 const col = new THREE.Color();
 const M4 = new THREE.Matrix4();
 // shape：0 糖果碎片（圓潤軟糖顆粒）、1 彩紙、2 糖果火花（沿速度拉長的亮面藥丸）、3 泡泡、4 閃星、5 金幣
-export const SH = { CANDY: 0, CONFETTI: 1, SPARK: 2, BUBBLE: 3, STAR: 4, COIN: 5 };
+export const SH = { CANDY: 0, CONFETTI: 1, SPARK: 2, BUBBLE: 3, STAR: 4, COIN: 5, STEAM: 6 };
 
 // 圓潤五角星（擠出＋倒角）
 function starGeo() {
@@ -56,7 +56,7 @@ export function createFx(scene, renderer) {
     const m = new THREE.InstancedMesh(geos[k], mats[k], MAX); m.frustumCulled = false; m.count = 0;
     m.setColorAt(0, col.set('#ffffff')); scene.add(m); return m;
   });
-  const meshOf = [meshes[0], meshes[1], meshes[0], meshes[2], meshes[3]]; // SPARK 共用糖果顆粒的網格
+  const meshOf = [meshes[0], meshes[1], meshes[0], meshes[2], meshes[3], null, meshes[0]]; // SPARK 共用糖果顆粒的網格
   meshes[2].renderOrder = 3;
   let coin = null; // 金幣：prop-coin（模型載入後才建）
   function coinMesh() {
@@ -163,6 +163,10 @@ export function createFx(scene, renderer) {
         const wob = 1 + Math.sin(P.rot[i] * 3) * 0.08;
         dummy.rotation.set(0, 0, 0); dummy.scale.set(s * (1.5 - u * 0.5) * wob * grow, s * (1.5 - u * 0.5) / wob * grow, s * (1.5 - u * 0.5) * grow);
         if (u < 0.12) dummy.scale.multiplyScalar(1 + (0.12 - u) * 4); // 破掉前鼓一下
+      } else if (sh === SH.STEAM) {
+        // 噴發蒸汽：不透明的軟膠團，出生鼓起來、後半慢慢縮小
+        const wob = 1 + Math.sin(P.rot[i] * 2) * 0.07;
+        dummy.rotation.set(0, 0, 0); dummy.scale.set(s * grow * (0.55 + 0.9 * Math.sqrt(u)) * wob, s * grow * (0.55 + 0.9 * Math.sqrt(u)) / wob, s * grow * (0.55 + 0.9 * Math.sqrt(u)));
       } else if (sh === SH.STAR) {
         const tw = 1 + Math.sin(P.rot[i] * 2.2) * 0.18; // 閃一閃
         dummy.rotation.set(0, P.rot[i] * 0.4, P.rot[i] * 0.25); dummy.scale.setScalar(s * grow * tw * Math.min(1, u * 2.5));

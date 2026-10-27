@@ -56,6 +56,7 @@ window.__game = {
   look(skin, trail, tongue) { applyLook(SKINS.find((k) => k.id === skin), TRAILS.find((k) => k.id === trail), TONGUES.find((k) => k.id === tongue)); },
   // 測試用：讓無盡模式直接死（驗結算流程）
   forceDie() { const s = G.sim; if (s && s.mode !== 'dead') { s.mode = 'air'; s.tongue.state = 'idle'; s.y = 0.1; s.vy = -5; } },
+  get view() { return view; }, // 測試用：量岩漿泡的螢幕位置
   get sim() { return G.sim; }, // 測試用：冒煙直接調時間／蒼蠅數來造 1、2 星
   audio: A, ui: UI, i18n: { audit, setLang, t }, // 截圖／測試用：直接叫 UI（例如成就膠囊）、語言稽核
   setLow() { setLowQuality(); }, // 測試用：直接切到低畫質（C 材質）
@@ -601,7 +602,7 @@ function ambient(s, dt) {
   if (dt <= 0) return;
   const lv = G.lv, cx = G.cam.x;
   if (lvView.isGeyser()) { // 火山：蒸汽噴泉。平常口上飄細細的圓蒸汽、預兆（0.6 秒）小蒸汽團變密、噴發時一柱圓胖的蒸汽團往上衝
-    const PUFF = ['#fff4ea', '#ffe0cc', '#ffd9a8'];
+    const PUFF = ['#ffe3d2', '#ffcfb4', '#ffd9a8'];
     for (const f of lv.fans) {
       if (Math.abs(f.x - cx) > 26) continue;
       const on = f.burst && burstOn(f.burst, s.t), warn = f.burst && burstWarn(f.burst, s.t);
@@ -609,7 +610,7 @@ function ambient(s, dt) {
       for (let k = 0; k < n; k++) {
         const big = on ? 1 : warn ? 0.55 : 0.4;
         fx.spawn(f.x + (Math.random() - 0.5) * f.w * (on ? 0.7 : 0.4), f.y0 + 0.7, 0.4 + Math.random() * 0.5, (Math.random() - 0.5) * (on ? 2.5 : 1.2),
-          (on ? 15 + Math.random() * 9 : warn ? 4 + Math.random() * 3 : 2.5 + Math.random() * 2), 0, on ? 0.7 + Math.random() * 0.3 : 1.1, (0.75 + Math.random() * 0.6) * big, 0, 0.6, SH.BUBBLE, PUFF[k % 3]);
+          (on ? 15 + Math.random() * 9 : warn ? 4 + Math.random() * 3 : 2.5 + Math.random() * 2), 0, on ? 0.7 + Math.random() * 0.3 : 1.1, (0.75 + Math.random() * 0.6) * big, 0, 0.6, SH.STEAM, PUFF[k % 3]);
       }
     }
   } else for (const f of lv.fans) if (Math.abs(f.x - cx) < 24 && Math.random() < dt * 14) fx.spawn(f.x + (Math.random() - 0.5) * f.w, f.y0 + 0.5, 0.3, 0, 10 + Math.random() * 6, 0, (f.y1 - f.y0) / 14, 0.2, 0, 0, 3, '#ffffff'); // 上升氣流＝小泡泡
