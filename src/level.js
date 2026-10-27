@@ -48,7 +48,24 @@ export function generateLevel(n, salt = SALT[n] ?? 0) {
   flyOf(L, r)(gx - 4, 6);
   L.length = gx;
   L.par = Math.round(L.length / TUNE.PAR_SPEED + 3);
+  if (L.world === 3) addBursts(L);
   return L;
+}
+
+// 火山的風扇改成蒸汽噴泉。相位用編號算（不抽亂數，關卡幾何不變）。
+// 保證：噴發會把人推上去的範圍（fan 旁到前方 BURST_REACH、y0+3 到 y1+BURST_UP）內沒有任何尖刺／鋸片（含鋸片的移動範圍），否則那座維持普通風扇。
+const BURST_REACH = 14, BURST_UP = 16;
+export function burstZoneClear(L, f) {
+  const x0 = f.x - f.w / 2 - 1.5, x1 = f.x + f.w / 2 + BURST_REACH, y0 = f.y0 + 3, y1 = f.y1 + BURST_UP;
+  const hit = (x, y, r, ax = 0, ay = 0) => x + ax + r > x0 && x - ax - r < x1 && y + ay + r > y0 && y - ay - r < y1;
+  return !L.spikes.some((s) => hit(s.x, s.y, s.r)) && !L.saws.some((s) => hit(s.x, s.y, s.r, s.move.ax, s.move.ay));
+}
+// 相位微調（tests/burst-check.mjs 的「推過後 1.5 秒內死亡＝0」對某些關的相位很敏感，像 SALT 一樣掃出來）
+export const BURST_SHIFT = { 49: 1 };
+function addBursts(L) {
+  L.fans.forEach((f, i) => {
+    if (burstZoneClear(L, f)) f.burst = { P: 4.2 + (i % 3) * 0.4, ph: (L.n * 0.37 + i * 1.7 + (BURST_SHIFT[L.n] ?? 0) * 0.9) % 4.2, dur: 0.9 };
+  });
 }
 
 const hookOf = (L) => (x, y, move) => { L.hooks.push({ x, y, move }); return L.hooks[L.hooks.length - 1]; };

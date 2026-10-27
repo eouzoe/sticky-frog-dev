@@ -18,6 +18,12 @@ export function flyPos(f, t, out) {
   return out;
 }
 
+// 蒸汽噴泉（火山）：fan.burst = { P 週期, ph 相位, dur 噴發長度 }；噴發中推力 ×2（只多不少），噴發前 BURST_WARN 秒是預兆（純視覺）
+export const BURST_WARN = 0.6;
+const burstPhase = (b, t) => (((t - b.ph) % b.P) + b.P) % b.P;
+export const burstOn = (b, t) => burstPhase(b, t) < b.dur;
+export const burstWarn = (b, t) => burstPhase(b, t) > b.P - BURST_WARN;
+
 export function createSim(level) {
   return {
     level, t: 0, time: 0, started: false,
@@ -144,7 +150,7 @@ export function step(s, dt, hold) {
     const f = lv.fans[i];
     if (Math.abs(s.x - f.x) < f.w * 0.5 && s.y > f.y0 && s.y < f.y1) {
       const k = 1.25 - 0.55 * (s.y - f.y0) / (f.y1 - f.y0);
-      s.vy += T.FAN_ACC * k * dt; inFan = i;
+      s.vy += T.FAN_ACC * k * (f.burst && burstOn(f.burst, s.t) ? 2 : 1) * dt; inFan = i;
     }
   }
   if (inFan >= 0 && s.fanIn !== inFan) s.events.push({ type: 'fan', i: inFan });
