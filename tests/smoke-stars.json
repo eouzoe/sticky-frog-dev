@@ -1,0 +1,84 @@
+[
+ {
+  "wait": 2500
+ },
+ {
+  "eval": "localStorage.clear(); 'ok'"
+ },
+ {
+  "eval": "window.__game.start(1)"
+ },
+ {
+  "wait": 900
+ },
+ {
+  "eval": "(() => { const s = window.__game.sim; s.fliesGot = 0; s.time = window.__game.sim.time; return 0; })(); window.__game.sim.time = 9999"
+ },
+ {
+  "eval": "window.__game.forceWin()"
+ },
+ {
+  "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => (window.__game.state === 'result' || performance.now() - t0 > 8000) ? r(window.__game.state) : setTimeout(f, 30); f(); })"
+ },
+ {
+  "eval": "window.__game.ui.finishResult?.()"
+ },
+ {
+  "wait": 400
+ },
+ {
+  "assert": "window.__game.state === 'result' && window.__game.levelResult.stars === 1",
+  "msg": "超時且沒吃蒼蠅：判定為 1 星"
+ },
+ {
+  "assert": "document.querySelectorAll('#resStars .rs.got').length === 1 && document.querySelectorAll('#resStars .rs.got.hit').length === 1 && document.querySelectorAll('#resStars .rs').length === 3",
+  "msg": "超時且沒吃蒼蠅：結算畫面亮 1 顆星"
+ },
+ {
+  "shot": "result-1star"
+ },
+ {
+  "key": "Enter"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "eval": "window.__game.start(1)"
+ },
+ {
+  "wait": 900
+ },
+ {
+  "eval": "(() => { const s = window.__game.sim; s.fliesGot = 0; s.time = 1; return 0; })()"
+ },
+ {
+  "eval": "window.__game.forceWin()"
+ },
+ {
+  "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => (window.__game.state === 'result' || performance.now() - t0 > 8000) ? r(window.__game.state) : setTimeout(f, 30); f(); })"
+ },
+ {
+  "eval": "window.__game.ui.finishResult?.()"
+ },
+ {
+  "wait": 400
+ },
+ {
+  "assert": "window.__game.state === 'result' && window.__game.levelResult.stars === 2",
+  "msg": "在時間內但沒吃蒼蠅：判定為 2 星"
+ },
+ {
+  "assert": "document.querySelectorAll('#resStars .rs.got').length === 2 && document.querySelectorAll('#resStars .rs.got.hit').length === 2 && document.querySelectorAll('#resStars .rs').length === 3",
+  "msg": "在時間內但沒吃蒼蠅：結算畫面亮 2 顆星"
+ },
+ {
+  "shot": "result-2star"
+ },
+ {
+  "key": "Enter"
+ },
+ {
+  "wait": 600
+ }
+]
