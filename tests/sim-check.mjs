@@ -13,7 +13,7 @@ export function run(n, bot, maxT = 90) {
   return s;
 }
 
-const PARAMS = [];
+export const PARAMS = [];
 for (const rel of [0.25, 0.4, 0.55, 0.7]) for (const gv of [-2, 2, 6]) PARAMS.push([rel, gv]);
 
 if (import.meta.url !== `file://${process.argv[1]}`) { } else main();
