@@ -31,6 +31,8 @@ export const TUNE = {
   MUSH_VX: 10, // 從上面踩到蘑菇：固定往前 10、往上 19 彈出（可預測，連續蘑菇間距剛好一跳）
   MUSH_VY: 19,
   FAN_ACC: 64,
+  DUNE_FLOOR: 10, // 滑沙：貼著沙面時沿坡面往前的速度下限（單位/秒）；沒有它兩座沙丘之間的谷底會來回晃到停
+  DUNE_LIP_FLOOR: 17, // 尾端上翹坡頂（lip）上的速度下限：離開坡頂時用這個速度沿坡面方向拋出去
   WATER_Y: 0,
   COMBO_WINDOW: 2.8, // 連擊：這麼多秒內沒有新動作就斷
   SCORE_FLIP: 100,
@@ -45,6 +47,7 @@ export const TUNE = {
   CAM_DIST_MAX: 30,
   CAM_LOOKAHEAD: 0.33,
   CAM_MIN_Y: 7.8, // 鏡頭最低高度：讓鉤點上方的圈圈、鋸片也在畫面內
+  CAM_MIN_Y_DUNE: 6.8, // 沙丘世界調低：青蛙在坡底（y 約 1–4）時不會貼在畫面最下緣，坡底看得到（鉤點最高 16，視野上緣 6.8＋8.9＝15.7）
   // 招牌時刻
   SLOWMO_SCALE: 0.28,
   SLOWMO_TIME: 0.8, // 真實秒
@@ -55,7 +58,7 @@ export const TUNE = {
   PAR_SPEED: 10.5, // 3 星時間：關卡長度 / 這個速度 + 3 秒
 };
 
-// 世界：每 15 關換一個（目前 5 個、75 關）（色盤、背景、障礙外觀）
+// 世界：每 15 關換一個（目前 6 個、90 關）（色盤、背景、障礙外觀）
 export const WORLDS = [
   {
     name: 'JUNGLE', sky: ['#a8e6ff', '#fff3b0'], fog: '#d6f2d8', water: '#2ec4c4', waterEm: '#000000',
@@ -88,6 +91,14 @@ export const WORLDS = [
     hemi: ['#ffffff', '#86b4dc'], props: 'frost', die: 'BRRR!', bgHill: '#8fbbe6', bgHill2: '#c4def5',
     // 極光帶（scene.js）：三個色停靠點
     aurora: ['#3dffa8', '#38d8ff', '#b46cff'],
+  },
+  {
+    name: 'SUNSET DUNES', sky: ['#5a2a86', '#ffb06a'], fog: '#ffb88c', water: '#7a2f3d', waterEm: '#1c0408',
+    petal: '#27d9c8', bud: '#fff3b0', vine: '#1fa59a', cap: '#ff5aa5', capSpot: '#fff3b0', stem: '#fff1d6',
+    hazard: '#2a1346', hazardTip: '#ff2e63', saw: '#dfe8ff', wood: '#8a4b2a', pad: '#46dc9a',
+    hemi: ['#ffdcb4', '#7a3a63'], props: 'dunes', die: 'GULP!', bgHill: '#a8467e', bgHill2: '#d4628a',
+    // 沙丘表面（levelview 程序網格）：谷底、坡面、頂緣高光、側面
+    sand: ['#f0a14a', '#ffd070', '#fff0b8', '#c9722f'],
   },
 ];
 

@@ -1,5 +1,5 @@
-// 61 關以後的種子篩選：每關掃 salt 0..MAX，挑「12 組 bot 的 WIN 數 ≥ 第 4 世界同位置（n−15）關 − 1」的第一個 salt（跟 SALT 同一套做法）。
-// 用法：node tests/salt-search.mjs [--max 60] [關卡號…]（預設 61–75）。印出每關每個 salt 的 WIN，最後印建議的 SALT 片段。
+// 61 關以後的種子篩選（第 5 世界對第 4 世界、第 6 世界對第 5 世界，都是 n−15）：每關掃 salt 0..MAX，挑「12 組 bot 的 WIN 數 ≥ 第 4 世界同位置（n−15）關 − 1」的第一個 salt（跟 SALT 同一套做法）。
+// 用法：node tests/salt-search.mjs [--max 60] [關卡號…]（預設 76–90）。印出每關每個 salt 的 WIN，最後印建議的 SALT 片段。
 // 第 4 世界的 WIN 數取自目前 generateLevel(n−15)，不是讀舊 log，所以第 1–60 關變動時門檻會跟著動。
 import { generateLevel } from '../src/level.js';
 import { makeBot } from '../src/bot.js';
@@ -7,7 +7,7 @@ import { run, PARAMS } from './sim-check.mjs';
 
 const argv = process.argv.slice(2), mi = argv.indexOf('--max');
 const MAX = mi >= 0 ? +argv.splice(mi, 2)[1] : 60;
-const list = argv.length ? argv.map(Number) : Array.from({ length: 15 }, (_, i) => 61 + i);
+const list = argv.length ? argv.map(Number) : Array.from({ length: 15 }, (_, i) => 76 + i);
 const wins = (n, salt) => {
   const mk = () => generateLevel(n, salt);
   let w = 0;

@@ -24,6 +24,24 @@ const burstPhase = (b, t) => (((t - b.ph) % b.P) + b.P) % b.P;
 export const burstOn = (b, t) => burstPhase(b, t) < b.dur;
 export const burstWarn = (b, t) => burstPhase(b, t) > b.P - BURST_WARN;
 
+// 沙丘（夕陽沙丘世界）：lv.dunes = [{ x0, x1, H, lip }]。一般沙丘＝cosine 凸起（兩端 0、中間 H）；lip＝尾端上翹坡頂（四分之一 cosine 一路翹到 x1，之後垂直落到 0）。
+// 相鄰沙丘首尾相接；off＝出口淨空不成立（level.js markDunes），整片當作沒有。
+export function duneH(d, x) {
+  if (x < d.x0 || x > d.x1) return 0;
+  const u = (x - d.x0) / (d.x1 - d.x0);
+  return d.lip ? d.H * (1 - Math.cos(u * Math.PI * 0.5)) : d.H * 0.5 * (1 - Math.cos(u * TAU));
+}
+export function duneSlope(d, x) {
+  if (x < d.x0 || x > d.x1) return 0;
+  const w = d.x1 - d.x0, u = (x - d.x0) / w;
+  return d.lip ? d.H * Math.PI * 0.5 / w * Math.sin(u * Math.PI * 0.5) : d.H * Math.PI / w * Math.sin(u * TAU);
+}
+export function duneAt(lv, x) {
+  const ds = lv.dunes;
+  if (ds) for (let i = 0; i < ds.length; i++) { const d = ds[i]; if (!d.off && x >= d.x0 && x <= d.x1) return i; }
+  return -1;
+}
+
 // from＝荷葉存檔（main.js 在荷葉落地時存下的快照 { pad, flies, rings, boostUsed, fliesGot, time }）：從那座荷葉重生，已吃的蒼蠅、圈圈、加速圈照快照
 export function createSim(level, from = null) {
   const s = {
@@ -38,7 +56,7 @@ export function createSim(level, from = null) {
     flies: level.flies.map(() => false), rings: level.rings.map(() => false),
     fliesGot: 0, attaches: 0, flipsTotal: 0, bounces: 0, maxX: level.start.x,
     fanIn: -1, cause: null, near: [], nearMin: [], // 一般陣列：無盡模式會一直往關卡尾端加危險物
-    checkpoint: -1, boostUsed: (level.boosts ?? []).map(() => false), boosts: 0, boostT: -99,
+    onDune: -1, duneT: -99, checkpoint: -1, boostUsed: (level.boosts ?? []).map(() => false), boosts: 0, boostT: -99,
     events: [],
   };
   if (from) {
@@ -240,6 +258,36 @@ export function step(s, dt, hold) {
       }
       s.x = m.x + nx * rr; s.y = m.y + ny * rr;
     }
+  }
+  // 沙丘：只在 lv.dunes 存在時執行（第 1–75 關沒有，軌跡逐位元不變）。把位置推回沙面、去掉朝內的法向速度；模式維持 air，所以滑行中照常能出舌。
+  // 空中（舌頭沒黏住）貼著沙面時，沿坡面往前的速度至少 DUNE_FLOOR（lip 上 DUNE_LIP_FLOOR）：不會卡在谷底、尾端把青蛙往前上方拋出去。
+  if (lv.dunes?.length) {
+    const di = duneAt(lv, s.x), prev = s.onDune;
+    let touch = -1;
+    if (di >= 0) {
+      const d = lv.dunes[di], h = duneH(d, s.x);
+      if (s.y - R < h) {
+        touch = di;
+        const sl = duneSlope(d, s.x), inv = 1 / Math.hypot(1, sl), nx = -sl * inv, ny = inv;
+        const impact = -(s.vx * nx + s.vy * ny);
+        s.y = h + R;
+        const vn = s.vx * nx + s.vy * ny;
+        if (vn < 0) { s.vx -= vn * nx; s.vy -= vn * ny; }
+        // 速度下限連舌頭黏住（擺盪）時也算：鉤點下方的弧線掃到沙面時，沙面把青蛙順著坡往前送，不會卡在坡上晃
+        const fl = d.lip ? T.DUNE_LIP_FLOOR : T.DUNE_FLOOR, vt = s.vx * inv + s.vy * sl * inv;
+        if (vt < fl) { s.vx += (fl - vt) * inv; s.vy += (fl - vt) * sl * inv; }
+        if (tg.state !== 'stuck') {
+          // 貼坡：角速度歸零、角度順著坡面（翻滾計數不會因為貼坡亂跳）
+          s.omega = 0; s.airRot = 0; s.airFlips = 0;
+          let da = Math.atan(sl) - s.angle; da -= Math.round(da / TAU) * TAU;
+          s.angle += da * (1 - Math.exp(-dt * 24));
+        }
+        if (prev < 0 && s.t - s.duneT > 0.25) s.events.push({ type: 'dune', i: di, x: s.x, y: s.y, speed: Math.max(0, impact), vx: s.vx });
+        s.duneT = s.t;
+      }
+    }
+    if (touch < 0 && prev >= 0 && lv.dunes[prev].lip && s.x > lv.dunes[prev].x1 - 1.5 && s.vx > 8) s.events.push({ type: 'launch', i: prev, x: s.x, y: s.y, vx: s.vx, vy: s.vy });
+    s.onDune = touch;
   }
   // 危險物：碰到就死；擦身而過（進入 1 單位內又離開）＝ CLOSE CALL
   const nS = lv.spikes.length;

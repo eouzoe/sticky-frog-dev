@@ -1,7 +1,7 @@
-// 75 關程序產生（種子固定）：同一關每次長一樣。難度＝全域進度 + 世界內進度。
+// 90 關程序產生（種子固定）：同一關每次長一樣。難度＝全域進度 + 世界內進度。
 import { TUNE } from './config.js';
 
-export const LEVEL_COUNT = 75;
+export const LEVEL_COUNT = 90;
 export const worldOf = (n) => Math.min(7, Math.floor((n - 1) / 15));
 export const levelLabel = (n) => `${worldOf(n) + 1}-${((n - 1) % 15) + 1}`;
 
@@ -15,7 +15,7 @@ function mulberry32(a) {
 }
 
 // 基本元素的解鎖關卡（第一次可能出現的關）；開場「NEW」字卡就看這張表。風扇、鋸片、高處尖刺、上下夾擊往後挪（MECHANICS §16）
-export const UNLOCK = { mush: 3, swarm: 4, ring: 5, move: 6, spikeLow: 8, mushChain: 9, ringArc: 12, fan: 18, saw: 22, spikeHigh: 25, tunnel: 33, pad: 63, boost: 69 };
+export const UNLOCK = { mush: 3, swarm: 4, ring: 5, move: 6, spikeLow: 8, mushChain: 9, ringArc: 12, fan: 18, saw: 22, spikeHigh: 25, tunnel: 33, pad: 63, boost: 69, dune: 76 };
 // NEW 字卡出現的關卡＝元素「實際第一次出現」的關（tests/unlock-check.mjs 掃 generateLevel 驗證）。
 // 跟 UNLOCK 不同的兩個（move 6→7、spikeLow 8→9）是解鎖那關剛好沒骰到，不改種子（前 10 關要保持不變）
 export const NEW_AT = { ...UNLOCK, move: 7, spikeLow: 9 };
@@ -28,32 +28,41 @@ const PLAN = {
   1: { teach: true }, 2: { calm: true }, 3: { pad: [0.5] }, 4: { calm: true, pad: [0.45] }, 6: { calm: true }, 7: { pad: [0.6] }, 8: { calm: true },
   9: { boost: [0.5] }, 11: { calm: true, boost: [0.4] }, 12: { boost: [0.35, 0.7] }, 14: { calm: true }, 15: { pad: [0.3], boost: [0.65] },
 };
+// 第 6 世界（76–90 關，夕陽沙丘）的節奏，同樣以世界內第幾關為鍵（MECHANICS §12，§16 裁定後的版本）。dune＝這一關保證放的沙丘段落（關卡長度的幾成處）；
+// tall＝坡頂更高更陡（6-5 LAUNCH LIP）、grab＝下一根鉤點離坡頂近、滑行中就能出舌（6-13 SURF & GRAB）、long＝加長的沙丘（6-10）。沙丘只當安全網／捷徑，拿掉也能過。
+// 6-3、6-7（泡泡盾 E3）、6-9、6-12（岔路 E4）的格子第一階段先排一般內容（只套節奏），第二階段要換成 E3／E4。
+const PLAN6 = {
+  1: { teach: true, dune: [0.3, 0.62] }, 2: { calm: true, dune: [0.5] }, 3: { dune: [0.4] }, 4: { calm: true, dune: [0.3, 0.65] }, 5: { dune: [0.35, 0.7], tall: true },
+  6: { calm: true }, 7: { dune: [0.5] }, 8: { calm: true }, 9: { dune: [0.4] }, 10: { dune: [0.3, 0.6], long: true }, 11: { calm: true }, 12: { dune: [0.35, 0.7] },
+  13: { dune: [0.4, 0.75], grab: true }, 14: { calm: true }, 15: { dune: [0.25, 0.5, 0.75], tall: true },
+};
 const HAZARD = new Set(['spikeLow', 'spikeHigh', 'fan', 'saw', 'tunnel']);
 // 加速圈出口淨空：圈圈往前 BOOST_REACH、上下 BOOST_Y 的範圍內不能有尖刺／鋸片（含鋸片移動範圍），否則那顆加速圈關掉（b.off）
 export const BOOST_REACH = 19, BOOST_Y = 14;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 // 部分關卡換種子（tests/sim-check.mjs 的自動玩家破不了或太難的）
-export const SALT = { 12: 7, 19: 3, 31: 11, 50: 14, 20: 1, 23: 1, 25: 2, 26: 1, 29: 1, 32: 1, 33: 1, 37: 2, 38: 3, 41: 1, 42: 4, 43: 1, 44: 1, 46: 5, 51: 1, 54: 3, 56: 1, 58: 1, 60: 3, 61: 2, 62: 1, 63: 3, 64: 1, 65: 5, 66: 1, 68: 1, 69: 4, 70: 3, 71: 1, 74: 12 };
+export const SALT = { 12: 7, 19: 3, 31: 11, 50: 14, 20: 1, 23: 1, 25: 2, 26: 1, 29: 1, 32: 1, 33: 1, 37: 2, 38: 3, 41: 1, 42: 4, 43: 1, 44: 1, 46: 5, 51: 1, 54: 3, 56: 1, 58: 1, 60: 3, 61: 2, 62: 1, 63: 3, 64: 1, 65: 5, 66: 1, 68: 1, 69: 4, 70: 3, 71: 1, 74: 12, 77: 2, 80: 9, 84: 13, 85: 1, 89: 2 };
 
 export function generateLevel(n, salt = SALT[n] ?? 0) {
   const r = mulberry32(n * 7919 + 1013 + salt * 100003);
   const local = ((n - 1) % 15) / 14;
   // 前 60 關寫死 /59（LEVEL_COUNT 變動不能讓它們重新產生）；61 關以後每個世界從 0.45 爬到 0.85（MECHANICS §9.1）
   let diff = n <= 60 ? clamp(((n - 1) / 59) * 0.75 + local * 0.3, 0, 1) : 0.45 + local * 0.4;
-  const plan = n > 60 ? (PLAN[(n - 1) % 15 + 1] ?? {}) : null;
+  const plan = n > 60 ? ((n > 75 ? PLAN6 : PLAN)[(n - 1) % 15 + 1] ?? {}) : null;
   if (plan?.teach) diff = 0.1;
   else if (plan?.calm) diff = Math.max(0.1, diff - 0.1);
   const L = {
     n, world: worldOf(n), diff,
     start: { x: 0, y: 3 },
-    hooks: [], mush: [], spikes: [], saws: [], fans: [], rings: [], flies: [], pads: [], boosts: [],
+    hooks: [], mush: [], spikes: [], saws: [], fans: [], rings: [], flies: [], pads: [], boosts: [], dunes: [],
     goal: null, length: 0, par: 0,
   };
   const g = { r, x: 7, y: 11, prevType: 'hook' };
   firstHook(L, g);
   const targetLen = n === 1 ? 46 : 52 + Math.min(n, 60) * 3.4;
-  const forces = plan ? [...(plan.pad ?? []).map((f) => [f, 'pad']), ...(plan.boost ?? []).map((f) => [f, 'boost'])].sort((a, b) => a[0] - b[0]) : [];
+  const forces = plan ? [...(plan.pad ?? []).map((f) => [f, 'pad']), ...(plan.boost ?? []).map((f) => [f, 'boost']), ...(plan.dune ?? []).map((f) => [f, 'dune'])].sort((a, b) => a[0] - b[0]) : [];
+  g.end = targetLen - 30; // 終點前不放沙丘段落
   while (g.x < targetLen) {
     if (!g.force && forces.length && g.x >= forces[0][0] * targetLen) g.force = forces.shift()[1];
     addSegment(L, g, n, diff, plan);
@@ -67,6 +76,7 @@ export function generateLevel(n, salt = SALT[n] ?? 0) {
   L.par = Math.round(L.length / TUNE.PAR_SPEED + 3);
   if (L.world === 3) addBursts(L);
   markBoosts(L, Infinity);
+  markDunes(L, Infinity);
   return L;
 }
 
@@ -78,6 +88,22 @@ export function boostZoneClear(L, b) {
 // 還沒檢查過、而且出口範圍已經全部產生完（b.x + BOOST_REACH + 3 < doneX）的加速圈：出口不乾淨就關掉。無盡模式邊產生邊檢查，所以每次只看「已經產生完」的
 function markBoosts(L, doneX) {
   for (const b of L.boosts) if (!b.checked && b.x + BOOST_REACH + 3 < doneX) { b.checked = true; if (!boostZoneClear(L, b)) b.off = true; }
+}
+
+// 沙丘出口淨空：一整片沙丘（同一個 f）從頭往前到最後一個 lip 的 x1 再往前 DUNE_REACH 內，不能有尖刺、鋸片（含移動範圍）、蘑菇——
+// 滑行與拋起之後 1.5 秒（約 20 單位/秒）都碰不到危險物；不成立就整片關掉（d.off）。段落產生器本來就只放普通鉤點（g.calm），這裡是保險
+export const DUNE_REACH = 24;
+export function duneFieldClear(L, fl) {
+  const x0 = fl[0].x0 - 1.5, x1 = fl[fl.length - 1].x1 + DUNE_REACH;
+  const hit = (x, r, ax = 0) => x + ax + r > x0 && x - ax - r < x1;
+  return !L.spikes.some((s) => hit(s.x, s.r)) && !L.saws.some((s) => hit(s.x, s.r, s.move.ax)) && !L.mush.some((m) => hit(m.x, m.r));
+}
+function markDunes(L, doneX) {
+  for (const d of L.dunes) {
+    if (!d.lip || d.checked || d.x1 + DUNE_REACH + 3 >= doneX) continue;
+    const fl = L.dunes.filter((e) => e.f === d.f), bad = !duneFieldClear(L, fl);
+    for (const e of fl) { e.checked = true; if (bad) e.off = true; }
+  }
 }
 
 // 火山的風扇改成蒸汽噴泉。相位用編號算（不抽亂數，關卡幾何不變）。
@@ -123,6 +149,8 @@ export function addSegment(L, g, n, diff, plan = null) {
   // 無盡模式（plan 是 null、n 夠大）才把荷葉、加速圈放進隨機池；61 關以後的正式關卡只放 PLAN 保證的那幾個
   if (!plan && n >= U.pad) types.push('pad');
   if (!plan && n >= U.boost) types.push('boost');
+  // 沙丘（76 關起）：正式關卡隨機池裡有；無盡模式只在輪到夕陽沙丘世界的那一段（endlessWorld 第 6 個）才放，其他世界不放
+  if (n >= U.dune && !(g.end && g.x > g.end) && (plan || endlessWorld(g.x, 6) === 5)) types.push('dune', 'dune');
   let type = pick(types);
   // 保證段落（PLAN）與加速圈後的緩衝：亂數照樣抽，只換掉結果，所以不影響沒有這些東西的關卡
   if (g.force) { type = g.force; g.force = null; }
@@ -211,6 +239,20 @@ export function addSegment(L, g, n, diff, plan = null) {
     L.boosts.push({ x: bx, y: by, dx: ex / el, dy: ey / el });
     fly(bx + 1, by + 2);
     g.calm = 2;
+  } else if (type === 'dune') {
+    // 沙丘：兩根鉤點之間拉寬，鉤點下方的弧線底下鋪沙（安全網／捷徑）；沒有沙也是一般的鉤點間隔。最後一片是尾端上翹的坡頂（lip），把青蛙往前上方拋向下一根鉤點。
+    // 段落裡只放鉤點與蒼蠅，後面兩段只放普通鉤點（g.calm），沙面與拋起後的路徑上沒有尖刺、鋸片、蘑菇
+    const gap = (plan?.grab ? 14 : 13.5) + r() * 2 + diff * 1.5 + (plan?.long ? 1.5 : 0);
+    const x0 = x + 2.8, x1 = x + gap - (plan?.grab ? 5.6 : 3.0), W = x1 - x0, H2 = plan?.tall ? 4.3 : 3.0 + r() * 0.7;
+    const f = L.dunes.length ? L.dunes[L.dunes.length - 1].f + 1 : 0;
+    if (W >= 9.3) {
+      const w1 = plan?.long ? 6 : 4.2, H1 = 1.7 + r() * 0.9;
+      L.dunes.push({ x0, x1: x0 + w1, H: H1, f }, { x0: x0 + w1, x1, H: H2, lip: true, f });
+      fly(x0 + w1 * 0.5, H1 + 2.0);
+    } else L.dunes.push({ x0, x1, H: H2, lip: true, f });
+    fly(x1 - 0.8, H2 + 2.6);
+    x += gap; y = ny; hook(x, y);
+    g.calm = 2;
   } else if (type === 'saw') {
     x += dx + 0.5; y = ny; hook(x, y);
     const sx = x - (dx + 0.5) * 0.5;
@@ -225,16 +267,16 @@ export function addSegment(L, g, n, diff, plan = null) {
 // ---------- 無盡模式 ----------
 // 同一個段落產生器無限往後接：難度隨距離上升（上限＝第 60 關的難度，sim-check 驗過的範圍內），每 ENDLESS_WORLD_LEN 換一個世界。
 export const ENDLESS_WORLD_LEN = 450;
-// 輪替幾個世界：預設前四個；打過第 60 關（解鎖了冰峰）之後 main.js 傳 5（MECHANICS §15）
+// 輪替幾個世界：預設前四個；打過第 60 關（解鎖了冰峰）之後 main.js 傳 5、打過第 75 關（解鎖了沙丘）傳 6（MECHANICS §15）
 export const endlessWorld = (x, count = 4) => Math.floor(Math.max(0, x) / ENDLESS_WORLD_LEN) % count;
 export const endlessDiff = (x) => clamp(0.12 + x / 2600, 0, 1);
-// cap＝玩家主線打過的關數（至少 60，最多 LEVEL_COUNT）：沒在主線學過的元素（荷葉 63、加速圈 69）不會先在無盡模式出現
+// cap＝玩家主線打過的關數（至少 60，最多 LEVEL_COUNT）：沒在主線學過的元素（荷葉 63、加速圈 69、沙丘 76）不會先在無盡模式出現
 export const endlessUnlockN = (x, cap = 60) => clamp(Math.floor(3 + x / 22), 3, cap);
 export function createEndless(seed, cap = 60) {
   const L = {
     n: 0, endless: true, seed, cap, world: 0, diff: 0,
     start: { x: 0, y: 3 },
-    hooks: [], mush: [], spikes: [], saws: [], fans: [], rings: [], flies: [], pads: [], boosts: [],
+    hooks: [], mush: [], spikes: [], saws: [], fans: [], rings: [], flies: [], pads: [], boosts: [], dunes: [],
     goal: { x: 1e6, y: -100, w: 1, wall: 1e6 + 6 }, // 沒有終點：放在碰不到的地方，sim 的落地／後牆判定永遠不成立
     length: 0, par: 0,
     gen: { r: mulberry32(seed * 2654435761 + 7), x: 7, y: 11, prevType: 'hook' },
@@ -248,6 +290,7 @@ export function extendEndless(L, untilX) {
   const g = L.gen, x0 = g.x;
   while (g.x < untilX) addSegment(L, g, endlessUnlockN(g.x, L.cap), endlessDiff(g.x));
   markBoosts(L, g.x);
+  markDunes(L, g.x);
   L.length = g.x;
   return g.x > x0;
 }
