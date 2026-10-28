@@ -1,7 +1,7 @@
 // 開機、主迴圈、狀態機、輸入、存檔、事件 → 手感回饋（音效／粒子／震動／慢動作／跳字）。
 import { cg } from './cg.js';
 import { TUNE as T, WORLDS, SKINS, TRAILS, TONGUES, FULL_LAUNCH } from './config.js';
-import { generateLevel, newElements, LEVEL_COUNT, levelLabel, createEndless, extendEndless, endlessWorld, ENDLESS_WORLD_LEN } from './level.js';
+import { generateLevel, newElements, LEVEL_COUNT, levelLabel, worldOf, createEndless, extendEndless, endlessWorld, ENDLESS_WORLD_LEN } from './level.js';
 import { createSim, step, movePos, flyPos, burstOn, burstWarn, padSnapshot } from './sim.js';
 import { makeBot } from './bot.js';
 import { createView } from './scene.js';
@@ -380,7 +380,9 @@ function goNextUp() {
   else if (st.kind === 'world') { save.seen.world = st.world; persist(); startLevel(st.level); }
   else openShop(st.item);
 }
-function openLevels() { sfx('click'); if (G.sim && G.sim.mode !== 'perch') resetRun(true); clearHold(); G.state = 'levels'; UI.setWorldTab(save.unlocked); UI.renderLevels(save, (n) => { sfx('click'); startLevel(n); }); UI.show('levels'); }
+// 選關背景：一直是「選單那一關」（save.last）的世界，切分頁不會換（前五個世界都是這樣）；第 6 分頁（夕陽沙丘，含舊存檔自動選到第 6 分頁）另外把背景換成沙丘，離開第 6 分頁就回到選單那一關的世界
+function levelsBackdrop(w) { const n = w === 5 ? 76 : Math.min(save.last, save.unlocked); if (worldOf(n) !== G.lv.world) loadLevel(n); }
+function openLevels() { sfx('click'); if (G.sim && G.sim.mode !== 'perch') resetRun(true); clearHold(); G.state = 'levels'; UI.setWorldTab(save.unlocked); UI.renderLevels(save, (n) => { sfx('click'); startLevel(n); }, levelsBackdrop); levelsBackdrop(worldOf(save.unlocked)); UI.show('levels'); }
 function openRecords() { sfx('click'); clearHold(); G.state = 'records'; UI.renderRecords(save, G.lastResult?.score); UI.show('records'); }
 function openShop(hi = null) {
   sfx('click'); if (G.sim && G.sim.mode !== 'perch') resetRun(true); clearHold(); G.state = 'shop';

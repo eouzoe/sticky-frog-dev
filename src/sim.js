@@ -26,19 +26,26 @@ export const burstWarn = (b, t) => burstPhase(b, t) > b.P - BURST_WARN;
 
 // 沙丘（夕陽沙丘世界）：lv.dunes = [{ x0, x1, H, lip }]。一般沙丘＝cosine 凸起（兩端 0、中間 H）；lip＝尾端上翹坡頂（四分之一 cosine 一路翹到 x1，之後垂直落到 0）。
 // 相鄰沙丘首尾相接；off＝出口淨空不成立（level.js markDunes），整片當作沒有。
+// 片區左緣（d.first）有 DUNE_APRON 長的緩坡從 0 升到 DUNE_BASE；lip 後面有 DUNE_BACK 長的背坡從坡頂圓滑降到 0（沒有垂直切面）。
+export const duneStart = (d) => (d.first ? d.x0 - T.DUNE_APRON : d.x0);
+export const duneEnd = (d) => (d.lip ? d.x1 + T.DUNE_BACK : d.x1);
 export function duneH(d, x) {
+  if (d.first && x < d.x0) { if (x < d.x0 - T.DUNE_APRON) return 0; return T.DUNE_BASE * 0.5 * (1 - Math.cos(Math.PI * (x - d.x0 + T.DUNE_APRON) / T.DUNE_APRON)); }
+  if (d.lip && x > d.x1) { if (x > d.x1 + T.DUNE_BACK) return 0; return (T.DUNE_BASE + d.H) * 0.5 * (1 + Math.cos(Math.PI * (x - d.x1) / T.DUNE_BACK)); }
   if (x < d.x0 || x > d.x1) return 0;
   const u = (x - d.x0) / (d.x1 - d.x0);
   return T.DUNE_BASE + (d.lip ? d.H * (1 - Math.cos(u * Math.PI * 0.5)) : d.H * 0.5 * (1 - Math.cos(u * TAU)));
 }
 export function duneSlope(d, x) {
+  if (d.first && x < d.x0) { if (x < d.x0 - T.DUNE_APRON) return 0; return T.DUNE_BASE * 0.5 * Math.PI / T.DUNE_APRON * Math.sin(Math.PI * (x - d.x0 + T.DUNE_APRON) / T.DUNE_APRON); }
+  if (d.lip && x > d.x1) { if (x > d.x1 + T.DUNE_BACK) return 0; return -(T.DUNE_BASE + d.H) * 0.5 * Math.PI / T.DUNE_BACK * Math.sin(Math.PI * (x - d.x1) / T.DUNE_BACK); }
   if (x < d.x0 || x > d.x1) return 0;
   const w = d.x1 - d.x0, u = (x - d.x0) / w;
   return d.lip ? d.H * Math.PI * 0.5 / w * Math.sin(u * Math.PI * 0.5) : d.H * Math.PI / w * Math.sin(u * TAU);
 }
 export function duneAt(lv, x) {
   const ds = lv.dunes;
-  if (ds) for (let i = 0; i < ds.length; i++) { const d = ds[i]; if (!d.off && x >= d.x0 && x <= d.x1) return i; }
+  if (ds) for (let i = 0; i < ds.length; i++) { const d = ds[i]; if (!d.off && x >= duneStart(d) && x <= duneEnd(d)) return i; }
   return -1;
 }
 
@@ -56,7 +63,7 @@ export function createSim(level, from = null) {
     flies: level.flies.map(() => false), rings: level.rings.map(() => false),
     fliesGot: 0, attaches: 0, flipsTotal: 0, bounces: 0, maxX: level.start.x,
     fanIn: -1, cause: null, near: [], nearMin: [], // 一般陣列：無盡模式會一直往關卡尾端加危險物
-    onDune: -1, duneT: -99, checkpoint: -1, boostUsed: (level.boosts ?? []).map(() => false), boosts: 0, boostT: -99,
+    onDune: -1, duneT: -99, backT: -99, checkpoint: -1, boostUsed: (level.boosts ?? []).map(() => false), boosts: 0, boostT: -99,
     events: [],
   };
   if (from) {
@@ -265,8 +272,11 @@ export function step(s, dt, hold) {
     const di = duneAt(lv, s.x), prev = s.onDune;
     let touch = -1;
     if (di >= 0) {
-      const d = lv.dunes[di], h = duneH(d, s.x);
-      if (s.y - R < h) {
+      const d = lv.dunes[di], h = duneH(d, s.x), gap = s.y - R - h;
+      // 貼地：上一步貼著沙面、離沙面不到 DUNE_SNAP、而且沒有明顯往上離開（沿法向 < 14）時，繼續貼著（凸起的坡頂不會把青蛙彈成一跳一跳）；lip 與背坡不貼（lip 要把青蛙拋出去）
+      let snap = false;
+      if (gap >= 0 && gap < T.DUNE_SNAP && prev >= 0 && !d.lip && tg.state !== 'stuck') { const k = duneSlope(d, s.x); snap = (s.vy - s.vx * k) / Math.hypot(1, k) < 14; }
+      if (gap < 0 || snap) {
         touch = di;
         const sl = duneSlope(d, s.x), inv = 1 / Math.hypot(1, sl), nx = -sl * inv, ny = inv;
         const impact = -(s.vx * nx + s.vy * ny);
@@ -274,8 +284,15 @@ export function step(s, dt, hold) {
         const vn = s.vx * nx + s.vy * ny;
         if (vn < 0) { s.vx -= vn * nx; s.vy -= vn * ny; }
         // 速度下限連舌頭黏住（擺盪）時也算：鉤點下方的弧線掃到沙面時，沙面把青蛙順著坡往前送，不會卡在坡上晃
-        const fl = d.lip ? T.DUNE_LIP_FLOOR : T.DUNE_FLOOR, vt = s.vx * inv + s.vy * sl * inv;
-        if (vt < fl) { s.vx += (fl - vt) * inv; s.vy += (fl - vt) * sl * inv; }
+        const inBack = d.lip && s.x > d.x1;
+        if (inBack) { // 背坡：落在 lip 後面的青蛙也往前上方拋出去（不會順著背坡滑進流沙）
+          if (s.vx < T.DUNE_BACK_VX) s.vx = T.DUNE_BACK_VX;
+          if (s.vy < T.DUNE_BACK_VY) s.vy = T.DUNE_BACK_VY;
+          if (s.t - s.backT > 0.3) s.events.push({ type: 'launch', i: di, x: s.x, y: s.y, vx: s.vx, vy: s.vy, back: true });
+          s.backT = s.t;
+        }
+        const fl = d.lip && !inBack ? T.DUNE_LIP_FLOOR : T.DUNE_FLOOR, vt = s.vx * inv + s.vy * sl * inv;
+        if (!inBack && vt < fl) { s.vx += (fl - vt) * inv; s.vy += (fl - vt) * sl * inv; }
         if (tg.state !== 'stuck') {
           // 貼坡：角速度歸零、角度順著坡面（翻滾計數不會因為貼坡亂跳）
           s.omega = 0; s.airRot = 0; s.airFlips = 0;
@@ -286,7 +303,7 @@ export function step(s, dt, hold) {
         s.duneT = s.t;
       }
     }
-    if (touch < 0 && prev >= 0 && lv.dunes[prev].lip && s.x > lv.dunes[prev].x1 - 1.5 && s.vx > 8) s.events.push({ type: 'launch', i: prev, x: s.x, y: s.y, vx: s.vx, vy: s.vy });
+    if (touch < 0 && prev >= 0 && lv.dunes[prev].lip && s.x > lv.dunes[prev].x1 - 1.5 && s.vx > 8 && s.t - s.backT > 0.3) s.events.push({ type: 'launch', i: prev, x: s.x, y: s.y, vx: s.vx, vy: s.vy });
     s.onDune = touch;
   }
   // 危險物：碰到就死；擦身而過（進入 1 單位內又離開）＝ CLOSE CALL

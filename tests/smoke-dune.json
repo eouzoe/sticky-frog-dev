@@ -57,14 +57,14 @@
   "wait": 3200
  },
  {
-  "eval": "(() => { const g = window.__game, s = g.sim, L = s.level, d = L.dunes.find((q) => !q.off), f = L.dunes.filter((q) => q.f === d.f), lip = f[f.length - 1]; window.__dn = { lipEnd: lip.x1, lipStart: lip.x0, slide: 0, launched: false, prev: -1, dead: false, lastT: s.t, stage: 0 }; s.mode = 'air'; s.started = true; s.tongue.state = 'idle'; s.x = d.x0 + 0.3; s.y = d.H + 3.5; s.vx = 6; s.vy = 0; s.omega = 0; if (!window.__dnOn) { window.__dnOn = true; const poll = () => { const q = window.__dn, s2 = window.__game.sim; if (s2.mode === 'dead') q.dead = true; if (s2.onDune >= 0) q.slide += s2.t - q.lastT; q.lastT = s2.t; if (q.prev >= 0 && s2.onDune < 0 && s2.vx > 8 && s2.x > q.lipEnd - 1.5) q.launched = true; q.prev = s2.onDune; if (q.stage === 0 && s2.onDune >= 0 && s2.level.dunes[s2.onDune].lip && s2.x > q.lipStart + 1.5) { q.stage = 1; window.__game.freeze = true; } if (q.stage === 2 && q.launched) { q.stage = 3; window.__game.freeze = true; } requestAnimationFrame(poll); }; poll(); } return 1; })()"
+  "eval": "(() => { const g = window.__game, s = g.sim, L = s.level, d = L.dunes.find((q) => !q.off), f = L.dunes.filter((q) => q.f === d.f), lip = f[f.length - 1]; window.__dn = { lipEnd: lip.x1, lipStart: lip.x0, slide: 0, launched: false, prev: -1, dead: false, lastT: s.t, stage: 0 }; s.mode = 'air'; s.started = true; s.tongue.state = 'idle'; s.x = d.x0 + 0.3; s.y = d.H + 3.5; s.vx = 6; s.vy = 0; s.omega = 0; if (!window.__dnOn) { window.__dnOn = true; const poll = () => { const q = window.__dn, s2 = window.__game.sim; if (s2.mode === 'dead') q.dead = true; if (s2.onDune >= 0) q.slide += s2.t - q.lastT; q.lastT = s2.t; if (q.prev >= 0 && s2.onDune < 0 && s2.vx > 8 && s2.x > q.lipEnd - 1.5) q.launched = true; q.prev = s2.onDune; if (q.stage === 0 && q.slide >= 1.5) { q.stage = 1; window.__game.freeze = true; } if (q.stage === 2 && q.launched) { q.stage = 3; window.__game.freeze = true; } requestAnimationFrame(poll); }; poll(); } return 1; })()"
  },
  {
   "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => { (window.__dn.stage >= 1 || performance.now() - t0 > 8000) ? r(JSON.stringify(window.__dn)) : setTimeout(f, 8); }; f(); })"
  },
  {
-  "assert": "window.__dn.stage >= 1 && window.__dn.slide > 0.05 && window.__dn.dead === false",
-  "msg": "青蛙落到沙丘上、滑上尾端上翹坡頂的坡面（貼著沙面累計 > 0.05 秒）、沒死"
+  "assert": "window.__dn.stage >= 1 && window.__dn.slide >= 1.5 && window.__dn.dead === false",
+  "msg": "青蛙落到沙丘上、貼著沙面滑行累計 ≥ 1.5 秒（sim 秒）、沒死"
  },
  {
   "shot": "dune-slide"

@@ -65,6 +65,33 @@ export function createView(canvas) {
     bubMesh.instanceMatrix.needsUpdate = true; bubHi.instanceMatrix.needsUpdate = true;
   }
 
+  // 流沙（夕陽沙丘的死亡地面，純視覺）：水面上蓋一張半透明的漩渦（幾個緩慢轉動的螺旋，深酒紅＋淺粉紅）；邊緣淡出到 z −12；
+  // 後面（z < −12）是乾的沙漠地面（土黃，前緣一條濕沙邊），平頂山、仙人掌、棕櫚都站在它上面，所以流沙一眼就跟背景地面分開。冒泡共用岩漿泡的實例（只開 14 顆、週期 1.7–3.5 秒，每秒最多約 6 顆）
+  const swirlMat = new THREE.ShaderMaterial({
+    uniforms: { uT: { value: 0 } }, transparent: true, depthWrite: false,
+    vertexShader: 'varying vec3 vW; void main(){ vec4 wp = modelMatrix * vec4(position, 1.0); vW = wp.xyz; gl_Position = projectionMatrix * viewMatrix * wp; }',
+    fragmentShader: `uniform float uT; varying vec3 vW;
+      float hs(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      void main(){
+        vec2 p = vW.xz / 8.0; vec2 ip = floor(p), fp = fract(p) - 0.5; float acc = 0.0;
+        for (int j = -1; j <= 1; j++) for (int i = -1; i <= 1; i++) {
+          vec2 c = vec2(float(i), float(j)); vec2 o = vec2(hs(ip + c), hs(ip + c + 7.3)) - 0.5; vec2 d = fp - c - o * 0.6;
+          float r = length(d), a = atan(d.y, d.x), dir = hs(ip + c + 3.1) > 0.5 ? 1.0 : -1.0;
+          acc += sin(a * 2.0 + dir * uT * 0.45 - r * 15.0) * smoothstep(0.62, 0.0, r);
+        }
+        float edge = smoothstep(-12.0, -3.0, vW.z);
+        vec3 dark = vec3(0.11, 0.03, 0.07), light = vec3(0.86, 0.45, 0.50);
+        float v = clamp(acc * 0.5 + 0.5, 0.0, 1.0);
+        gl_FragColor = vec4(mix(dark, light, smoothstep(0.35, 0.8, v)), edge * (0.15 + 0.45 * smoothstep(0.25, 0.9, abs(acc))));
+      }`,
+  });
+  const swirl = new THREE.Mesh(new THREE.PlaneGeometry(200, 52, 1, 1).rotateX(-Math.PI / 2), swirlMat);
+  swirl.position.set(0, 0.36, 14); swirl.visible = false; swirl.frustumCulled = false; swirl.renderOrder = 1; scene.add(swirl);
+  const floorGeo = new THREE.PlaneGeometry(700, 100, 1, 3).rotateX(-Math.PI / 2);
+  { const cc = new THREE.Color(), cs = ['#d79a62', '#d79a62', '#c98f5e', '#8a5238'], ca = []; for (let r = 0; r < 4; r++) { cc.set(cs[r]); for (let k = 0; k < 2; k++) ca.push(cc.r, cc.g, cc.b); } floorGeo.setAttribute('color', new THREE.Float32BufferAttribute(ca, 3)); }
+  const floorMesh = new THREE.Mesh(floorGeo, new THREE.MeshLambertMaterial({ vertexColors: true }));
+  floorMesh.position.set(0, 0.5, -62); floorMesh.visible = false; floorMesh.frustumCulled = false; scene.add(floorMesh); // 前緣 z −12，往後到 −112
+
   // 霓虹窗戶（純視覺）：三組同色材質照音樂拍子輪流亮一下，每個四分音符換下一組，小節頭整片微亮。只動這三個材質的自發光，鉤點與危險物是別的材質
   let winMats = [];
   function updateWindows(beat) {
@@ -135,19 +162,22 @@ export function createView(canvas) {
     bgSets.push(A, B);
     winMats = wi === 2 ? A.meshes.map((m) => m.material).filter((m) => /^window/.test(m.name)) : [];
     for (const m of winMats) m.userData.eBase ??= m.emissive.clone();
-    bubMesh.visible = bubHi.visible = wi === 3;
+    bubMesh.visible = bubHi.visible = wi === 3 || wi === 5;
+    bubMesh.count = bubHi.count = wi === 5 ? 14 : BUB_N;
+    bubMesh.material.color.set(wi === 5 ? '#8a3d4a' : '#d02a10'); bubMesh.material.emissive.set(wi === 5 ? '#4a1424' : '#c8300c'); bubHi.material.color.set(wi === 5 ? '#f2b2b0' : '#ff9a3c');
+    swirl.visible = floorMesh.visible = wi === 5;
     aurora.visible = wi === 4;
     sunDisc.visible = sunHalo.visible = wi === 5;
     if (wi === 4) { const ac = w.aurora; auroraMat.uniforms.c0.value.set(ac[0]); auroraMat.uniforms.c1.value.set(ac[1]); auroraMat.uniforms.c2.value.set(ac[2]); }
     for (let i = 0; i < nA; i++) {
       const s = 0.8 + rnd() * 0.7;
       // 大樓、火山又高又暗：往後推，角色前面不要壓一大塊深色
-      dummy.position.set(-50 + (i / nA) * span + rnd() * 4, 0, (wi >= 2 ? -30 : -22) - rnd() * 26); dummy.rotation.set(0, wi === 1 ? (rnd() - 0.5) * 0.6 : rnd() * 6, 0); dummy.scale.set(s * (wi === 5 ? 1.25 : 1), s * (0.8 + rnd() * 0.5) * (wi === 4 ? 0.7 : wi === 5 ? 1.25 : 1), s * (wi === 5 ? 1.25 : 1));
+      dummy.position.set(-50 + (i / nA) * span + rnd() * 4, wi === 5 ? 0.45 : 0, (wi >= 2 ? -30 : -22) - rnd() * 26); dummy.rotation.set(0, wi === 1 ? (rnd() - 0.5) * 0.6 : rnd() * 6, 0); dummy.scale.set(s * (wi === 5 ? 1.25 : 1), s * (0.8 + rnd() * 0.5) * (wi === 4 ? 0.7 : wi === 5 ? 1.25 : 1), s * (wi === 5 ? 1.25 : 1));
       dummy.updateMatrix(); A.set(i, dummy.matrix);
     }
     for (let i = 0; i < nB; i++) {
       const s = 0.6 + rnd() * 0.6;
-      dummy.position.set(-50 + (i / nB) * span + rnd() * 5, -0.2, -9 - rnd() * 8); dummy.rotation.set(0, rnd() * 6, 0); dummy.scale.set(s, s, s);
+      dummy.position.set(-50 + (i / nB) * span + rnd() * 5, wi === 5 ? 0.45 : -0.2, (wi === 5 ? -13 : -9) - rnd() * 8); dummy.rotation.set(0, rnd() * 6, 0); dummy.scale.set(s, s, s);
       dummy.updateMatrix(); B.set(i, dummy.matrix);
     }
     if (wi <= 1) { // 叢林、糖果：水上漂著小荷葉
@@ -180,7 +210,7 @@ export function createView(canvas) {
       const Tr = new PartSet(bg, splitProp(BG_SETS[5][2], wi).main, nT, { shadow: false, receive: false }); bgSets.push(Tr);
       for (let i = 0; i < nT; i++) {
         const ts = 0.9 + rnd() * 0.7;
-        dummy.position.set(-50 + (i / nT) * span + rnd() * 6, -0.3, -16 - rnd() * 14); dummy.rotation.set(0, rnd() * 6, 0); dummy.scale.set(ts, ts * (0.9 + rnd() * 0.4), ts);
+        dummy.position.set(-50 + (i / nT) * span + rnd() * 6, 0.45, -16 - rnd() * 14); dummy.rotation.set(0, rnd() * 6, 0); dummy.scale.set(ts, ts * (0.9 + rnd() * 0.4), ts);
         dummy.updateMatrix(); Tr.set(i, dummy.matrix);
       }
     }
@@ -235,6 +265,7 @@ export function createView(canvas) {
   function update(t, focusX, focusY, beat = 0) {
     if (winMats.length) updateWindows(beat);
     if (bubMesh.visible) updateBubbles(t, focusX);
+    if (swirl.visible) { swirlMat.uniforms.uT.value = t; swirl.position.x = Math.round(focusX / 24) * 24; floorMesh.position.x = Math.round(focusX / 24) * 24; }
     if (sunDisc.visible) { sunDisc.position.x = focusX * 0.94 + 18; sunHalo.position.x = sunDisc.position.x; }
     if (aurora.visible) { auroraMat.uniforms.uT.value = t; auroraMat.uniforms.uX.value = focusX * 0.012; aurora.position.x = focusX * 0.94; }
     // 水面波浪

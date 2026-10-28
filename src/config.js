@@ -31,6 +31,11 @@ export const TUNE = {
   MUSH_VX: 10, // 從上面踩到蘑菇：固定往前 10、往上 19 彈出（可預測，連續蘑菇間距剛好一跳）
   MUSH_VY: 19,
   FAN_ACC: 64,
+  DUNE_APRON: 2.5, // 片區左緣的緩坡長度（0→DUNE_BASE，沒有垂直切面）
+  DUNE_BACK: 6, // lip 後面的背坡長度（從坡頂圓滑下降到 0，沒入流沙）
+  DUNE_BACK_VX: 12.5, // 落在背坡上：往前至少這個速度
+  DUNE_BACK_VY: 11, // ……往上至少這個速度（背面也算往前上方拋，不會把青蛙滑進流沙）
+  DUNE_SNAP: 0.45, // 貼地距離：貼著沙面的青蛙離沙面不到這個高度就繼續貼著（lip 與背坡除外）
   DUNE_BASE: 0.5, // 沙丘谷底離水面的高度（高於浪，青蛙貼著谷底不會泡在水裡）；沙丘高度 H 是疊在這個底上面的
   DUNE_FLOOR: 10, // 滑沙：貼著沙面時沿坡面往前的速度下限（單位/秒）；沒有它兩座沙丘之間的谷底會來回晃到停
   DUNE_LIP_FLOOR: 17, // 尾端上翹坡頂（lip）上的速度下限：離開坡頂時用這個速度沿坡面方向拋出去
@@ -94,7 +99,7 @@ export const WORLDS = [
     aurora: ['#3dffa8', '#38d8ff', '#b46cff'],
   },
   {
-    name: 'SUNSET DUNES', sky: ['#5a2a86', '#ffb06a'], fog: '#ffb88c', water: '#7a2f3d', waterEm: '#3a0a16',
+    name: 'SUNSET DUNES', sky: ['#5a2a86', '#ffb06a'], fog: '#ffb88c', water: '#4e2233', waterEm: '#220812',
     petal: '#0fb3ae', bud: '#fff3b0', vine: '#1fa59a', cap: '#ff5aa5', capSpot: '#fff3b0', stem: '#fff1d6',
     hazard: '#2a1346', hazardTip: '#ff2e63', saw: '#dfe8ff', wood: '#8a4b2a', pad: '#46dc9a',
     hemi: ['#ffdcb4', '#7a3a63'], props: 'dunes', die: 'GULP!', bgHill: '#a8467e', bgHill2: '#d4628a',

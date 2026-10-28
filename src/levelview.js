@@ -1,6 +1,6 @@
 // 關卡物件的 3D 外觀（GLB 軟膠素材，同種物件全部 InstancedMesh）：鉤點花、蘑菇、尖刺、鋸片、風扇、圈圈、蒼蠅、終點荷葉＋葉牆。
 import * as THREE from 'three';
-import { movePos, flyPos, burstOn, burstWarn, duneH } from './sim.js';
+import { movePos, flyPos, burstOn, burstWarn, duneH, duneStart, duneEnd } from './sim.js';
 import { TUNE as T } from './config.js';
 import { dressProp, softMaterial, WORLD_PAL, initEnv } from './artkit.js';
 import { ART, splitProp, PartSet } from './art.js';
@@ -24,35 +24,29 @@ const GEO = {
 };
 const flagBase = Float32Array.from(GEO.flag.attributes.position.array);
 
-// 沙丘表面：所有沙丘併成一個網格（一個 draw call）。橫剖面由後往前：頂面後緣 → 頂面前緣 → 圓角 → 前壁 → 水下；頂點色＝谷底到坡面的漸層、前緣高光、側面暗色
-const SAND_ROWS = [[-7, 0, 'top'], [0.6, 0, 'top'], [1.02, -0.24, 'rim'], [1.18, -0.85, 'side'], [1.18, -1.4, 'deep']];
+// 沙丘表面：所有片區併成一個網格（一個 draw call）。高度場 y(x, z) = h(x)·g(z) − (1 − g(z))·1.2：
+// g(z) 在青蛙走的那條帶（z −2.2～1.0）是 1，往前（到 z 3.4）、往後（到 z −8）圓滑降到 0 沒入流沙；x 方向左緣有緩坡、lip 後面有背坡（sim 的 duneH），所以整個網格沒有任何垂直切面，物理（z=0）跟畫面一致。
+const SAND_Z = [-8, -6.4, -5, -3.8, -2.8, -2.2, -1, 0, 1, 1.5, 2.0, 2.5, 3.0, 3.4];
+const sandG = (z) => (z > 1 ? 0.5 * (1 + Math.cos(Math.PI * Math.min(1, (z - 1) / 2.4))) : z < -2.2 ? 0.5 * (1 + Math.cos(Math.PI * Math.min(1, (-2.2 - z) / 5.8))) : 1);
 function sandGeometry(dunes, pal) {
   const C = pal.map((c) => new THREE.Color(c)), col = new THREE.Color();
   const pos = [], rgb = [], idx = [];
-  const vert = (x, y, z, c) => { pos.push(x, y, z); rgb.push(c.r, c.g, c.b); return pos.length / 3 - 1; };
-  const face = (a, b, c, d) => idx.push(a, c, b, b, c, d);
-  dunes.forEach((d, di) => {
-    const N = Math.max(8, Math.ceil((d.x1 - d.x0) / 0.3)), rows = [];
+  const fields = new Map();
+  for (const d of dunes) { if (!fields.has(d.f)) fields.set(d.f, []); fields.get(d.f).push(d); }
+  for (const fl of fields.values()) {
+    const a = duneStart(fl[0]), b = duneEnd(fl[fl.length - 1]), N = Math.ceil((b - a) / 0.3), base = pos.length / 3;
     for (let i = 0; i <= N; i++) {
-      const x = d.x0 + (d.x1 - d.x0) * i / N, h = duneH(d, x), k = Math.min(1, Math.max(0, (h - T.DUNE_BASE) / d.H)), r = [];
-      for (const [z, dy, key] of SAND_ROWS) {
-        if (key === 'top') col.copy(C[0]).lerp(C[1], Math.pow(k, 0.8));
-        else if (key === 'rim') col.copy(C[1]).lerp(C[2], 0.35 + 0.65 * k);
-        else if (key === 'side') col.copy(C[3]).lerp(C[1], 0.25 * k);
-        else col.copy(C[3]).multiplyScalar(0.62);
-        r.push(vert(x, key === 'deep' ? -1.4 : h + dy, z, col));
+      const x = a + (b - a) * i / N;
+      let h = 0, hm = 1; for (const d of fl) if (x >= duneStart(d) && x <= duneEnd(d)) { h = duneH(d, x); hm = d.H + T.DUNE_BASE; break; }
+      for (const z of SAND_Z) {
+        const g = sandG(z), k = Math.min(1, h / hm);
+        col.copy(C[0]).lerp(C[1], Math.pow(k, 0.8)).lerp(C[2], Math.max(0, 0.3 - Math.abs(g - 0.6)) * 1.2 * k).lerp(C[3], (1 - g) * 0.85);
+        pos.push(x, h * g - (1 - g) * 1.2, z); rgb.push(col.r, col.g, col.b);
       }
-      rows.push(r);
     }
-    for (let i = 0; i < N; i++) for (let r = 0; r < SAND_ROWS.length - 1; r++) face(rows[i][r], rows[i + 1][r], rows[i][r + 1], rows[i + 1][r + 1]);
-    // 側壁：沙丘群的左緣（跟前一片不相接）與 lip 的尾端（垂直落到水面）
-    const wall = (x, hTop, plusX) => {
-      const a = vert(x, hTop, -7, C[3]), b = vert(x, hTop, 1.18, C[3]), c = vert(x, -1.4, -7, C[3]), e = vert(x, -1.4, 1.18, C[3]);
-      if (plusX) idx.push(a, b, c, b, e, c); else idx.push(a, c, b, b, c, e);
-    };
-    if (!(dunes[di - 1] && Math.abs(dunes[di - 1].x1 - d.x0) < 1e-6)) wall(d.x0, duneH(d, d.x0), false);
-    if (d.lip) wall(d.x1, duneH(d, d.x1), true);
-  });
+    const W = SAND_Z.length;
+    for (let i = 0; i < N; i++) for (let r = 0; r < W - 1; r++) { const p0 = base + i * W + r, p1 = p0 + W, p2 = p0 + 1, p3 = p1 + 1; idx.push(p0, p2, p1, p1, p2, p3); }
+  }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(rgb, 3));
   g.setIndex(idx); g.computeVertexNormals();

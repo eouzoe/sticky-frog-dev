@@ -32,9 +32,9 @@ const PLAN = {
 // tall＝坡頂更高更陡（6-5 LAUNCH LIP）、grab＝下一根鉤點離坡頂近、滑行中就能出舌（6-13 SURF & GRAB）、long＝加長的沙丘（6-1 教學關與 6-10）。沙丘只當安全網／捷徑，拿掉也能過。
 // 6-3、6-7（泡泡盾 E3）、6-9、6-12（岔路 E4）的格子第一階段先排一般內容（只套節奏），第二階段要換成 E3／E4。
 const PLAN6 = {
-  1: { teach: true, long: true, dune: [0.3, 0.62] }, 2: { calm: true, dune: [0.5] }, 3: { dune: [0.4] }, 4: { calm: true, dune: [0.3, 0.65] }, 5: { dune: [0.35, 0.7], tall: true },
-  6: { calm: true }, 7: { dune: [0.5] }, 8: { calm: true }, 9: { dune: [0.4] }, 10: { dune: [0.3, 0.6], long: true }, 11: { calm: true }, 12: { dune: [0.35, 0.7] },
-  13: { dune: [0.4, 0.75], grab: true }, 14: { calm: true }, 15: { dune: [0.25, 0.5, 0.75], tall: true },
+  1: { teach: true, long: true, dune: [0.14, 0.5] }, 2: { calm: true, dune: [0.14, 0.55] }, 3: { dune: [0.14, 0.55] }, 4: { calm: true, dune: [0.14, 0.55] }, 5: { dune: [0.14, 0.55], tall: true },
+  6: { calm: true, dune: [0.14, 0.55] }, 7: { dune: [0.14, 0.55] }, 8: { calm: true, dune: [0.14, 0.55] }, 9: { dune: [0.14, 0.55] }, 10: { dune: [0.14, 0.55], long: true }, 11: { calm: true, dune: [0.14, 0.55] }, 12: { dune: [0.14, 0.55] },
+  13: { dune: [0.14, 0.55], grab: true }, 14: { calm: true, dune: [0.14, 0.55] }, 15: { dune: [0.1, 0.4, 0.7], tall: true },
 };
 const HAZARD = new Set(['spikeLow', 'spikeHigh', 'fan', 'saw', 'tunnel']);
 // 加速圈出口淨空：圈圈往前 BOOST_REACH、上下 BOOST_Y 的範圍內不能有尖刺／鋸片（含鋸片移動範圍），否則那顆加速圈關掉（b.off）
@@ -92,9 +92,9 @@ function markBoosts(L, doneX) {
 
 // 沙丘出口淨空：一整片沙丘（同一個 f）從頭往前到最後一個 lip 的 x1 再往前 DUNE_REACH 內，不能有尖刺、鋸片（含移動範圍）、蘑菇——
 // 滑行與拋起之後 1.5 秒（約 20 單位/秒）都碰不到危險物；不成立就整片關掉（d.off）。段落產生器本來就只放普通鉤點（g.calm），這裡是保險
-export const DUNE_REACH = 24;
+export const DUNE_REACH = 30;
 export function duneFieldClear(L, fl) {
-  const x0 = fl[0].x0 - 1.5, x1 = fl[fl.length - 1].x1 + DUNE_REACH;
+  const x0 = fl[0].x0 - 4, x1 = fl[fl.length - 1].x1 + DUNE_REACH;
   const hit = (x, r, ax = 0) => x + ax + r > x0 && x - ax - r < x1;
   return !L.spikes.some((s) => hit(s.x, s.r)) && !L.saws.some((s) => hit(s.x, s.r, s.move.ax)) && !L.mush.some((m) => hit(m.x, m.r));
 }
@@ -240,19 +240,23 @@ export function addSegment(L, g, n, diff, plan = null) {
     fly(bx + 1, by + 2);
     g.calm = 2;
   } else if (type === 'dune') {
-    // 沙丘：兩根鉤點之間拉寬，鉤點下方的弧線底下鋪沙（安全網／捷徑）；沒有沙也是一般的鉤點間隔。最後一片是尾端上翹的坡頂（lip），把青蛙往前上方拋向下一根鉤點。
-    // 段落裡只放鉤點與蒼蠅，後面兩段只放普通鉤點（g.calm），沙面與拋起後的路徑上沒有尖刺、鋸片、蘑菇
-    const gap = (plan?.grab ? 14 : 13.5) + r() * 2 + diff * 1.5 + (plan?.long ? 1.5 : 0);
-    const x0 = x + 2.8, x1 = x + gap - (plan?.grab ? 5.6 : 3.0), W = x1 - x0, H2 = plan?.tall ? 4.3 : 3.0 + r() * 0.7;
+    // 沙丘：跨三個鉤點間隔（A→中間兩根鉤點→B）的一整片沙，片區長約 30–35 單位：幾座圓潤的凸起接一座尾端上翹的坡頂（lip），lip 後面是圓滑沒入流沙的背坡。
+    // 沙丘只是安全網／捷徑：每個間隔拿掉沙也是一般的鉤點間隔。段落裡只放鉤點與蒼蠅，後面兩段只放普通鉤點（g.calm），沙面與拋起後的路徑上沒有尖刺、鋸片、蘑菇
+    const gs = [0, 1, 2].map(() => 11.5 + r() * 1.8 + diff * 1.0 + (plan?.long ? 0.8 : 0)), gap = gs[0] + gs[1] + gs[2];
+    const mid = [gs[0], gs[0] + gs[1]].map((dx) => ({ dx, y: clamp(y + (r() - 0.5) * (2 + diff * 5), 10.5, 16) }));
+    const x0 = x + 2.8, x1 = x + gap - (plan?.grab ? 5.6 : 3.0), H2 = plan?.tall ? 4.3 : 3.0 + r() * 0.7, wl = plan?.tall ? 6.2 : 5.6;
+    const R = x1 - wl - x0, nb = Math.max(1, Math.round(R / 8)), wb = R / nb;
     const f = L.dunes.length ? L.dunes[L.dunes.length - 1].f + 1 : 0;
-    if (W >= 9.3) {
-      const w1 = plan?.long ? 6 : 4.2, H1 = 1.7 + r() * 0.9;
-      L.dunes.push({ x0, x1: x0 + w1, H: H1, f }, { x0: x0 + w1, x1, H: H2, lip: true, f });
-      fly(x0 + w1 * 0.5, H1 + 2.0);
-    } else L.dunes.push({ x0, x1, H: H2, lip: true, f });
+    for (let k = 0; k < nb; k++) {
+      const H1 = 1.8 + r() * 1.6, bx = x0 + wb * k;
+      L.dunes.push({ x0: bx, x1: bx + wb, H: H1, f, first: k === 0 });
+      fly(bx + wb * 0.5, H1 + 2.2);
+    }
+    L.dunes.push({ x0: x1 - wl, x1, H: H2, lip: true, f });
     fly(x1 - 0.8, H2 + 2.6);
+    for (const m of mid) hook(x + m.dx, m.y);
     x += gap; y = ny; hook(x, y);
-    g.calm = 2;
+    g.calm = 3;
   } else if (type === 'saw') {
     x += dx + 0.5; y = ny; hook(x, y);
     const sx = x - (dx + 0.5) * 0.5;
