@@ -28,7 +28,7 @@ const elastic = (u) => (u <= 0 ? 0 : u >= 1 ? 1 : 1 - Math.pow(2, -9 * u) * Math
 export function createLevelView(scene) {
   const group = new THREE.Group(); scene.add(group);
   let sets = [], lv = null, wi = 0;
-  const st = { hookWob: [], hookWobV: [], mushK: [], mushKV: [], flyGone: [], ringGone: [], ringJ: [], target: -1, attached: -1, goalBounce: 0, intro: 9, introX: 0 };
+  const st = { padOn: [], padBounce: [], boostGone: [], hookWob: [], hookWobV: [], mushK: [], mushKV: [], flyGone: [], ringGone: [], ringJ: [], target: -1, attached: -1, goalBounce: 0, intro: 9, introX: 0 };
   const S = {};
   const mats = {
     track: new THREE.MeshBasicMaterial({ color: '#000000', transparent: true, opacity: 0.16, depthWrite: false }),
@@ -46,7 +46,7 @@ export function createLevelView(scene) {
   };
   const popK = (x) => elastic(st.intro - Math.max(0, Math.min(0.7, (x - st.introX) * 0.01)));
 
-  let fan = null, mush = null, fly = null, geyser = false;
+  let fan = null, mush = null, fly = null, geyser = false, padObjs = [], padFlagOff = null, padFlagOn = null;
   function build(level, w) {
     lv = level; wi = Math.max(0, Math.min(4, level.world ?? 0));
     const P = WORLD_PAL[wi], q = ART.q;
@@ -75,6 +75,7 @@ export function createLevelView(scene) {
     if (!geyser) add('blade', fan.sub.blades.parts, level.fans.length);
     simple('column', GEO.column, mats.column, level.fans.length);
     add('ring', splitProp('prop-ring', wi).main, level.rings.length);
+    add('boost', splitProp('prop-boost', wi).main, level.boosts.length, { shadow: false });
     fly = splitProp('prop-fly', wi, ['wing_L', 'wing_R']);
     add('fly', fly.main, level.flies.length, { shadow: false }); add('wingL', fly.sub.wing_L.parts, level.flies.length, { shadow: false }); add('wingR', fly.sub.wing_R.parts, level.flies.length, { shadow: false });
     st.hookWob = new Float32Array(H); st.hookWobV = new Float32Array(H);
@@ -96,6 +97,14 @@ export function createLevelView(scene) {
     for (const [dx, dz, sx, sy, ry] of [[1.0, -0.8, 2.1, 1.0, -0.2], [3.6, -2.4, 1.9, 0.62, 0.6], [6.0, -4.2, 2.0, 0.78, 1.5], [2.0, -6.5, 2.2, 0.5, -0.9]]) {
       const wall = dressProp(ART.models, 'prop-goalWall', wi, q); wall.position.set(g.wall + dx, 0, dz); wall.scale.set(sx, sy, sx * 0.8); wall.rotation.y = ry; group.add(wall);
     }
+    // 中途荷葉（E1）：prop-pad 拉寬壓扁、缺口朝左（青蛙從左邊來）；旁邊插一面小旗，落地後旗子換成世界點綴色
+    padFlagOff = softMaterial('#ffffff', q, { rough: 0.3 }); padFlagOn = softMaterial(P.accent ?? '#ff6fb5', q, { rough: 0.35 }); padFlagOn.side = THREE.DoubleSide; padFlagOff.side = THREE.DoubleSide;
+    padObjs = level.pads.map((p) => {
+      const o = dressProp(ART.models, 'prop-pad', wi, q); o.position.set(p.x, p.y - 0.07 * 1.6, 0); o.scale.set(p.w / 2, 1.6, 2.1); o.rotation.y = Math.PI; group.add(o);
+      const fp = new THREE.Mesh(GEO.flagPole, softMaterial('#ffffff', q, { rough: 0.3 })); fp.scale.set(0.8, 0.5, 0.8); fp.position.set(p.x + 2.3, p.y + 1.5, -0.9); fp.castShadow = true; group.add(fp);
+      const fl = new THREE.Mesh(GEO.flag, padFlagOff); fl.scale.setScalar(0.62); fl.position.set(p.x + 3.0, p.y + 2.4, -0.9); fl.castShadow = true; group.add(fl);
+      return { o, fl };
+    });
     const pole = new THREE.Mesh(GEO.flagPole, softMaterial('#ffffff', q, { rough: 0.3 })); pole.position.set(g.x - 1.5, g.y + 3, -1.6); pole.castShadow = true; group.add(pole);
     const flagMat = softMaterial(P.accent ?? '#ff6fb5', q, { rough: 0.35 }); flagMat.side = THREE.DoubleSide; // 只有旗子用這個色
     const flag = new THREE.Mesh(GEO.flag, flagMat); flag.position.set(g.x - 0.4, g.y + 5.2, -1.6); flag.castShadow = true; group.add(flag); st.flag = flag;
@@ -104,7 +113,7 @@ export function createLevelView(scene) {
 
   function reset() {
     if (!lv) return;
-    st.flyGone = lv.flies.map(() => 0); st.ringGone = lv.rings.map(() => 0); st.ringJ = lv.rings.map(() => 0); st.attached = -1;
+    st.flyGone = lv.flies.map(() => 0); st.ringGone = lv.rings.map(() => 0); st.boostGone = lv.boosts.map(() => 0); st.padOn = lv.pads.map(() => 0); st.padBounce = lv.pads.map(() => 0); st.ringJ = lv.rings.map(() => 0); st.attached = -1;
     st.hookWob.fill(0); st.hookWobV.fill(0); st.mushK.fill(0); st.mushKV.fill(0);
   }
 
@@ -182,6 +191,18 @@ export function createLevelView(scene) {
       M4.copy(N4).multiply(fly.sub.wing_R.node).multiply(mat(0, 0, 0, 0.3 + flap, 0, 0, 1)); S.wingR.set(i, M4);
     });
     S.fly.commit(); S.wingL.commit(); S.wingR.commit();
+    lv.boosts.forEach((b, i) => {
+      let k = b.off ? 0 : 1 + Math.sin(t * 5 + i) * 0.06;
+      if (st.boostGone[i] > 0) { st.boostGone[i] = Math.min(1, st.boostGone[i] + dt * 2.6); const u = st.boostGone[i]; k *= (1 + u * 0.6) * (1 - u * u); }
+      k *= popK(b.x);
+      // 箭頭沿著加速方向；圈環在垂直於鏡頭的面上，繞 z 轉到 (dx, dy)
+      S.boost.set(i, mat(b.x, b.y, 0, 0, Math.sin(t * 1.5 + i) * 0.12, Math.atan2(b.dy, b.dx), k));
+    });
+    S.boost.commit();
+    padObjs.forEach(({ o, fl }, i) => {
+      st.padBounce[i] *= Math.exp(-dt * 4); const bn = st.padBounce[i] * Math.sin(t * 26);
+      o.scale.y = 1.6 * (1 - bn * 0.5); fl.material = st.padOn[i] ? padFlagOn : padFlagOff;
+    });
     // 目標高亮
     const tg = st.target;
     if (tg >= 0 && st.attached < 0) {
@@ -213,6 +234,8 @@ export function createLevelView(scene) {
     eatFly(i) { st.flyGone[i] = 0.001; },
     takeRing(i) { st.ringGone[i] = 0.001; },
     bouncePad() { st.goalBounce = 1; },
+    landPad(i) { st.padOn[i] = 1; st.padBounce[i] = 1; },
+    takeBoost(i) { st.boostGone[i] = 0.001; },
     intro(x) { st.intro = 0; st.introX = x; },
   };
 }

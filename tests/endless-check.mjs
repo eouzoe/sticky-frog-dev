@@ -18,7 +18,7 @@ const LEG = 60, BEAM = 6;
 const clone = (s) => ({ ...structuredClone({ ...s, level: null }), level: s.level });
 let fails = 0, soloBest = 0;
 for (let seed = 1; seed <= SEEDS; seed++) {
-  const L = createEndless(seed);
+  const L = createEndless(seed, 75); // 打過第 75 關：荷葉（63）、加速圈（69）都學過了
   let beam = [createSim(L)], legs = 0, stuck = null;
   while (beam[0].maxX < TARGET) {
     const next = [];
@@ -44,13 +44,24 @@ for (let seed = 1; seed <= SEEDS; seed++) {
   const front = beam[0];
   // 參考：單一參數一路不換手能跑多遠
   for (const p of PARAMS) {
-    const L2 = createEndless(seed), s = createSim(L2), bot = makeBot(...p);
+    const L2 = createEndless(seed, 75), s = createSim(L2), bot = makeBot(...p);
     while (s.mode !== 'dead' && s.maxX < TARGET && s.t < 600) { if (L2.gen.x < s.x + 120) extendEndless(L2, s.x + 250); step(s, T.DT, bot(s)); s.events.length = 0; }
     soloBest = Math.max(soloBest, s.maxX);
   }
   const ok = stuck === null;
   if (!ok) fails++;
   console.log(`seed ${String(seed).padStart(2)} ${ok ? `OK reached ${front.maxX.toFixed(0)} in ${legs} legs` : `FAIL all 12 bots die after x=${stuck.toFixed(0)} (diff ${endlessDiff(stuck).toFixed(2)})`}`);
+}
+// 元素上限：cap=60 不出現荷葉／加速圈（沒在主線學過），cap=75 兩個都要出現（否則就是沒接上）
+{
+  let lo = 0, hi = 0, p75 = 0, b75 = 0;
+  for (let seed = 1; seed <= 12; seed++) {
+    const A = createEndless(seed, 60); extendEndless(A, TARGET); lo += A.pads.length + A.boosts.length;
+    const B = createEndless(seed, 75); extendEndless(B, TARGET); p75 += B.pads.length; b75 += B.boosts.filter((b) => !b.off).length;
+  }
+  hi = p75 + b75;
+  const ok = lo === 0 && p75 > 0 && b75 > 0;
+  if (!ok) { fails++; console.log(`FAIL 無盡元素上限 cap60 荷葉＋加速圈=${lo}（要 0）cap75 荷葉=${p75} 加速圈=${b75}（都要 >0）`); } else console.log(`OK 無盡元素上限：cap60 荷葉＋加速圈=0、cap75 荷葉=${p75} 加速圈=${b75}（12 個種子、到 ${TARGET}）`);
 }
 // 輪替：預設前四個世界；count=5（打過第 60 關）冰峰（世界 4）要出現，而且四個世界時不會出現
 {

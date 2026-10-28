@@ -32,11 +32,12 @@ export const featById = (id) => FEATS.find((f) => f.id === id);
 const WATER = T.WATER_Y + 0.15; // sim 的落水判定線（青蛙中心）
 
 export function createFeatTracker(K = FEAT_T) {
-  const st = { stall: 0, dip: Infinity, clutch: null };
+  // padded＝這一輪停過中途荷葉（落在上面、或從荷葉重生）：荷葉＝停下來過，不能拿 NONSTOP
+  const st = { stall: 0, dip: Infinity, clutch: null, padded: false };
   const out = [];
   return {
     st,
-    reset() { st.stall = 0; st.dip = Infinity; st.clutch = null; },
+    reset() { st.stall = 0; st.dip = Infinity; st.clutch = null; st.padded = false; },
     // 每個 sim 步呼叫一次；回傳這一步達成的成就
     tick(s, dt) {
       out.length = 0;
@@ -61,9 +62,10 @@ export function createFeatTracker(K = FEAT_T) {
       else if (e.type === 'close' && e.gap !== undefined && e.gap <= K.SHAVE) out.push({ id: 'shave', value: Math.max(0, e.gap) });
       else if (e.type === 'attach' && e.fy !== undefined && e.fy - WATER < K.CLUTCH_Y && e.fvy < K.CLUTCH_VY) st.clutch = e.fy - WATER;
       else if (e.type === 'die') { st.dip = Infinity; st.clutch = null; }
+      else if (e.type === 'pad') st.padded = true;
       else if (e.type === 'win' && !s.level.endless) {
         const len = s.level.goal.x - s.level.start.x;
-        if (len >= K.FLOW_MIN_LEN && st.stall <= K.FLOW_STALL) out.push({ id: 'flow', value: st.stall });
+        if (len >= K.FLOW_MIN_LEN && st.stall <= K.FLOW_STALL && !st.padded) out.push({ id: 'flow', value: st.stall });
         if (s.time > 0 && len / s.time >= K.SPEED) out.push({ id: 'speed', value: len / s.time });
       }
       return out;

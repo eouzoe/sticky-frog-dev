@@ -20,7 +20,7 @@ export default {
   'clear.clear': 'RÉUSSI !', 'clear.perfect': 'PARFAIT !',
   'pop.level': 'NIVEAU {level}', 'pop.worldLevel': '{world}  {level}', 'pop.endlessBest': 'INFINI  RECORD {dist} m', 'pop.newRecord': 'NOUVEAU RECORD !',
   'pop.flip1': 'SALTO !', 'pop.flip2': 'DOUBLE SALTO !', 'pop.flip3': 'TRIPLE SALTO !', 'pop.flip4': 'QUADRUPLE SALTO !', 'pop.flipN': '{n}x SALTO !!',
-  'pop.withPts': '{text} +{pts}', 'pop.pts': '+{pts}', 'pop.ring': 'ANNEAU ! +{pts}', 'pop.boing': 'BOING !', 'pop.closeCall': 'DE JUSTESSE ! +{pts}', 'pop.ouch': 'AÏE !',
+  'pop.withPts': '{text} +{pts}', 'pop.pts': '+{pts}', 'pop.ring': 'ANNEAU ! +{pts}', 'pop.boing': 'BOING !', 'pop.checkpoint': 'POINT DE REPRISE !', 'pop.boost': 'ZOUM !', 'pop.closeCall': 'DE JUSTESSE ! +{pts}', 'pop.ouch': 'AÏE !',
   'pop.soClose': 'SI PRÈS ! {pct}%', 'pop.bullseye': 'EN PLEIN DANS LE MILLE !', 'pop.landed': 'ATTERRI !', 'pop.combo': 'COMBO x{n} !', 'pop.coins': '+{n} PIÈCES !',
   'pop.noVideo': 'PAS DE VIDÉO POUR LE MOMENT', 'pop.endlessLocked': 'RÉUSSIS D’ABORD LE NIVEAU {level}',
   'featVal.spins': '{n} tours', 'featVal.stalled': '{v}s à l’arrêt', 'featVal.speed': '{v} m/s', 'featVal.above': '{v} m au-dessus', 'featVal.gap': '{v} m d’écart', 'featVal.high': '{v} m de haut',
@@ -39,5 +39,5 @@ export default {
   'feat.skim': 'BAISER DE VAGUE !', 'featLine.skim': 'Tu as touché l’eau et tu t’en es sorti.',
   'feat.shave': 'RASAGE DE PRÈS !', 'featLine.shave': 'À un poil des pointes.',
   'feat.clutch': 'SAUVÉ DE JUSTESSE !', 'featLine.clutch': 'Accroché à la toute dernière seconde !',
-  'new.title': 'NOUVEAU !', 'new.mush': 'Champignon rebondissant', 'new.swarm': 'Essaim de mouches', 'new.ring': 'Anneau doré', 'new.move': 'Crochet mobile', 'new.spikeLow': 'Piques basses', 'new.mushChain': 'Chaîne de champignons', 'new.ringArc': 'Double anneau', 'new.fan': 'Ventilateur', 'new.saw': 'Scie', 'new.spikeHigh': 'Piques hautes', 'new.tunnel': 'Piques haut et bas',
+  'new.title': 'NOUVEAU !', 'new.mush': 'Champignon rebondissant', 'new.swarm': 'Essaim de mouches', 'new.ring': 'Anneau doré', 'new.move': 'Crochet mobile', 'new.spikeLow': 'Piques basses', 'new.mushChain': 'Chaîne de champignons', 'new.ringArc': 'Double anneau', 'new.fan': 'Ventilateur', 'new.saw': 'Scie', 'new.spikeHigh': 'Piques hautes', 'new.tunnel': 'Piques haut et bas', 'new.pad': 'Nénuphar de reprise', 'new.boost': 'Anneau turbo',
 };

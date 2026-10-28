@@ -24,8 +24,9 @@ const burstPhase = (b, t) => (((t - b.ph) % b.P) + b.P) % b.P;
 export const burstOn = (b, t) => burstPhase(b, t) < b.dur;
 export const burstWarn = (b, t) => burstPhase(b, t) > b.P - BURST_WARN;
 
-export function createSim(level) {
-  return {
+// from＝荷葉存檔（main.js 在荷葉落地時存下的快照 { pad, flies, rings, boostUsed, fliesGot, time }）：從那座荷葉重生，已吃的蒼蠅、圈圈、加速圈照快照
+export function createSim(level, from = null) {
+  const s = {
     level, t: 0, time: 0, started: false,
     x: level.start.x, y: level.start.y + T.FROG_R, vx: 0, vy: 0,
     angle: 0, omega: 0,
@@ -37,9 +38,20 @@ export function createSim(level) {
     flies: level.flies.map(() => false), rings: level.rings.map(() => false),
     fliesGot: 0, attaches: 0, flipsTotal: 0, bounces: 0, maxX: level.start.x,
     fanIn: -1, cause: null, near: [], nearMin: [], // 一般陣列：無盡模式會一直往關卡尾端加危險物
+    checkpoint: -1, boostUsed: (level.boosts ?? []).map(() => false), boosts: 0, boostT: -99,
     events: [],
   };
+  if (from) {
+    const p = level.pads[from.pad];
+    s.x = p.x; s.y = p.y + T.FROG_R; s.maxX = p.x; s.started = true; s.checkpoint = from.pad;
+    s.flies = from.flies.slice(); s.rings = from.rings.slice(); s.boostUsed = from.boostUsed.slice();
+    s.fliesGot = from.fliesGot; s.time = from.time;
+  }
+  return s;
 }
+
+// 荷葉存檔快照（main.js 在 'pad' 事件時存，tests/pad-check.mjs 也用）：createSim(level, snapshot) 從那座荷葉重生
+export const padSnapshot = (s) => ({ pad: s.checkpoint, flies: s.flies.slice(), rings: s.rings.slice(), boostUsed: s.boostUsed.slice(), fliesGot: s.fliesGot, time: s.time });
 
 function pickTarget(s) {
   const hooks = s.level.hooks;
@@ -253,6 +265,26 @@ export function step(s, dt, hold) {
     if (Math.hypot(s.x - tmp.x, s.y - tmp.y) < T.FLY_EAT_R) {
       s.flies[i] = true; s.fliesGot++;
       s.events.push({ type: 'fly', i, x: tmp.x, y: tmp.y });
+    }
+  }
+  for (let i = 0; i < lv.boosts.length; i++) {
+    const b = lv.boosts[i];
+    if (b.off || s.boostUsed[i]) continue;
+    if (Math.hypot(s.x - b.x, s.y - b.y) < T.BOOST_R) {
+      s.boostUsed[i] = true; s.boosts++; s.boostT = s.t;
+      s.vx += b.dx * T.BOOST_V; s.vy += b.dy * T.BOOST_V;
+      s.events.push({ type: 'boost', i, x: b.x, y: b.y, dx: b.dx, dy: b.dy, speed: Math.hypot(s.vx, s.vy) });
+    }
+  }
+  // 中途荷葉：跟終點同一套落地判定，但不結束關卡，變回站著（可以重新起跳）並記下存檔
+  for (let i = 0; i < lv.pads.length; i++) {
+    const p = lv.pads[i];
+    if (Math.abs(s.x - p.x) < p.w * 0.5 && s.y - R <= p.y + 0.1 && s.y > p.y - 1.4 && s.vy <= 0.5) {
+      const sp = Math.hypot(s.vx, s.vy);
+      s.mode = 'perch'; s.crouch = 0; s.vx = 0; s.vy = 0; s.omega = 0; s.angle = 0; s.y = p.y + R;
+      tg.state = 'idle'; tg.tip = 0; s.checkpoint = i;
+      s.events.push({ type: 'pad', i, x: s.x, y: s.y, speed: sp });
+      return;
     }
   }
   const g = lv.goal;

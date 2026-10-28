@@ -9,7 +9,7 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 export const MODELS = ['char-frog', 'char-cat', 'char-ape', 'acc-band', 'acc-helmet', 'acc-crown', 'prop-hook', 'prop-pad', 'prop-goal', 'prop-goalWall',
-  'prop-mush', 'prop-fan', 'prop-geyser', 'prop-spike', 'prop-saw', 'prop-ring', 'prop-coin', 'prop-fly', 'bg-cloud', 'bg-jungle-a', 'bg-jungle-b', 'bg-candy-a', 'bg-candy-b',
+  'prop-mush', 'prop-fan', 'prop-geyser', 'prop-spike', 'prop-saw', 'prop-ring', 'prop-boost', 'prop-coin', 'prop-fly', 'bg-cloud', 'bg-jungle-a', 'bg-jungle-b', 'bg-candy-a', 'bg-candy-b',
   'bg-city-a', 'bg-city-b', 'bg-volcano-a', 'bg-volcano-b', 'bg-frost-a', 'bg-frost-b', 'bg-frost-c'];
 
 // ------------------------------------------------------------------ characters (ids = hook-hero SKINS)
@@ -77,6 +77,7 @@ function worldPalette(w) {
     hazard: { c: [w.hazard], rough: 0.2, metal: 0.3, env: 1 }, hazardTip: { c: [w.hazardTip, w.hazardTip], rough: 0.25, emis: w.hazardTip, emisK: 0.35 },
     saw: { c: ['#4a5262', '#f2f6fa'], rough: 0.22, metal: 0.55, env: 1.2 }, hub: { c: [w.hub], rough: 0.25 },
     ring: { c: ['#ffc93c', '#fff3b0'], rough: 0.2, metal: 0.5, env: 1.2, emis: '#ffb300', emisK: 0.15 },
+    boost: { c: [w.accent ?? '#ff5fa8', '#ffffff'], rough: 0.25, env: 1, emis: w.accent ?? '#ff5fa8', emisK: 0.3 },
     coin: { c: ['#ffc93c', '#fff0a0'], rough: 0.2, metal: 0.6, env: 1.3 },
     flyBody: { c: ['#3b3a58', '#6a6890'], rough: 0.3 }, eye: { c: ['#ffffff'], rough: 0.08, env: 1 }, pupil: { c: ['#14131c'], rough: 0.06, env: 1 },
     wing: { basic: '#dff6ff', opacity: 0.6 }, cloud: { c: [w.cloud, '#d9ecff'], rough: 0.7, rim: 0 },

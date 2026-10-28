@@ -20,7 +20,7 @@ export default {
   'clear.clear': '¡SUPERADO!', 'clear.perfect': '¡PERFECTO!',
   'pop.level': 'NIVEL {level}', 'pop.worldLevel': '{world}  {level}', 'pop.endlessBest': 'INFINITO  RÉCORD {dist} m', 'pop.newRecord': '¡NUEVO RÉCORD!',
   'pop.flip1': '¡VUELTA!', 'pop.flip2': '¡VUELTA DOBLE!', 'pop.flip3': '¡VUELTA TRIPLE!', 'pop.flip4': '¡VUELTA CUÁDRUPLE!', 'pop.flipN': '¡¡{n}x VUELTA!!',
-  'pop.withPts': '{text} +{pts}', 'pop.pts': '+{pts}', 'pop.ring': '¡ARO! +{pts}', 'pop.boing': '¡BOING!', 'pop.closeCall': '¡POR LOS PELOS! +{pts}', 'pop.ouch': '¡AY!',
+  'pop.withPts': '{text} +{pts}', 'pop.pts': '+{pts}', 'pop.ring': '¡ARO! +{pts}', 'pop.boing': '¡BOING!', 'pop.checkpoint': '¡PUNTO DE CONTROL!', 'pop.boost': '¡ZUM!', 'pop.closeCall': '¡POR LOS PELOS! +{pts}', 'pop.ouch': '¡AY!',
   'pop.soClose': '¡CASI! {pct}%', 'pop.bullseye': '¡EN EL BLANCO!', 'pop.landed': '¡ATERRIZAJE!', 'pop.combo': '¡COMBO x{n}!', 'pop.coins': '¡+{n} MONEDAS!',
   'pop.noVideo': 'SIN VÍDEO AHORA MISMO', 'pop.endlessLocked': 'SUPERA ANTES EL NIVEL {level}',
   'featVal.spins': '{n} giros', 'featVal.stalled': '{v}s parado', 'featVal.speed': '{v} m/s', 'featVal.above': '{v} m sobre el agua', 'featVal.gap': '{v} m de margen', 'featVal.high': '{v} m de altura',
@@ -40,5 +40,5 @@ export default {
   'feat.skim': '¡BESO A LAS OLAS!', 'featLine.skim': 'Tocaste el agua y lo contaste.',
   'feat.shave': '¡AFEITADO AL RAS!', 'featLine.shave': 'A un pelo de los pinchos.',
   'feat.clutch': '¡SALVADA EN EL ÚLTIMO SEGUNDO!', 'featLine.clutch': '¡Te agarraste justo a tiempo!',
-  'new.title': '¡NUEVO!', 'new.mush': 'Seta saltarina', 'new.swarm': 'Enjambre de moscas', 'new.ring': 'Aro dorado', 'new.move': 'Gancho móvil', 'new.spikeLow': 'Pinchos bajos', 'new.mushChain': 'Cadena de setas', 'new.ringArc': 'Aro doble', 'new.fan': 'Ventilador', 'new.saw': 'Sierra', 'new.spikeHigh': 'Pinchos altos', 'new.tunnel': 'Pinchos arriba y abajo',
+  'new.title': '¡NUEVO!', 'new.mush': 'Seta saltarina', 'new.swarm': 'Enjambre de moscas', 'new.ring': 'Aro dorado', 'new.move': 'Gancho móvil', 'new.spikeLow': 'Pinchos bajos', 'new.mushChain': 'Cadena de setas', 'new.ringArc': 'Aro doble', 'new.fan': 'Ventilador', 'new.saw': 'Sierra', 'new.spikeHigh': 'Pinchos altos', 'new.tunnel': 'Pinchos arriba y abajo', 'new.pad': 'Nenúfar de control', 'new.boost': 'Aro de impulso',
 };

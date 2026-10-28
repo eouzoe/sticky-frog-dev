@@ -20,7 +20,7 @@ export default {
   'clear.clear': 'TAMAT!', 'clear.perfect': 'SEMPURNA!',
   'pop.level': 'LEVEL {level}', 'pop.worldLevel': '{world}  {level}', 'pop.endlessBest': 'TANPA BATAS  REKOR {dist} m', 'pop.newRecord': 'REKOR BARU!',
   'pop.flip1': 'SALTO!', 'pop.flip2': 'SALTO GANDA!', 'pop.flip3': 'SALTO TRIPEL!', 'pop.flip4': 'SALTO KUADRUPEL!', 'pop.flipN': '{n}x SALTO!!',
-  'pop.withPts': '{text} +{pts}', 'pop.pts': '+{pts}', 'pop.ring': 'CINCIN! +{pts}', 'pop.boing': 'BOING!', 'pop.closeCall': 'TIPIS BANGET! +{pts}', 'pop.ouch': 'ADUH!',
+  'pop.withPts': '{text} +{pts}', 'pop.pts': '+{pts}', 'pop.ring': 'CINCIN! +{pts}', 'pop.boing': 'BOING!', 'pop.checkpoint': 'CHECKPOINT!', 'pop.boost': 'NGEBUT!', 'pop.closeCall': 'TIPIS BANGET! +{pts}', 'pop.ouch': 'ADUH!',
   'pop.soClose': 'HAMPIR! {pct}%', 'pop.bullseye': 'TEPAT SASARAN!', 'pop.landed': 'MENDARAT!', 'pop.combo': 'KOMBO x{n}!', 'pop.coins': '+{n} KOIN!',
   'pop.noVideo': 'VIDEO BELUM TERSEDIA', 'pop.endlessLocked': 'TAMATKAN LEVEL {level} DULU',
   'featVal.spins': '{n} putaran', 'featVal.stalled': 'berhenti {v}d', 'featVal.speed': '{v} m/d', 'featVal.above': '{v} m di atas air', 'featVal.gap': 'jarak {v} m', 'featVal.high': 'setinggi {v} m',
@@ -39,5 +39,5 @@ export default {
   'feat.skim': 'CIUM OMBAK!', 'featLine.skim': 'Nyentuh air dan masih selamat.',
   'feat.shave': 'TIPIS SEKALI!', 'featLine.shave': 'Sehelai rambut dari duri.',
   'feat.clutch': 'SELAMAT DI DETIK AKHIR!', 'featLine.clutch': 'Nyangkut di detik terakhir!',
-  'new.title': 'BARU!', 'new.mush': 'Jamur Pantul', 'new.swarm': 'Kawanan Lalat', 'new.ring': 'Cincin Emas', 'new.move': 'Kait Bergerak', 'new.spikeLow': 'Duri Rendah', 'new.mushChain': 'Rantai Jamur', 'new.ringArc': 'Cincin Ganda', 'new.fan': 'Kipas', 'new.saw': 'Gergaji', 'new.spikeHigh': 'Duri Tinggi', 'new.tunnel': 'Duri Atas-Bawah',
+  'new.title': 'BARU!', 'new.mush': 'Jamur Pantul', 'new.swarm': 'Kawanan Lalat', 'new.ring': 'Cincin Emas', 'new.move': 'Kait Bergerak', 'new.spikeLow': 'Duri Rendah', 'new.mushChain': 'Rantai Jamur', 'new.ringArc': 'Cincin Ganda', 'new.fan': 'Kipas', 'new.saw': 'Gergaji', 'new.spikeHigh': 'Duri Tinggi', 'new.tunnel': 'Duri Atas-Bawah', 'new.pad': 'Teratai Checkpoint', 'new.boost': 'Cincin Pemacu',
 };

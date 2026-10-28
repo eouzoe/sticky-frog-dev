@@ -20,7 +20,7 @@ export default {
   'clear.clear': '過關！', 'clear.perfect': '完美！',
   'pop.level': '第 {level} 關', 'pop.worldLevel': '{world}  {level}', 'pop.endlessBest': '無盡  最佳 {dist} 公尺', 'pop.newRecord': '新紀錄！',
   'pop.flip1': '翻轉！', 'pop.flip2': '雙重翻轉！', 'pop.flip3': '三重翻轉！', 'pop.flip4': '四重翻轉！', 'pop.flipN': '{n} 連翻！！',
-  'pop.withPts': '{text} +{pts}', 'pop.pts': '+{pts}', 'pop.ring': '穿環！ +{pts}', 'pop.boing': '啵嚨！', 'pop.closeCall': '千鈞一髮！ +{pts}', 'pop.ouch': '好痛！',
+  'pop.withPts': '{text} +{pts}', 'pop.pts': '+{pts}', 'pop.ring': '穿環！ +{pts}', 'pop.boing': '啵嚨！', 'pop.checkpoint': '存檔！', 'pop.boost': '咻！', 'pop.closeCall': '千鈞一髮！ +{pts}', 'pop.ouch': '好痛！',
   'pop.soClose': '差一點！ {pct}%', 'pop.bullseye': '正中紅心！', 'pop.landed': '著陸！', 'pop.combo': '連擊 x{n}！', 'pop.coins': '+{n} 金幣！',
   'pop.noVideo': '目前沒有影片', 'pop.endlessLocked': '先通過第 {level} 關',
   'featVal.spins': '{n} 圈', 'featVal.stalled': '停頓 {v} 秒', 'featVal.speed': '{v} 公尺/秒', 'featVal.above': '離水面 {v} 公尺', 'featVal.gap': '間隙 {v} 公尺', 'featVal.high': '高度 {v} 公尺',
@@ -39,5 +39,5 @@ export default {
   'feat.skim': '親吻浪花！', 'featLine.skim': '碰到水還活得好好的。',
   'feat.shave': '擦邊球！', 'featLine.shave': '離尖刺只差一根頭髮。',
   'feat.clutch': '絕地救援！', 'featLine.clutch': '最後一秒死命抓住了！',
-  'new.title': '新！', 'new.mush': '彈跳蘑菇', 'new.swarm': '蒼蠅串', 'new.ring': '金圈', 'new.move': '移動鉤點', 'new.spikeLow': '低處尖刺', 'new.mushChain': '連續蘑菇', 'new.ringArc': '雙圈', 'new.fan': '風扇', 'new.saw': '鋸片', 'new.spikeHigh': '高處尖刺', 'new.tunnel': '上下夾擊',
+  'new.title': '新！', 'new.mush': '彈跳蘑菇', 'new.swarm': '蒼蠅串', 'new.ring': '金圈', 'new.move': '移動鉤點', 'new.spikeLow': '低處尖刺', 'new.mushChain': '連續蘑菇', 'new.ringArc': '雙圈', 'new.fan': '風扇', 'new.saw': '鋸片', 'new.spikeHigh': '高處尖刺', 'new.tunnel': '上下夾擊', 'new.pad': '中途荷葉', 'new.boost': '加速圈',
 };

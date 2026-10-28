@@ -15,7 +15,7 @@ function mulberry32(a) {
 }
 
 // 基本元素的解鎖關卡（第一次可能出現的關）；開場「NEW」字卡就看這張表。風扇、鋸片、高處尖刺、上下夾擊往後挪（MECHANICS §16）
-export const UNLOCK = { mush: 3, swarm: 4, ring: 5, move: 6, spikeLow: 8, mushChain: 9, ringArc: 12, fan: 18, saw: 22, spikeHigh: 25, tunnel: 33 };
+export const UNLOCK = { mush: 3, swarm: 4, ring: 5, move: 6, spikeLow: 8, mushChain: 9, ringArc: 12, fan: 18, saw: 22, spikeHigh: 25, tunnel: 33, pad: 63, boost: 69 };
 // NEW 字卡出現的關卡＝元素「實際第一次出現」的關（tests/unlock-check.mjs 掃 generateLevel 驗證）。
 // 跟 UNLOCK 不同的兩個（move 6→7、spikeLow 8→9）是解鎖那關剛好沒骰到，不改種子（前 10 關要保持不變）
 export const NEW_AT = { ...UNLOCK, move: 7, spikeLow: 9 };
@@ -23,32 +23,41 @@ export const NEW_AT = { ...UNLOCK, move: 7, spikeLow: 9 };
 export const newElements = (n) => Object.keys(NEW_AT).filter((k) => NEW_AT[k] === n);
 
 // 61 關以後每個世界內第幾關的節奏（MECHANICS §12）：teach＝招牌教學關（原本給冰舌的位置：diff 0.1、不放危險物），calm＝喘息（diff −0.1、危險段落機率減半）。
-// 冰舌、荷葉、加速圈這一階段都不做，所以沒有 NEW 標籤，只套節奏。
-const PLAN = { 1: { teach: true }, 2: { calm: true }, 4: { calm: true }, 6: { calm: true }, 8: { calm: true }, 11: { calm: true }, 14: { calm: true } };
+// pad／boost＝這一關保證放的中途荷葉（E1）、加速圈（E2）段落：陣列裡每個數字是「關卡長度的幾成處」。冰舌不做，原本的格子只套節奏。
+const PLAN = {
+  1: { teach: true }, 2: { calm: true }, 3: { pad: [0.5] }, 4: { calm: true, pad: [0.45] }, 6: { calm: true }, 7: { pad: [0.6] }, 8: { calm: true },
+  9: { boost: [0.5] }, 11: { calm: true, boost: [0.4] }, 12: { boost: [0.35, 0.7] }, 14: { calm: true }, 15: { pad: [0.3], boost: [0.65] },
+};
 const HAZARD = new Set(['spikeLow', 'spikeHigh', 'fan', 'saw', 'tunnel']);
+// 加速圈出口淨空：圈圈往前 BOOST_REACH、上下 BOOST_Y 的範圍內不能有尖刺／鋸片（含鋸片移動範圍），否則那顆加速圈關掉（b.off）
+export const BOOST_REACH = 19, BOOST_Y = 14;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 // 部分關卡換種子（tests/sim-check.mjs 的自動玩家破不了或太難的）
-export const SALT = { 12: 7, 19: 3, 31: 11, 50: 14, 20: 1, 23: 1, 25: 2, 26: 1, 29: 1, 32: 1, 33: 1, 37: 2, 38: 3, 41: 1, 42: 4, 43: 1, 44: 1, 46: 5, 51: 1, 54: 3, 56: 1, 58: 1, 60: 3, 61: 2, 62: 1, 65: 5, 66: 1, 67: 1, 68: 1, 69: 6, 70: 3, 71: 1, 74: 12 };
+export const SALT = { 12: 7, 19: 3, 31: 11, 50: 14, 20: 1, 23: 1, 25: 2, 26: 1, 29: 1, 32: 1, 33: 1, 37: 2, 38: 3, 41: 1, 42: 4, 43: 1, 44: 1, 46: 5, 51: 1, 54: 3, 56: 1, 58: 1, 60: 3, 61: 2, 62: 1, 63: 3, 64: 1, 65: 5, 66: 1, 68: 1, 69: 4, 70: 3, 71: 1, 74: 12 };
 
 export function generateLevel(n, salt = SALT[n] ?? 0) {
   const r = mulberry32(n * 7919 + 1013 + salt * 100003);
   const local = ((n - 1) % 15) / 14;
   // 前 60 關寫死 /59（LEVEL_COUNT 變動不能讓它們重新產生）；61 關以後每個世界從 0.45 爬到 0.85（MECHANICS §9.1）
   let diff = n <= 60 ? clamp(((n - 1) / 59) * 0.75 + local * 0.3, 0, 1) : 0.45 + local * 0.4;
-  const plan = n > 60 ? PLAN[(n - 1) % 15 + 1] : null;
+  const plan = n > 60 ? (PLAN[(n - 1) % 15 + 1] ?? {}) : null;
   if (plan?.teach) diff = 0.1;
   else if (plan?.calm) diff = Math.max(0.1, diff - 0.1);
   const L = {
     n, world: worldOf(n), diff,
     start: { x: 0, y: 3 },
-    hooks: [], mush: [], spikes: [], saws: [], fans: [], rings: [], flies: [],
+    hooks: [], mush: [], spikes: [], saws: [], fans: [], rings: [], flies: [], pads: [], boosts: [],
     goal: null, length: 0, par: 0,
   };
   const g = { r, x: 7, y: 11, prevType: 'hook' };
   firstHook(L, g);
   const targetLen = n === 1 ? 46 : 52 + Math.min(n, 60) * 3.4;
-  while (g.x < targetLen) addSegment(L, g, n, diff, plan);
+  const forces = plan ? [...(plan.pad ?? []).map((f) => [f, 'pad']), ...(plan.boost ?? []).map((f) => [f, 'boost'])].sort((a, b) => a[0] - b[0]) : [];
+  while (g.x < targetLen) {
+    if (!g.force && forces.length && g.x >= forces[0][0] * targetLen) g.force = forces.shift()[1];
+    addSegment(L, g, n, diff, plan);
+  }
   const x = g.x;
 
   const gx = x + 12;
@@ -57,7 +66,18 @@ export function generateLevel(n, salt = SALT[n] ?? 0) {
   L.length = gx;
   L.par = Math.round(L.length / TUNE.PAR_SPEED + 3);
   if (L.world === 3) addBursts(L);
+  markBoosts(L, Infinity);
   return L;
+}
+
+export function boostZoneClear(L, b) {
+  const x0 = b.x - 1.5, x1 = b.x + BOOST_REACH, y0 = b.y - BOOST_Y, y1 = b.y + BOOST_Y;
+  const hit = (x, y, r, ax = 0, ay = 0) => x + ax + r > x0 && x - ax - r < x1 && y + ay + r > y0 && y - ay - r < y1;
+  return !L.spikes.some((s) => hit(s.x, s.y, s.r)) && !L.saws.some((s) => hit(s.x, s.y, s.r, s.move.ax, s.move.ay));
+}
+// 還沒檢查過、而且出口範圍已經全部產生完（b.x + BOOST_REACH + 3 < doneX）的加速圈：出口不乾淨就關掉。無盡模式邊產生邊檢查，所以每次只看「已經產生完」的
+function markBoosts(L, doneX) {
+  for (const b of L.boosts) if (!b.checked && b.x + BOOST_REACH + 3 < doneX) { b.checked = true; if (!boostZoneClear(L, b)) b.off = true; }
 }
 
 // 火山的風扇改成蒸汽噴泉。相位用編號算（不抽亂數，關卡幾何不變）。
@@ -100,7 +120,13 @@ export function addSegment(L, g, n, diff, plan = null) {
   if (n >= U.mushChain) types.push('mushChain');
   if (n >= U.ringArc) types.push('ringArc');
   if (n >= U.tunnel) types.push('tunnel');
+  // 無盡模式（plan 是 null、n 夠大）才把荷葉、加速圈放進隨機池；61 關以後的正式關卡只放 PLAN 保證的那幾個
+  if (!plan && n >= U.pad) types.push('pad');
+  if (!plan && n >= U.boost) types.push('boost');
   let type = pick(types);
+  // 保證段落（PLAN）與加速圈後的緩衝：亂數照樣抽，只換掉結果，所以不影響沒有這些東西的關卡
+  if (g.force) { type = g.force; g.force = null; }
+  else if (g.calm > 0) { g.calm--; if (type !== 'hook') type = 'hook'; }
   // 節奏關（只有 61 關以後會帶 plan，前 60 關與無盡模式不經過這兩行，亂數序列不變）
   if (plan?.teach && HAZARD.has(type)) type = 'hook';
   else if (plan?.calm && HAZARD.has(type) && r() < 0.5) type = 'hook';
@@ -168,6 +194,23 @@ export function addSegment(L, g, n, diff, plan = null) {
     const mx = x - (dx + 0.5) * 0.5;
     L.spikes.push({ x: mx, y: 2.6 + diff * 1.4, r: 0.95, pole: true }, { x: mx, y: y + 5.6, r: 0.95, hang: true });
     fly(mx, y - 1.5);
+  } else if (type === 'pad') {
+    // 中途荷葉：兩根鉤點之間拉寬，中間水面上放一片荷葉。掉下去不會死，落在荷葉上＝存檔；青蛙在荷葉上重新起跳，下一根鉤點在前上方
+    const gap = 13 + r() * 2 + diff * 2;
+    const px = x + gap * 0.5;
+    L.pads.push({ x: px, y: 1.3, w: 7 });
+    fly(px, 5 + r() * 2);
+    x += gap; y = clamp(ny, 10.5, 13); hook(x, y);
+  } else if (type === 'boost') {
+    // 加速圈：放在兩根鉤點中間、擺盪弧線上，箭頭指向下一根鉤點（幫忙，不是非穿不可）；後面兩段只放普通鉤點，保證出口沒有尖刺和鋸片
+    const y0 = y;
+    x += dx; y = ny; hook(x, y);
+    // 擺盪弧線的低處（青蛙離開上一根鉤點後大約飛這個高度）
+    const bx = x - dx * 0.55, by = Math.max(5, y0 - 7.5);
+    const ex = x - bx, ey = y - by, el = Math.hypot(ex, ey);
+    L.boosts.push({ x: bx, y: by, dx: ex / el, dy: ey / el });
+    fly(bx + 1, by + 2);
+    g.calm = 2;
   } else if (type === 'saw') {
     x += dx + 0.5; y = ny; hook(x, y);
     const sx = x - (dx + 0.5) * 0.5;
@@ -185,12 +228,13 @@ export const ENDLESS_WORLD_LEN = 450;
 // 輪替幾個世界：預設前四個；打過第 60 關（解鎖了冰峰）之後 main.js 傳 5（MECHANICS §15）
 export const endlessWorld = (x, count = 4) => Math.floor(Math.max(0, x) / ENDLESS_WORLD_LEN) % count;
 export const endlessDiff = (x) => clamp(0.12 + x / 2600, 0, 1);
-export const endlessUnlockN = (x) => clamp(Math.floor(3 + x / 22), 3, 60);
-export function createEndless(seed) {
+// cap＝玩家主線打過的關數（至少 60，最多 LEVEL_COUNT）：沒在主線學過的元素（荷葉 63、加速圈 69）不會先在無盡模式出現
+export const endlessUnlockN = (x, cap = 60) => clamp(Math.floor(3 + x / 22), 3, cap);
+export function createEndless(seed, cap = 60) {
   const L = {
-    n: 0, endless: true, seed, world: 0, diff: 0,
+    n: 0, endless: true, seed, cap, world: 0, diff: 0,
     start: { x: 0, y: 3 },
-    hooks: [], mush: [], spikes: [], saws: [], fans: [], rings: [], flies: [],
+    hooks: [], mush: [], spikes: [], saws: [], fans: [], rings: [], flies: [], pads: [], boosts: [],
     goal: { x: 1e6, y: -100, w: 1, wall: 1e6 + 6 }, // 沒有終點：放在碰不到的地方，sim 的落地／後牆判定永遠不成立
     length: 0, par: 0,
     gen: { r: mulberry32(seed * 2654435761 + 7), x: 7, y: 11, prevType: 'hook' },
@@ -202,7 +246,8 @@ export function createEndless(seed) {
 // 產生到 untilX 為止；回傳有沒有新增段落
 export function extendEndless(L, untilX) {
   const g = L.gen, x0 = g.x;
-  while (g.x < untilX) addSegment(L, g, endlessUnlockN(g.x), endlessDiff(g.x));
+  while (g.x < untilX) addSegment(L, g, endlessUnlockN(g.x, L.cap), endlessDiff(g.x));
+  markBoosts(L, g.x);
   L.length = g.x;
   return g.x > x0;
 }

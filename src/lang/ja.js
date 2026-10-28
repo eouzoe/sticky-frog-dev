@@ -20,7 +20,7 @@ export default {
   'clear.clear': 'クリア！', 'clear.perfect': 'パーフェクト！',
   'pop.level': 'ステージ {level}', 'pop.worldLevel': '{world}  {level}', 'pop.endlessBest': 'エンドレス  ベスト {dist} m', 'pop.newRecord': '新記録！',
   'pop.flip1': 'フリップ！', 'pop.flip2': 'ダブルフリップ！', 'pop.flip3': 'トリプルフリップ！', 'pop.flip4': 'クアッドフリップ！', 'pop.flipN': '{n}連フリップ！！',
-  'pop.withPts': '{text} +{pts}', 'pop.pts': '+{pts}', 'pop.ring': 'リング！ +{pts}', 'pop.boing': 'ボヨ〜ン！', 'pop.closeCall': 'ギリギリ！ +{pts}', 'pop.ouch': 'いてっ！',
+  'pop.withPts': '{text} +{pts}', 'pop.pts': '+{pts}', 'pop.ring': 'リング！ +{pts}', 'pop.boing': 'ボヨ〜ン！', 'pop.checkpoint': 'チェックポイント！', 'pop.boost': 'ビューン！', 'pop.closeCall': 'ギリギリ！ +{pts}', 'pop.ouch': 'いてっ！',
   'pop.soClose': '惜しい！ {pct}%', 'pop.bullseye': 'ど真ん中！', 'pop.landed': '着地！', 'pop.combo': '{n}コンボ！', 'pop.coins': 'コイン +{n}！',
   'pop.noVideo': '今は動画がありません', 'pop.endlessLocked': '先にステージ{level}をクリアしよう',
   'featVal.spins': '{n}回転', 'featVal.stalled': '停止 {v}秒', 'featVal.speed': '{v} m/秒', 'featVal.above': '水面から{v} m', 'featVal.gap': 'すき間 {v} m', 'featVal.high': '高さ {v} m',
@@ -39,5 +39,5 @@ export default {
   'feat.skim': '波にキス！', 'featLine.skim': '水に触れたのに生還！',
   'feat.shave': 'ヒゲそりギリギリ！', 'featLine.shave': 'トゲまであとほんの少し。',
   'feat.clutch': '土壇場セーブ！', 'featLine.clutch': 'ラスト1秒でつかんだ！',
-  'new.title': '新登場！', 'new.mush': 'バウンドキノコ', 'new.swarm': 'ハエの群れ', 'new.ring': '金のリング', 'new.move': '動くフック', 'new.spikeLow': '低いトゲ', 'new.mushChain': '連続キノコ', 'new.ringArc': 'ダブルリング', 'new.fan': 'ファン', 'new.saw': 'ノコギリ', 'new.spikeHigh': '高いトゲ', 'new.tunnel': '上下トゲ',
+  'new.title': '新登場！', 'new.mush': 'バウンドキノコ', 'new.swarm': 'ハエの群れ', 'new.ring': '金のリング', 'new.move': '動くフック', 'new.spikeLow': '低いトゲ', 'new.mushChain': '連続キノコ', 'new.ringArc': 'ダブルリング', 'new.fan': 'ファン', 'new.saw': 'ノコギリ', 'new.spikeHigh': '高いトゲ', 'new.tunnel': '上下トゲ', 'new.pad': 'チェックポイントのハス', 'new.boost': 'ブーストリング',
 };

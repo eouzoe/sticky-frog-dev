@@ -20,7 +20,7 @@ export default {
   'clear.clear': 'ПРОЙДЕНО!', 'clear.perfect': 'ИДЕАЛЬНО!',
   'pop.level': 'УРОВЕНЬ {level}', 'pop.worldLevel': '{world}  {level}', 'pop.endlessBest': 'БЕСКОНЕЧНО  РЕКОРД {dist} м', 'pop.newRecord': 'НОВЫЙ РЕКОРД!',
   'pop.flip1': 'САЛЬТО!', 'pop.flip2': 'ДВОЙНОЕ САЛЬТО!', 'pop.flip3': 'ТРОЙНОЕ САЛЬТО!', 'pop.flip4': 'ЧЕТВЕРНОЕ САЛЬТО!', 'pop.flipN': '{n}x САЛЬТО!!',
-  'pop.withPts': '{text} +{pts}', 'pop.pts': '+{pts}', 'pop.ring': 'КОЛЬЦО! +{pts}', 'pop.boing': 'БОЙНГ!', 'pop.closeCall': 'ЧУТЬ НЕ ЗАДЕЛ! +{pts}', 'pop.ouch': 'ОЙ!',
+  'pop.withPts': '{text} +{pts}', 'pop.pts': '+{pts}', 'pop.ring': 'КОЛЬЦО! +{pts}', 'pop.boing': 'БОЙНГ!', 'pop.checkpoint': 'ЧЕКПОЙНТ!', 'pop.boost': 'ЗУМ!', 'pop.closeCall': 'ЧУТЬ НЕ ЗАДЕЛ! +{pts}', 'pop.ouch': 'ОЙ!',
   'pop.soClose': 'ПОЧТИ! {pct}%', 'pop.bullseye': 'В ЯБЛОЧКО!', 'pop.landed': 'ПРИЗЕМЛИЛСЯ!', 'pop.combo': 'КОМБО x{n}!', 'pop.coins': '+{n} МОНЕТ!',
   'pop.noVideo': 'ВИДЕО СЕЙЧАС НЕТ', 'pop.endlessLocked': 'СНАЧАЛА ПРОЙДИ УРОВЕНЬ {level}',
   'featVal.spins': 'оборотов: {n}', 'featVal.stalled': 'простой: {v} с', 'featVal.speed': '{v} м/с', 'featVal.above': '{v} м над водой', 'featVal.gap': 'зазор {v} м', 'featVal.high': 'высота {v} м',
@@ -39,5 +39,5 @@ export default {
   'feat.skim': 'ПОЦЕЛУЙ ВОЛНЫ!', 'featLine.skim': 'Коснулся воды и выжил.',
   'feat.shave': 'ВОЛОСОК ОТ БЕДЫ!', 'featLine.shave': 'На волосок от шипов.',
   'feat.clutch': 'СПАСЕНИЕ В ПОСЛЕДНИЙ МИГ!', 'featLine.clutch': 'Схватился в самую последнюю секунду!',
-  'new.title': 'НОВОЕ!', 'new.mush': 'Грибы-батуты', 'new.swarm': 'Рой мух', 'new.ring': 'Золотое кольцо', 'new.move': 'Движущийся крюк', 'new.spikeLow': 'Низкие шипы', 'new.mushChain': 'Цепочка грибов', 'new.ringArc': 'Двойное кольцо', 'new.fan': 'Вентилятор', 'new.saw': 'Пила', 'new.spikeHigh': 'Высокие шипы', 'new.tunnel': 'Шипы сверху и снизу',
+  'new.title': 'НОВОЕ!', 'new.mush': 'Грибы-батуты', 'new.swarm': 'Рой мух', 'new.ring': 'Золотое кольцо', 'new.move': 'Движущийся крюк', 'new.spikeLow': 'Низкие шипы', 'new.mushChain': 'Цепочка грибов', 'new.ringArc': 'Двойное кольцо', 'new.fan': 'Вентилятор', 'new.saw': 'Пила', 'new.spikeHigh': 'Высокие шипы', 'new.tunnel': 'Шипы сверху и снизу', 'new.pad': 'Кувшинка-чекпойнт', 'new.boost': 'Ускоряющее кольцо',
 };

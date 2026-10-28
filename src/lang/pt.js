@@ -20,7 +20,7 @@ export default {
   'clear.clear': 'COMPLETA!', 'clear.perfect': 'PERFEITO!',
   'pop.level': 'FASE {level}', 'pop.worldLevel': '{world}  {level}', 'pop.endlessBest': 'INFINITO  RECORDE {dist} m', 'pop.newRecord': 'NOVO RECORDE!',
   'pop.flip1': 'GIRO!', 'pop.flip2': 'GIRO DUPLO!', 'pop.flip3': 'GIRO TRIPLO!', 'pop.flip4': 'GIRO QUÁDRUPLO!', 'pop.flipN': '{n}x GIRO!!',
-  'pop.withPts': '{text} +{pts}', 'pop.pts': '+{pts}', 'pop.ring': 'ARGOLA! +{pts}', 'pop.boing': 'BOING!', 'pop.closeCall': 'NA TRAVE! +{pts}', 'pop.ouch': 'AI!',
+  'pop.withPts': '{text} +{pts}', 'pop.pts': '+{pts}', 'pop.ring': 'ARGOLA! +{pts}', 'pop.boing': 'BOING!', 'pop.checkpoint': 'CHECKPOINT!', 'pop.boost': 'ZUM!', 'pop.closeCall': 'NA TRAVE! +{pts}', 'pop.ouch': 'AI!',
   'pop.soClose': 'QUASE! {pct}%', 'pop.bullseye': 'NA MOSCA!', 'pop.landed': 'POUSOU!', 'pop.combo': 'COMBO x{n}!', 'pop.coins': '+{n} MOEDAS!',
   'pop.noVideo': 'SEM VÍDEO NO MOMENTO', 'pop.endlessLocked': 'VENÇA A FASE {level} ANTES',
   'featVal.spins': '{n} giros', 'featVal.stalled': '{v}s parado', 'featVal.speed': '{v} m/s', 'featVal.above': '{v} m acima', 'featVal.gap': '{v} m de folga', 'featVal.high': '{v} m de altura',
@@ -39,5 +39,5 @@ export default {
   'feat.skim': 'BEIJA-ONDA!', 'featLine.skim': 'Tocou na água e sobreviveu.',
   'feat.shave': 'BARBA FEITA!', 'featLine.shave': 'Por um fio dos espinhos.',
   'feat.clutch': 'SALVOU NA HORA H!', 'featLine.clutch': 'Agarrou no último segundo!',
-  'new.title': 'NOVO!', 'new.mush': 'Cogumelo saltitante', 'new.swarm': 'Enxame de moscas', 'new.ring': 'Anel dourado', 'new.move': 'Gancho móvel', 'new.spikeLow': 'Espinhos baixos', 'new.mushChain': 'Fila de cogumelos', 'new.ringArc': 'Anel duplo', 'new.fan': 'Ventilador', 'new.saw': 'Serra', 'new.spikeHigh': 'Espinhos altos', 'new.tunnel': 'Espinhos em cima e embaixo',
+  'new.title': 'NOVO!', 'new.mush': 'Cogumelo saltitante', 'new.swarm': 'Enxame de moscas', 'new.ring': 'Anel dourado', 'new.move': 'Gancho móvel', 'new.spikeLow': 'Espinhos baixos', 'new.mushChain': 'Fila de cogumelos', 'new.ringArc': 'Anel duplo', 'new.fan': 'Ventilador', 'new.saw': 'Serra', 'new.spikeHigh': 'Espinhos altos', 'new.tunnel': 'Espinhos em cima e embaixo', 'new.pad': 'Vitória-régia de checkpoint', 'new.boost': 'Anel de impulso',
 };

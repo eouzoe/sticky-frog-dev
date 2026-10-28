@@ -99,7 +99,7 @@ export default {
   'pop.withPts': '{text} +{pts}',
   'pop.pts': '+{pts}',
   'pop.ring': 'RING! +{pts}',
-  'pop.boing': 'BOING!',
+  'pop.boing': 'BOING!', 'pop.checkpoint': 'CHECKPOINT!', 'pop.boost': 'ZOOM!',
   'pop.closeCall': 'CLOSE CALL! +{pts}',
   'pop.ouch': 'OUCH!',
   'pop.soClose': 'SO CLOSE! {pct}%',
@@ -140,5 +140,5 @@ export default {
   'new.fan': 'Fan',
   'new.saw': 'Saw Blade',
   'new.spikeHigh': 'High Spikes',
-  'new.tunnel': 'Spike Squeeze',
+  'new.tunnel': 'Spike Squeeze', 'new.pad': 'Checkpoint Lily', 'new.boost': 'Boost Ring',
 };

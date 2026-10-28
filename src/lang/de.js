@@ -20,7 +20,7 @@ export default {
   'clear.clear': 'GESCHAFFT!', 'clear.perfect': 'PERFEKT!',
   'pop.level': 'LEVEL {level}', 'pop.worldLevel': '{world}  {level}', 'pop.endlessBest': 'ENDLOS  REKORD {dist} m', 'pop.newRecord': 'NEUER REKORD!',
   'pop.flip1': 'SALTO!', 'pop.flip2': 'DOPPELSALTO!', 'pop.flip3': 'DREIFACHSALTO!', 'pop.flip4': 'VIERFACHSALTO!', 'pop.flipN': '{n}x SALTO!!',
-  'pop.withPts': '{text} +{pts}', 'pop.pts': '+{pts}', 'pop.ring': 'RING! +{pts}', 'pop.boing': 'BOING!', 'pop.closeCall': 'KNAPP! +{pts}', 'pop.ouch': 'AUA!',
+  'pop.withPts': '{text} +{pts}', 'pop.pts': '+{pts}', 'pop.ring': 'RING! +{pts}', 'pop.boing': 'BOING!', 'pop.checkpoint': 'CHECKPOINT!', 'pop.boost': 'ZOOM!', 'pop.closeCall': 'KNAPP! +{pts}', 'pop.ouch': 'AUA!',
   'pop.soClose': 'SO NAH! {pct}%', 'pop.bullseye': 'VOLLTREFFER!', 'pop.landed': 'GELANDET!', 'pop.combo': 'KOMBO x{n}!', 'pop.coins': '+{n} MÜNZEN!',
   'pop.noVideo': 'GERADE KEIN VIDEO', 'pop.endlessLocked': 'SCHAFFE ERST LEVEL {level}',
   'featVal.spins': '{n} Drehungen', 'featVal.stalled': '{v}s Stillstand', 'featVal.speed': '{v} m/s', 'featVal.above': '{v} m drüber', 'featVal.gap': '{v} m Abstand', 'featVal.high': '{v} m hoch',
@@ -39,5 +39,5 @@ export default {
   'feat.skim': 'WELLENKÜSSER!', 'featLine.skim': 'Wasser berührt und überlebt.',
   'feat.shave': 'HAARSCHARF!', 'featLine.shave': 'Nur ein Haar von den Stacheln entfernt.',
   'feat.clutch': 'RETTUNG IM LETZTEN MOMENT!', 'featLine.clutch': 'In der allerletzten Sekunde gegriffen!',
-  'new.title': 'NEU!', 'new.mush': 'Sprungpilz', 'new.swarm': 'Fliegenschwarm', 'new.ring': 'Goldring', 'new.move': 'Wanderhaken', 'new.spikeLow': 'Bodenstacheln', 'new.mushChain': 'Pilzkette', 'new.ringArc': 'Doppelring', 'new.fan': 'Ventilator', 'new.saw': 'Sägeblatt', 'new.spikeHigh': 'Deckenstacheln', 'new.tunnel': 'Stachelzange',
+  'new.title': 'NEU!', 'new.mush': 'Sprungpilz', 'new.swarm': 'Fliegenschwarm', 'new.ring': 'Goldring', 'new.move': 'Wanderhaken', 'new.spikeLow': 'Bodenstacheln', 'new.mushChain': 'Pilzkette', 'new.ringArc': 'Doppelring', 'new.fan': 'Ventilator', 'new.saw': 'Sägeblatt', 'new.spikeHigh': 'Deckenstacheln', 'new.tunnel': 'Stachelzange', 'new.pad': 'Seerosen-Checkpoint', 'new.boost': 'Boost-Ring',
 };

@@ -24,6 +24,8 @@ export const TUNE = {
   FLIP_TOLERANCE: 0.26, // 差 15° 內也算轉滿一圈
   FLY_EAT_R: 2.6, // 蒼蠅進入這個距離就自動舔掉
   RING_R: 1.9,
+  BOOST_V: 12, // 加速圈：進圈時沿箭頭方向加的速度
+  BOOST_R: 2.1, // 加速圈的觸發半徑
   MUSH_MIN_BOUNCE: 17,
   MUSH_REST: 1.0,
   MUSH_VX: 10, // 從上面踩到蘑菇：固定往前 10、往上 19 彈出（可預測，連續蘑菇間距剛好一跳）

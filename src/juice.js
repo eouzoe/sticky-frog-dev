@@ -84,6 +84,17 @@ export function createJuice(c) {
     },
     close(e) { stars(e.x, e.y, 8, { colors: ['#ffffff', '#fff3a0'], speed: 7 }); fx.shock(e.x, e.y, 2.5, '#ffffff', 0.3); c.slowmo(0.35); frog.jiggle(6); c.sfx('whoosh'); },
     wall(s, w) { frog.squash(0.6, Math.PI / 2); frog.jelly(4); candy(s.x + 0.5, s.y, 6, [w.pad, w.vine], { speed: 5 }); small(0.22); },
+    // 荷葉落地（一次：一圈白色果凍環＋6 顆糖＋3 顆泡泡，小震動，沒有停格、慢動作、閃光）
+    pad(e, w) {
+      frog.squash(0.6, 0); frog.jelly(4); candy(e.x, e.y - 0.4, 6, [w.pad, w.vein ?? '#ffffff', '#ffffff'], { speed: 6, dir: Math.PI / 2, spread: 2.4, size: 0.24 });
+      bubbles(e.x, e.y - 0.4, 3, { speed: 3 }); fx.shock(e.x, e.y - 0.5, 3.4, '#ffffff', 0.4, true); small(0.12);
+    },
+    // 穿過加速圈（一次：沿箭頭方向的 8 顆閃星＋一圈世界點綴色環，視野拉開一點，小震動，沒有停格、慢動作、閃光）
+    boost(e, w) {
+      const a = Math.atan2(e.dy, e.dx);
+      stars(e.x, e.y, 8, { colors: [w.petal, '#ffffff', '#fff3a0'], speed: 12, dir: a, spread: 0.5, size: 0.28 });
+      fx.shock(e.x, e.y, 3.6, w.petal, 0.4); frog.jiggle(5); G.fovKick = Math.max(G.fovKick, 6); small(0.1);
+    },
     fan(s) { bubbles(s.x, s.y - 0.5, 5, { speed: 5, dir: Math.PI / 2, spread: 0.6, grav: -6 }); },
     // 成就（UI 線負責 DOM 大字；這裡只做場景配合）
     feat(kind, x, y) {

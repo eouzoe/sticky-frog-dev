@@ -20,7 +20,7 @@ export default {
   'clear.clear': 'TAMAM!', 'clear.perfect': 'MÜKEMMEL!',
   'pop.level': 'BÖLÜM {level}', 'pop.worldLevel': '{world}  {level}', 'pop.endlessBest': 'SONSUZ  REKOR {dist} m', 'pop.newRecord': 'YENİ REKOR!',
   'pop.flip1': 'TAKLA!', 'pop.flip2': 'ÇİFT TAKLA!', 'pop.flip3': 'ÜÇLÜ TAKLA!', 'pop.flip4': 'DÖRTLÜ TAKLA!', 'pop.flipN': '{n}x TAKLA!!',
-  'pop.withPts': '{text} +{pts}', 'pop.pts': '+{pts}', 'pop.ring': 'HALKA! +{pts}', 'pop.boing': 'BOİNG!', 'pop.closeCall': 'ÇOK YAKINDI! +{pts}', 'pop.ouch': 'AY!',
+  'pop.withPts': '{text} +{pts}', 'pop.pts': '+{pts}', 'pop.ring': 'HALKA! +{pts}', 'pop.boing': 'BOİNG!', 'pop.checkpoint': 'KONTROL NOKTASI!', 'pop.boost': 'ZUUM!', 'pop.closeCall': 'ÇOK YAKINDI! +{pts}', 'pop.ouch': 'AY!',
   'pop.soClose': 'ÇOK YAKIN! %{pct}', 'pop.bullseye': 'TAM İSABET!', 'pop.landed': 'İNDİ!', 'pop.combo': 'KOMBO x{n}!', 'pop.coins': '+{n} ALTIN!',
   'pop.noVideo': 'ŞU AN VİDEO YOK', 'pop.endlessLocked': 'ÖNCE {level}. BÖLÜMÜ GEÇ',
   'featVal.spins': '{n} dönüş', 'featVal.stalled': '{v}sn durdu', 'featVal.speed': '{v} m/sn', 'featVal.above': '{v} m yukarıda', 'featVal.gap': '{v} m boşluk', 'featVal.high': '{v} m yüksek',
@@ -39,5 +39,5 @@ export default {
   'feat.skim': 'DALGA ÖPÜCÜĞÜ!', 'featLine.skim': 'Suya dokundun ve kurtuldun.',
   'feat.shave': 'KIL PAYI!', 'featLine.shave': 'Dikenlerden bir tüy farkla.',
   'feat.clutch': 'SON SANİYE KURTARIŞI!', 'featLine.clutch': 'Tam son saniyede yakaladın!',
-  'new.title': 'YENİ!', 'new.mush': 'Zıplayan Mantar', 'new.swarm': 'Sinek Sürüsü', 'new.ring': 'Altın Halka', 'new.move': 'Hareketli Kanca', 'new.spikeLow': 'Alçak Dikenler', 'new.mushChain': 'Mantar Zinciri', 'new.ringArc': 'Çift Halka', 'new.fan': 'Fan', 'new.saw': 'Testere', 'new.spikeHigh': 'Yüksek Dikenler', 'new.tunnel': 'Alt-Üst Dikenler',
+  'new.title': 'YENİ!', 'new.mush': 'Zıplayan Mantar', 'new.swarm': 'Sinek Sürüsü', 'new.ring': 'Altın Halka', 'new.move': 'Hareketli Kanca', 'new.spikeLow': 'Alçak Dikenler', 'new.mushChain': 'Mantar Zinciri', 'new.ringArc': 'Çift Halka', 'new.fan': 'Fan', 'new.saw': 'Testere', 'new.spikeHigh': 'Yüksek Dikenler', 'new.tunnel': 'Alt-Üst Dikenler', 'new.pad': 'Kontrol Noktası Nilüfer', 'new.boost': 'Hız Halkası',
 };

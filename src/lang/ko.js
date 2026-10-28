@@ -20,7 +20,7 @@ export default {
   'clear.clear': '클리어!', 'clear.perfect': '퍼펙트!',
   'pop.level': '스테이지 {level}', 'pop.worldLevel': '{world}  {level}', 'pop.endlessBest': '무한  최고 {dist} m', 'pop.newRecord': '신기록!',
   'pop.flip1': '플립!', 'pop.flip2': '더블 플립!', 'pop.flip3': '트리플 플립!', 'pop.flip4': '쿼드 플립!', 'pop.flipN': '{n}연속 플립!!',
-  'pop.withPts': '{text} +{pts}', 'pop.pts': '+{pts}', 'pop.ring': '링! +{pts}', 'pop.boing': '뿅!', 'pop.closeCall': '아슬아슬! +{pts}', 'pop.ouch': '아야!',
+  'pop.withPts': '{text} +{pts}', 'pop.pts': '+{pts}', 'pop.ring': '링! +{pts}', 'pop.boing': '뿅!', 'pop.checkpoint': '체크포인트!', 'pop.boost': '부웅!', 'pop.closeCall': '아슬아슬! +{pts}', 'pop.ouch': '아야!',
   'pop.soClose': '아깝다! {pct}%', 'pop.bullseye': '정중앙!', 'pop.landed': '착지!', 'pop.combo': '콤보 x{n}!', 'pop.coins': '코인 +{n}!',
   'pop.noVideo': '지금은 영상이 없어요', 'pop.endlessLocked': '먼저 스테이지 {level}을(를) 클리어하세요',
   'featVal.spins': '{n}회전', 'featVal.stalled': '정지 {v}초', 'featVal.speed': '{v} m/s', 'featVal.above': '수면 위 {v} m', 'featVal.gap': '간격 {v} m', 'featVal.high': '높이 {v} m',
@@ -39,5 +39,5 @@ export default {
   'feat.skim': '파도와 뽀뽀!', 'featLine.skim': '물에 닿고도 살아남았다.',
   'feat.shave': '털끝 차이!', 'featLine.shave': '가시와 머리카락 한 올 차이.',
   'feat.clutch': '막판 구출!', 'featLine.clutch': '마지막 1초에 붙잡았다!',
-  'new.title': 'NEW!', 'new.mush': '점프 버섯', 'new.swarm': '파리 떼', 'new.ring': '황금 링', 'new.move': '움직이는 고리', 'new.spikeLow': '낮은 가시', 'new.mushChain': '연속 버섯', 'new.ringArc': '더블 링', 'new.fan': '선풍기', 'new.saw': '톱날', 'new.spikeHigh': '높은 가시', 'new.tunnel': '위아래 가시',
+  'new.title': 'NEW!', 'new.mush': '점프 버섯', 'new.swarm': '파리 떼', 'new.ring': '황금 링', 'new.move': '움직이는 고리', 'new.spikeLow': '낮은 가시', 'new.mushChain': '연속 버섯', 'new.ringArc': '더블 링', 'new.fan': '선풍기', 'new.saw': '톱날', 'new.spikeHigh': '높은 가시', 'new.tunnel': '위아래 가시', 'new.pad': '체크포인트 연잎', 'new.boost': '부스트 링',
 };
