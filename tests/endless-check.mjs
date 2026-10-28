@@ -7,7 +7,8 @@ import { createEndless, extendEndless, endlessDiff, endlessWorld, ENDLESS_WORLD_
 import { createSim, step } from '../src/sim.js';
 import { makeBot } from '../src/bot.js';
 
-export const TARGET = 4 * ENDLESS_WORLD_LEN; // 跑完四個世界（1800 單位，難度 0.12 → 0.81）
+export const TARGET = Number(process.env.ENDLESS_TARGET ?? 4 * ENDLESS_WORLD_LEN); // 預設跑完四個世界（1800 單位，難度 0.12 → 0.81）；ENDLESS_TARGET=2800 ENDLESS_CAP=90 會一路接力穿過沙丘世界那一段（2250–2700）
+const CAP = Number(process.env.ENDLESS_CAP ?? 75);
 const SEEDS = Number(process.argv[2] ?? 12);
 const PARAMS = [];
 for (const rel of [0.25, 0.4, 0.55, 0.7]) for (const gv of [-2, 2, 6]) PARAMS.push([rel, gv]);
@@ -18,7 +19,7 @@ const LEG = 60, BEAM = 6;
 const clone = (s) => ({ ...structuredClone({ ...s, level: null }), level: s.level });
 let fails = 0, soloBest = 0;
 for (let seed = 1; seed <= SEEDS; seed++) {
-  const L = createEndless(seed, 75); // 打過第 75 關：荷葉（63）、加速圈（69）都學過了
+  const L = createEndless(seed, CAP); // 預設打過第 75 關：荷葉（63）、加速圈（69）都學過了；CAP=90 連沙丘（76）也學過
   let beam = [createSim(L)], legs = 0, stuck = null;
   while (beam[0].maxX < TARGET) {
     const next = [];

@@ -107,5 +107,28 @@
  },
  {
   "shot": "dune-after"
+ },
+ {
+  "eval": "window.__game.startEndless()"
+ },
+ {
+  "wait": 900
+ },
+ {
+  "eval": "(() => { const s = window.__game.sim; s.x = 2300; s.y = 9; s.vx = 0; s.vy = 0; s.mode = 'perch'; s.started = true; s.tongue.state = 'idle'; return s.x; })()"
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "assert": "window.__game.endless && window.__game.sim.level.world === 5 && document.body.dataset.world === '5'",
+  "msg": "無盡模式：75 關舊存檔（解鎖 76）跑到 x=2300 輪替到第 6 世界（夕陽沙丘）"
+ },
+ {
+  "assert": "window.__game.sim.level.dunes.length === 0",
+  "msg": "無盡模式：第 76 關還沒破（元素上限 75），沙丘世界裡沒有沙丘段落"
+ },
+ {
+  "shot": "endless-dunes-world"
  }
 ]

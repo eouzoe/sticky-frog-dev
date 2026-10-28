@@ -29,10 +29,10 @@ const PLAN = {
   9: { boost: [0.5] }, 11: { calm: true, boost: [0.4] }, 12: { boost: [0.35, 0.7] }, 14: { calm: true }, 15: { pad: [0.3], boost: [0.65] },
 };
 // 第 6 世界（76–90 關，夕陽沙丘）的節奏，同樣以世界內第幾關為鍵（MECHANICS §12，§16 裁定後的版本）。dune＝這一關保證放的沙丘段落（關卡長度的幾成處）；
-// tall＝坡頂更高更陡（6-5 LAUNCH LIP）、grab＝下一根鉤點離坡頂近、滑行中就能出舌（6-13 SURF & GRAB）、long＝加長的沙丘（6-10）。沙丘只當安全網／捷徑，拿掉也能過。
+// tall＝坡頂更高更陡（6-5 LAUNCH LIP）、grab＝下一根鉤點離坡頂近、滑行中就能出舌（6-13 SURF & GRAB）、long＝加長的沙丘（6-1 教學關與 6-10）。沙丘只當安全網／捷徑，拿掉也能過。
 // 6-3、6-7（泡泡盾 E3）、6-9、6-12（岔路 E4）的格子第一階段先排一般內容（只套節奏），第二階段要換成 E3／E4。
 const PLAN6 = {
-  1: { teach: true, dune: [0.3, 0.62] }, 2: { calm: true, dune: [0.5] }, 3: { dune: [0.4] }, 4: { calm: true, dune: [0.3, 0.65] }, 5: { dune: [0.35, 0.7], tall: true },
+  1: { teach: true, long: true, dune: [0.3, 0.62] }, 2: { calm: true, dune: [0.5] }, 3: { dune: [0.4] }, 4: { calm: true, dune: [0.3, 0.65] }, 5: { dune: [0.35, 0.7], tall: true },
   6: { calm: true }, 7: { dune: [0.5] }, 8: { calm: true }, 9: { dune: [0.4] }, 10: { dune: [0.3, 0.6], long: true }, 11: { calm: true }, 12: { dune: [0.35, 0.7] },
   13: { dune: [0.4, 0.75], grab: true }, 14: { calm: true }, 15: { dune: [0.25, 0.5, 0.75], tall: true },
 };
