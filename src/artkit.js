@@ -61,11 +61,11 @@ export const WORLD_PAL = [
     hazard: '#1e1416', hazardTip: '#ffdd33', saw: '#ffcf40', sawStripe: '#1e1416', hub: '#ff3a00', glow: 1,
     rock: '#2e2224', rock2: '#55444a', lava: '#ff6a1a', accent: '#ff6a1a', cloud: '#6a3a30' },
   // 冰峰：冰藍、白、莓紅點綴。鉤點是冰藍花瓣＋莓紅花苞；危險物是深藍核心＋莓紅尖（跟冰面分開）
-  { name: 'FROSTBITE PEAKS', petal: '#7fd2ff', petal2: '#f2fcff', bud: '#e0305a', leaf: '#4aa8d8', leaf2: '#e0f6ff', vine: '#68b0de', pad: '#8ee6e6', pad2: '#4fb8c8', vein: '#f6ffff',
-    cap: '#e0305a', capSpot: '#ffffff', capUnder: '#eaf6ff', stem: '#eaf6ff', wood: '#7f9bb8', blade: '#e8f6ff',
-    hazard: '#22365c', hazardTip: '#ff3b6b', saw: '#dfeaf5', sawStripe: '#e0305a', hub: '#e0305a', glow: 0,
-    trunk: '#7a5a4c', crown: '#2f8c88', crown2: '#ffffff', accent: '#ff4f7a', cloud: '#ffffff',
-    rock: '#6f9fcc', rock2: '#ffffff', lava: '#ffffff', ice: '#7fe0ff', ice2: '#ffffff', ice3: '#d6f6ff' },
+  { name: 'FROSTBITE PEAKS', petal: '#ff4d94', petal2: '#ffc4dc', bud: '#ffd21f', leaf: '#4aa8d8', leaf2: '#e0f6ff', vine: '#3d86c4', pad: '#8ee6e6', pad2: '#4fb8c8', vein: '#f6ffff',
+    cap: '#8a5cff', capSpot: '#ffffff', capUnder: '#eaf6ff', stem: '#eaf6ff', wood: '#4d6f9a', blade: '#e8f6ff',
+    hazard: '#17233f', hazardTip: '#ff9a14', saw: '#dfeaf5', sawStripe: '#ff9a14', hub: '#ff9a14', glow: 0,
+    trunk: '#6a4a3c', crown: '#1f7a78', crown2: '#f4fbff', accent: '#ff4f7a', cloud: '#ffffff',
+    rock: '#4f7fb2', rock2: '#e4f1fb', lava: '#ffffff', ice: '#5fd0f8', ice2: '#ffffff', ice3: '#cfeefc' },
 ];
 
 function worldPalette(w) {

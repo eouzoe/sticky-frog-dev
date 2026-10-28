@@ -80,12 +80,12 @@ export const WORLDS = [
     hemi: ['#ffd0a0', '#5a1a1a'], props: 'volcano', die: 'SIZZLE!', bgHill: '#5a2a24', bgHill2: '#7a3a2a',
   },
   {
-    name: 'FROSTBITE PEAKS', sky: ['#74b6ec', '#f6fcff'], fog: '#e3f2fc', water: '#6fe0e4', waterEm: '#0d5663',
-    petal: '#8fdcff', bud: '#e0305a', vine: '#6fb4e0', cap: '#e0305a', capSpot: '#ffffff', stem: '#eaf6ff',
-    hazard: '#24385e', hazardTip: '#ff3b6b', saw: '#dfeaf5', wood: '#7f9bb8', pad: '#8ee6e6',
-    hemi: ['#ffffff', '#86b4dc'], props: 'frost', die: 'BRRR!', bgHill: '#b7d8f2', bgHill2: '#e2f1fb',
+    name: 'FROSTBITE PEAKS', sky: ['#3f8ddc', '#dcefff'], fog: '#e3f2fc', water: '#6fe0e4', waterEm: '#0d5663',
+    petal: '#ff4d94', bud: '#ffd21f', vine: '#3d86c4', cap: '#8a5cff', capSpot: '#ffffff', stem: '#eaf6ff',
+    hazard: '#17233f', hazardTip: '#ff9a14', saw: '#dfeaf5', wood: '#4d6f9a', pad: '#8ee6e6',
+    hemi: ['#ffffff', '#86b4dc'], props: 'frost', die: 'BRRR!', bgHill: '#8fbbe6', bgHill2: '#c4def5',
     // 極光帶（scene.js）：三個色停靠點
-    aurora: ['#4dffc0', '#5ad8ff', '#c08cff'],
+    aurora: ['#3dffa8', '#38d8ff', '#b46cff'],
   },
 ];
 

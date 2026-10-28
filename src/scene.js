@@ -87,12 +87,12 @@ export function createView(canvas) {
         float rays = 0.65 + 0.35 * sin(x * 7.0 + sin(x * 1.3 + uT * 0.5) * 2.0);
         float drift = 0.6 + 0.4 * sin(x * 0.5 + uT * 0.18);
         vec3 col = v < 0.5 ? mix(c0, c1, v * 2.0) : mix(c1, c2, (v - 0.5) * 2.0);
-        gl_FragColor = vec4(col, band * rays * drift * 1.2);
+        gl_FragColor = vec4(col, band * rays * drift * 1.25);
       }`,
     transparent: true, depthWrite: false, fog: false,
   });
-  const aurora = new THREE.Mesh(new THREE.PlaneGeometry(440, 46, 1, 1), auroraMat);
-  aurora.position.set(0, 50, -118); aurora.visible = false; aurora.frustumCulled = false; scene.add(aurora);
+  const aurora = new THREE.Mesh(new THREE.PlaneGeometry(440, 64, 1, 1), auroraMat);
+  aurora.position.set(0, 44, -118); aurora.visible = false; aurora.frustumCulled = false; scene.add(aurora);
 
   // 冰面浮冰（冰峰）：低多邊形的扁柱，白到淺藍，漂在水上（純視覺）
   const floeGeo = new THREE.CylinderGeometry(1, 1.12, 0.42, 7, 1);
@@ -136,7 +136,7 @@ export function createView(canvas) {
     for (let i = 0; i < nA; i++) {
       const s = 0.8 + rnd() * 0.7;
       // 大樓、火山又高又暗：往後推，角色前面不要壓一大塊深色
-      dummy.position.set(-50 + (i / nA) * span + rnd() * 4, 0, (wi >= 2 ? -30 : -22) - rnd() * 26); dummy.rotation.set(0, wi === 1 ? (rnd() - 0.5) * 0.6 : rnd() * 6, 0); dummy.scale.set(s, s * (0.8 + rnd() * 0.5), s);
+      dummy.position.set(-50 + (i / nA) * span + rnd() * 4, 0, (wi >= 2 ? -30 : -22) - rnd() * 26); dummy.rotation.set(0, wi === 1 ? (rnd() - 0.5) * 0.6 : rnd() * 6, 0); dummy.scale.set(s, s * (0.8 + rnd() * 0.5) * (wi === 4 ? 0.7 : 1), s);
       dummy.updateMatrix(); A.set(i, dummy.matrix);
     }
     for (let i = 0; i < nB; i++) {
@@ -153,7 +153,7 @@ export function createView(canvas) {
     }
     if (wi === 4) {
       // 冰峰：浮冰（水面）＋積雪的松樹（中景）。亂數接在其他件之後抽，不影響前四個世界的排法
-      const nF = Math.ceil(span / 7), nT = Math.ceil(span / 11);
+      const nF = Math.ceil(span / 7), nT = Math.ceil(span / 26);
       const F = new THREE.InstancedMesh(floeGeo, ART.q === 'high' ? floeHi : floeLo, nF);
       const fc = [new THREE.Color('#ffffff'), new THREE.Color('#d8f2ff'), new THREE.Color('#bfe8f8')];
       for (let i = 0; i < nF; i++) {
@@ -163,8 +163,8 @@ export function createView(canvas) {
       bgMeshes.push(F);
       const Tr = new PartSet(bg, splitProp(BG_SETS[4][2], wi).main, nT, { shadow: false, receive: false }); bgSets.push(Tr);
       for (let i = 0; i < nT; i++) {
-        const ts = 0.9 + rnd() * 0.9;
-        dummy.position.set(-50 + (i / nT) * span + rnd() * 6, -0.3, -15 - rnd() * 13); dummy.rotation.set(0, rnd() * 6, 0); dummy.scale.set(ts, ts * (0.9 + rnd() * 0.4), ts);
+        const ts = 0.55 + rnd() * 0.5;
+        dummy.position.set(-50 + (i / nT) * span + rnd() * 6, -0.3, -24 - rnd() * 12); dummy.rotation.set(0, rnd() * 6, 0); dummy.scale.set(ts, ts * (0.9 + rnd() * 0.4), ts);
         dummy.updateMatrix(); Tr.set(i, dummy.matrix);
       }
     }
