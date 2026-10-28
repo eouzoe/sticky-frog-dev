@@ -39,6 +39,8 @@ export function normalizeSave(raw, levelCount) {
   // 舊存檔：已經解鎖的東西當作看過（不要一升級就推一堆）
   // 60 關時代的存檔：第 60 關破了但 unlocked 被舊上限壓在 60 → 補成 61（第 5 世界開放）；seen.world 用補之前的算，這樣冰峰會被推薦成新世界
   if (levelCount > 60 && s.unlocked === 60 && s.stars[60]) s.unlocked = 61;
+  // 75 關時代的存檔（第 75 關破了但 unlocked 被舊上限壓在 75）→ 補成 76（第 6 世界夕陽沙丘開放，同樣被推薦成新世界）
+  if (levelCount > 75 && s.unlocked === 75 && s.stars[75]) s.unlocked = 76;
   s.seen = { endless: seen.endless ?? s.unlocked > ENDLESS_UNLOCK, world: int(seen.world, 0, Math.floor((levelCount - 1) / 15), Math.floor((unlocked0 - 1) / 15)) };
   return s;
 }

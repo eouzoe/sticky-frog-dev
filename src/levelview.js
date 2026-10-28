@@ -1,7 +1,8 @@
 // 關卡物件的 3D 外觀（GLB 軟膠素材，同種物件全部 InstancedMesh）：鉤點花、蘑菇、尖刺、鋸片、風扇、圈圈、蒼蠅、終點荷葉＋葉牆。
 import * as THREE from 'three';
-import { movePos, flyPos, burstOn, burstWarn } from './sim.js';
-import { dressProp, softMaterial, WORLD_PAL } from './artkit.js';
+import { movePos, flyPos, burstOn, burstWarn, duneH } from './sim.js';
+import { TUNE as T } from './config.js';
+import { dressProp, softMaterial, WORLD_PAL, initEnv } from './artkit.js';
 import { ART, splitProp, PartSet } from './art.js';
 
 const tmp = { x: 0, y: 0 };
@@ -22,6 +23,47 @@ const GEO = {
   flag: new THREE.PlaneGeometry(2.2, 1.4, 8, 2),
 };
 const flagBase = Float32Array.from(GEO.flag.attributes.position.array);
+
+// 沙丘表面：所有沙丘併成一個網格（一個 draw call）。橫剖面由後往前：頂面後緣 → 頂面前緣 → 圓角 → 前壁 → 水下；頂點色＝谷底到坡面的漸層、前緣高光、側面暗色
+const SAND_ROWS = [[-7, 0, 'top'], [0.6, 0, 'top'], [1.02, -0.24, 'rim'], [1.18, -0.85, 'side'], [1.18, -1.4, 'deep']];
+function sandGeometry(dunes, pal) {
+  const C = pal.map((c) => new THREE.Color(c)), col = new THREE.Color();
+  const pos = [], rgb = [], idx = [];
+  const vert = (x, y, z, c) => { pos.push(x, y, z); rgb.push(c.r, c.g, c.b); return pos.length / 3 - 1; };
+  const face = (a, b, c, d) => idx.push(a, c, b, b, c, d);
+  dunes.forEach((d, di) => {
+    const N = Math.max(8, Math.ceil((d.x1 - d.x0) / 0.3)), rows = [];
+    for (let i = 0; i <= N; i++) {
+      const x = d.x0 + (d.x1 - d.x0) * i / N, h = duneH(d, x), k = Math.min(1, Math.max(0, (h - T.DUNE_BASE) / d.H)), r = [];
+      for (const [z, dy, key] of SAND_ROWS) {
+        if (key === 'top') col.copy(C[0]).lerp(C[1], Math.pow(k, 0.8));
+        else if (key === 'rim') col.copy(C[1]).lerp(C[2], 0.35 + 0.65 * k);
+        else if (key === 'side') col.copy(C[3]).lerp(C[1], 0.25 * k);
+        else col.copy(C[3]).multiplyScalar(0.62);
+        r.push(vert(x, key === 'deep' ? -1.4 : h + dy, z, col));
+      }
+      rows.push(r);
+    }
+    for (let i = 0; i < N; i++) for (let r = 0; r < SAND_ROWS.length - 1; r++) face(rows[i][r], rows[i + 1][r], rows[i][r + 1], rows[i + 1][r + 1]);
+    // 側壁：沙丘群的左緣（跟前一片不相接）與 lip 的尾端（垂直落到水面）
+    const wall = (x, hTop, plusX) => {
+      const a = vert(x, hTop, -7, C[3]), b = vert(x, hTop, 1.18, C[3]), c = vert(x, -1.4, -7, C[3]), e = vert(x, -1.4, 1.18, C[3]);
+      if (plusX) idx.push(a, b, c, b, e, c); else idx.push(a, c, b, b, c, e);
+    };
+    if (!(dunes[di - 1] && Math.abs(dunes[di - 1].x1 - d.x0) < 1e-6)) wall(d.x0, duneH(d, d.x0), false);
+    if (d.lip) wall(d.x1, duneH(d, d.x1), true);
+  });
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(rgb, 3));
+  g.setIndex(idx); g.computeVertexNormals();
+  return g;
+}
+function sandMaterial(high) {
+  const m = high ? new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.42, metalness: 0, envMap: initEnv(null), envMapIntensity: 0.4 }) : new THREE.MeshLambertMaterial({ vertexColors: true });
+  m.onBeforeCompile = (sh) => { sh.fragmentShader = sh.fragmentShader.replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n totalEmissiveRadiance += vec3(0.34, 0.24, 0.12) * pow(1.0 - abs(dot(normal, normalize(vViewPosition))), 3.0) + diffuseColor.rgb * 0.1;'); };
+  m.customProgramCacheKey = () => `sand|${high}`;
+  return m;
+}
 
 // 彈性出場（0→1，帶過衝）：換關時物件由左到右依序「啵」地長出來
 const elastic = (u) => (u <= 0 ? 0 : u >= 1 ? 1 : 1 - Math.pow(2, -9 * u) * Math.cos(u * 10.5));
@@ -50,7 +92,7 @@ export function createLevelView(scene) {
 
   let fan = null, mush = null, fly = null, geyser = false, padObjs = [], padFlagOff = null, padFlagOn = null;
   function build(level, w) {
-    lv = level; wi = Math.max(0, Math.min(4, level.world ?? 0));
+    lv = level; wi = Math.max(0, Math.min(5, level.world ?? 0));
     const P = WORLD_PAL[wi], q = ART.q;
     for (const s of sets) s.dispose(group);
     for (const o of [...group.children]) group.remove(o);
@@ -89,6 +131,12 @@ export function createLevelView(scene) {
     level.saws.forEach((s, i) => S.track.set(i, mat(s.x, s.y, -0.3, 0, 0, 0, s.move.ax * 2 + 0.25, s.move.ay * 2 + 0.25, 1)));
     level.fans.forEach((f, i) => S.column.set(i, mat(f.x, (f.y0 + f.y1) / 2, -0.4, 0, 0, 0, f.w, f.y1 - f.y0, 1)));
     for (const k of ['pole', 'track', 'column']) S[k].commit();
+    // 沙丘（夕陽沙丘世界）：程序網格，一個 draw call
+    const live = level.dunes.filter((d) => !d.off);
+    if (live.length) {
+      const sm = new THREE.Mesh(sandGeometry(live, w.sand ?? ['#f0a14a', '#ffd070', '#fff0b8', '#c9722f']), sandMaterial(q === 'high'));
+      sm.receiveShadow = true; sm.frustumCulled = false; sm.renderOrder = 1; group.add(sm);
+    }
     // 起點木樁、終點荷葉、葉牆、旗子（各一個，不用 instancing）
     const stump = new THREE.Mesh(GEO.stump, softMaterial(P.wood, q, { rough: 0.5 }));
     stump.position.set(level.start.x, level.start.y - 2.25, 0); stump.castShadow = stump.receiveShadow = true; group.add(stump);

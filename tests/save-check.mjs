@@ -45,5 +45,17 @@ check('第 60 關沒破（unlocked=60 但沒星）：不開第 5 世界', normal
 check('新存檔正規化到 75 關：從 1 開始、seen.world=0', (() => { const n = normalizeSave({}, 75); return n.unlocked === 1 && n.seen.world === 0; })());
 check('75 關上限：unlocked 超過 75 會被夾回', normalizeSave({ unlocked: 99 }, 75).unlocked === 75 && normalizeSave({ stars: { 75: 2, 76: 3 } }, 75).stars[75] === 2);
 check('已進第 5 世界的新存檔：不重複推薦', nextStep({ ...n60, coins: 0, unlocked: 63, seen: { endless: true, world: 4 } }) === null);
+// fadd436（75 關上限）格式的存檔：75 關全破＋星數，載入到 90 關的版本
+const old75 = { unlocked: 75, stars: Object.fromEntries(Array.from({ length: 75 }, (_, i) => [i + 1, 1 + (i % 3)])), best: { 75: 1234 }, coins: 7000, skin: 'tree', trail: 'none', owned: ['tree', 'none', 'tongue'], worldsDone: [15, 30, 45, 60, 75], last: 75, seen: { endless: true, world: 4 } };
+const n75 = normalizeSave(JSON.parse(JSON.stringify(old75)), 90);
+check('75 關舊存檔：前 75 關星數逐關不變', Array.from({ length: 75 }, (_, i) => n75.stars[i + 1] === 1 + (i % 3)).every(Boolean) && Object.keys(n75.stars).length === 75);
+check('75 關舊存檔：第 6 世界解鎖（unlocked=76）', n75.unlocked === 76);
+check('75 關舊存檔：下一步推薦夕陽沙丘 6-1（第 76 關）', (() => { const n = nextStep(n75); return n?.kind === 'world' && n.world === 5 && n.level === 76; })());
+check('75 關舊存檔：金幣、最佳分數、已完成世界保留', n75.coins === 7000 && n75.best[75] === 1234 && n75.worldsDone.join() === '15,30,45,60,75');
+check('74 關進度的舊存檔：不會被多開世界', normalizeSave({ unlocked: 74, stars: { 73: 2 } }, 90).unlocked === 74);
+check('第 75 關沒破（unlocked=75 但沒星）：不開第 6 世界', normalizeSave({ unlocked: 75, stars: { 74: 3 } }, 90).unlocked === 75);
+check('90 關上限：unlocked 超過 90 會被夾回', normalizeSave({ unlocked: 999 }, 90).unlocked === 90 && normalizeSave({ stars: { 90: 2, 91: 3 } }, 90).stars[90] === 2);
+check('已進第 6 世界的存檔：不重複推薦', nextStep({ ...n75, coins: 0, unlocked: 78, seen: { endless: true, world: 5 } }) === null);
+check('60 關舊存檔載入 90 關版：仍然只補到 61、推薦冰峰', (() => { const n = normalizeSave(JSON.parse(JSON.stringify(old60)), 90); return n.unlocked === 61 && nextStep(n)?.world === 4; })());
 console.log(fails ? `FAILED ${fails}` : 'all ok');
 process.exit(fails ? 1 : 0);

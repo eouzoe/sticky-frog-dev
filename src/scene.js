@@ -4,7 +4,7 @@ import { TUNE as T } from './config.js';
 import { BG_SETS, initEnv } from './artkit.js';
 import { ART, splitProp, PartSet } from './art.js';
 
-const WI = { jungle: 0, candy: 1, city: 2, volcano: 3, frost: 4 };
+const WI = { jungle: 0, candy: 1, city: 2, volcano: 3, frost: 4, dunes: 5 };
 
 export function createView(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
@@ -94,6 +94,11 @@ export function createView(canvas) {
   const aurora = new THREE.Mesh(new THREE.PlaneGeometry(440, 64, 1, 1), auroraMat);
   aurora.position.set(0, 44, -118); aurora.visible = false; aurora.frustumCulled = false; scene.add(aurora);
 
+  // 夕陽（沙丘世界，純視覺）：天邊一顆大太陽＋外圈暈光，慢慢跟著鏡頭走（視差）；不受霧影響
+  const sunMat = new THREE.MeshBasicMaterial({ color: '#fff0b0', fog: false, depthWrite: false }), sunHaloMat = new THREE.MeshBasicMaterial({ color: '#ffc070', fog: false, transparent: true, opacity: 0.32, depthWrite: false });
+  const sunDisc = new THREE.Mesh(new THREE.CircleGeometry(15, 48), sunMat), sunHalo = new THREE.Mesh(new THREE.CircleGeometry(30, 48), sunHaloMat);
+  sunDisc.position.set(0, 24, -121); sunHalo.position.set(0, 24, -122); sunDisc.visible = sunHalo.visible = false; sunDisc.frustumCulled = sunHalo.frustumCulled = false; scene.add(sunHalo, sunDisc);
+
   // 冰面浮冰（冰峰）：低多邊形的扁柱，白到淺藍，漂在水上（純視覺）
   const floeGeo = new THREE.CylinderGeometry(1, 1.12, 0.42, 7, 1);
   { const pa = floeGeo.attributes.position, jr = mulberry(7);
@@ -132,11 +137,12 @@ export function createView(canvas) {
     for (const m of winMats) m.userData.eBase ??= m.emissive.clone();
     bubMesh.visible = bubHi.visible = wi === 3;
     aurora.visible = wi === 4;
+    sunDisc.visible = sunHalo.visible = wi === 5;
     if (wi === 4) { const ac = w.aurora; auroraMat.uniforms.c0.value.set(ac[0]); auroraMat.uniforms.c1.value.set(ac[1]); auroraMat.uniforms.c2.value.set(ac[2]); }
     for (let i = 0; i < nA; i++) {
       const s = 0.8 + rnd() * 0.7;
       // 大樓、火山又高又暗：往後推，角色前面不要壓一大塊深色
-      dummy.position.set(-50 + (i / nA) * span + rnd() * 4, 0, (wi >= 2 ? -30 : -22) - rnd() * 26); dummy.rotation.set(0, wi === 1 ? (rnd() - 0.5) * 0.6 : rnd() * 6, 0); dummy.scale.set(s, s * (0.8 + rnd() * 0.5) * (wi === 4 ? 0.7 : 1), s);
+      dummy.position.set(-50 + (i / nA) * span + rnd() * 4, 0, (wi >= 2 ? -30 : -22) - rnd() * 26); dummy.rotation.set(0, wi === 1 ? (rnd() - 0.5) * 0.6 : rnd() * 6, 0); dummy.scale.set(s * (wi === 5 ? 1.5 : 1), s * (0.8 + rnd() * 0.5) * (wi === 4 ? 0.7 : wi === 5 ? 1.5 : 1), s * (wi === 5 ? 1.5 : 1));
       dummy.updateMatrix(); A.set(i, dummy.matrix);
     }
     for (let i = 0; i < nB; i++) {
@@ -165,6 +171,16 @@ export function createView(canvas) {
       for (let i = 0; i < nT; i++) {
         const ts = 0.55 + rnd() * 0.5;
         dummy.position.set(-50 + (i / nT) * span + rnd() * 6, -0.3, -24 - rnd() * 12); dummy.rotation.set(0, rnd() * 6, 0); dummy.scale.set(ts, ts * (0.9 + rnd() * 0.4), ts);
+        dummy.updateMatrix(); Tr.set(i, dummy.matrix);
+      }
+    }
+    if (wi === 5) {
+      // 沙丘：棕櫚樹（中景）。亂數接在其他件之後抽，不影響前面世界的排法
+      const nT = Math.ceil(span / 24);
+      const Tr = new PartSet(bg, splitProp(BG_SETS[5][2], wi).main, nT, { shadow: false, receive: false }); bgSets.push(Tr);
+      for (let i = 0; i < nT; i++) {
+        const ts = 0.9 + rnd() * 0.7;
+        dummy.position.set(-50 + (i / nT) * span + rnd() * 6, -0.3, -16 - rnd() * 14); dummy.rotation.set(0, rnd() * 6, 0); dummy.scale.set(ts, ts * (0.9 + rnd() * 0.4), ts);
         dummy.updateMatrix(); Tr.set(i, dummy.matrix);
       }
     }
@@ -219,6 +235,7 @@ export function createView(canvas) {
   function update(t, focusX, focusY, beat = 0) {
     if (winMats.length) updateWindows(beat);
     if (bubMesh.visible) updateBubbles(t, focusX);
+    if (sunDisc.visible) { sunDisc.position.x = focusX * 0.94 + 18; sunHalo.position.x = sunDisc.position.x; }
     if (aurora.visible) { auroraMat.uniforms.uT.value = t; auroraMat.uniforms.uX.value = focusX * 0.012; aurora.position.x = focusX * 0.94; }
     // 水面波浪
     water.position.x = Math.round(focusX / 3) * 3;

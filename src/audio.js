@@ -74,6 +74,7 @@ export function play(name, o = {}) {
     case 'click': tone('triangle', 660 * p, 990 * p, 0.07, 0.16); break;
     case 'buy': [0, 7, 12].forEach((s, i) => tone('triangle', 660 * Math.pow(2, s / 12), 660 * Math.pow(2, s / 12), 0.2, 0.16, i * 0.06)); break;
     case 'whoosh': noise(0.6, 300, 3000, 0.25, 0.7); break;
+    case 'slide': noise(0.17, 2400 * p, 1200, 0.06, 0.9); break; // 滑沙：沙沙聲（既有的噪音＋帶通，音量小）
     // 第二輪（軟膠公仔特效的聲音層）
     case 'sparkle': { const n = Math.min(7, o.n ?? 1); for (let i = 0; i < n + 1; i++) tone('triangle', note(1568, (i * 3) % 10) * p, note(1568, (i * 3) % 10) * p, 0.12, 0.05 + n * 0.006, i * 0.035); break; } // 閃星：高音琶音，圈數越多越長
     case 'fanfare': { const big = (o.n ?? 1) >= 2; // 號角：大三和弦往上爬＋長音，7 圈版多一層低音與鈸
@@ -107,6 +108,8 @@ const WORLD_MUSIC = [
   { root: 174.6, bpm: 124, prog: [0, 0, 3, 4] }, { root: 164.8, bpm: 128, prog: [0, 3, 1, 4] },
   // 冰峰：慢（84 bpm）、D 小調（自然小調音階）、鈴音（正弦＋非整數倍泛音）當旋律、細碎的雪沙取代 hi-hat，和弦墊用三角波長音；沒有 bandpass 的軍鼓
   { root: 293.7, bpm: 84, prog: [0, 5, 2, 6], scale: [0, 2, 3, 5, 7, 8, 10], bell: true, mel: [0, 3, 7, 3, 10, 7, 3, 7, 0, 7, 10, 12, 10, 7, 3, 0] },
+  // 夕陽沙丘：100 bpm、降 B（233.1 Hz）弗里吉安屬音階（0 1 4 5 7 8 10，沙漠味的小二度＋大三度）；撥弦（三角波＋八度正弦）當旋律、鼓點是低咚＋清脆敲擊（咚 咚 敲 的搖擺節奏）、鼓邊沙沙聲，持續低音；沒有 hi-hat、沒有軍鼓
+  { root: 233.1, bpm: 100, prog: [0, 0, 3, 4], scale: [0, 1, 4, 5, 7, 8, 10], desert: true, mel: [0, 4, -1, 5, 4, 1, -1, 0, 7, -1, 8, 7, 5, 4, 1, 0] },
 ];
 const SCALE = [0, 2, 4, 5, 7, 9, 11];
 // 現在的拍位（四分音符為單位的小數）。音樂排程超前播放，所以扣掉還沒到的部分；音樂沒起來就用牆鐘照該世界的 bpm 推（視覺照樣有節奏）
@@ -130,6 +133,16 @@ function startMusic() {
         if (s % 8 === 6) noise(0.2, 6000, 3000, 0.03, 2, 'bandpass', when, music);
         if ((s * 5 + bar) % 3 !== 1) { const f = chord(0) * 4 * Math.pow(2, m.mel[(s + bar * 5) % 16] / 12); tone('sine', f, f, sp * 3.2, 0.075, when, music); tone('sine', f * 2.76, f * 2.76, sp * 1.1, 0.022, when, music); }
         if (s === 0) [0, 2, 4].forEach((k) => tone('triangle', chord(k), chord(k), sp * 15, 0.045, when, music));
+        nextT += sp; step16++; continue;
+      }
+      if (m.desert) {
+        if (s === 0 || s === 6 || s === 10) { tone('sine', s === 0 ? 118 : 96, 52, 0.2, 0.34, when, music); }
+        if (s === 4 || s === 12 || s === 15) noise(0.05, 4200, 2600, 0.07, 3, 'bandpass', when, music);
+        if (s % 4 === 2) noise(0.06, 7800, 6800, 0.025, 1, 'highpass', when, music);
+        const md = m.mel[(s + bar * 5) % 16];
+        if (md >= 0 && (s % 2 === 0 || (s + bar) % 3 === 0)) { const f = chord(0) * 2 * Math.pow(2, md / 12); tone('triangle', f, f * 0.996, sp * 2.6, 0.1, when, music); tone('sine', f * 2, f * 2, sp * 1.1, 0.03, when, music); }
+        if (s === 0) { tone('triangle', chord(0) / 2, chord(0) / 2, sp * 14, 0.11, when, music); tone('triangle', chord(0), chord(0), sp * 14, 0.05, when, music); }
+        if (s === 8) tone('sine', chord(4), chord(4), sp * 5, 0.045, when, music);
         nextT += sp; step16++; continue;
       }
       if (s % 4 === 0) tone('triangle', chord(0) / 2, chord(0) / 2, sp * 3.5, 0.3, when, music);

@@ -1,6 +1,7 @@
 // 成就＝當下的捧場：sim 吐事件、這裡判斷「玩家剛剛做了一件自己都覺得很強的事」。純邏輯（不碰 DOM／three），Node 測試直接餵事件。
 // 門檻由 tests/feat-dist.mjs 的自動玩家分布訂（分布與理由寫在 _out/hook-hero/round2/play/DONE.md）。
 import { TUNE as T } from './config.js';
+import { duneAt } from './sim.js';
 
 export const FEAT_T = {
   SPIN: 5, // 一次滯空轉滿幾圈（自動玩家最多 5 圈、1.3% 的局）
@@ -42,9 +43,10 @@ export function createFeatTracker(K = FEAT_T) {
     tick(s, dt) {
       out.length = 0;
       if (s.mode !== 'air' && s.mode !== 'swing') return out;
-      if (s.attaches > 1 && Math.hypot(s.vx, s.vy) < K.STALL_V) st.stall += dt; // 起跳後第一個鉤點（一定會慢一下）不算
-      const h = s.y - WATER;
-      if (h < 3) st.dip = Math.min(st.dip, h);
+      if (s.attaches > 1 && Math.hypot(s.vx, s.vy) < K.STALL_V && !(s.onDune >= 0)) st.stall += dt; // 滑沙（貼著沙面）不算停下：沙面一直把青蛙往前送 // 起跳後第一個鉤點（一定會慢一下）不算
+      const h = s.y - WATER, sand = duneAt(s.level, s.x) >= 0; // 沙丘上方不是水：低飛、貼沙面都不算 WAVE KISSER／CLUTCH SAVE
+      if (sand) st.dip = Infinity;
+      else if (h < 3) st.dip = Math.min(st.dip, h);
       else if (h > K.SKIM_BACK && st.dip < Infinity) {
         if (st.dip <= K.SKIM_Y) out.push({ id: 'skim', value: st.dip });
         st.dip = Infinity;
@@ -60,7 +62,7 @@ export function createFeatTracker(K = FEAT_T) {
         if (e.n >= K.TORNADO) out.push({ id: 'tornado', value: e.n, silent: e.n > K.TORNADO });
       }
       else if (e.type === 'close' && e.gap !== undefined && e.gap <= K.SHAVE) out.push({ id: 'shave', value: Math.max(0, e.gap) });
-      else if (e.type === 'attach' && e.fy !== undefined && e.fy - WATER < K.CLUTCH_Y && e.fvy < K.CLUTCH_VY) st.clutch = e.fy - WATER;
+      else if (e.type === 'attach' && e.fy !== undefined && e.fy - WATER < K.CLUTCH_Y && e.fvy < K.CLUTCH_VY && !(duneAt(s.level, s.x) >= 0)) st.clutch = e.fy - WATER;
       else if (e.type === 'die') { st.dip = Infinity; st.clutch = null; }
       else if (e.type === 'pad') st.padded = true;
       else if (e.type === 'win' && !s.level.endless) {

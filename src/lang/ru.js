@@ -30,8 +30,8 @@ export default {
   'it.skins.ninja': 'Лягушка-ниндзя', 'it.skins.gold': 'Золотая лягушка', 'it.skins.astro': 'Лягушка-космонавт', 'it.skins.king': 'Король Жаб', 'it.skins.ape': 'Лиановая обезьяна', 'it.skins.silkfrog': 'Шёлковая лягушка',
   'it.tongues.tongue': 'Лягушачий язык', 'it.tongues.yarn': 'Клубок', 'it.tongues.vine': 'Лиана', 'it.tongues.silk': 'Шёлковая нить',
   'it.trails.none': 'Ветерок', 'it.trails.rainbow': 'Радуга', 'it.trails.fire': 'Огонь', 'it.trails.bubble': 'Пузыри', 'it.trails.star': 'Звёздная пыль',
-  'world.0': 'ДЖУНГЛИ', 'world.1': 'КОНФЕТЫ', 'world.2': 'НЕОН-СИТИ', 'world.3': 'ВУЛКАН', 'world.4': 'ЛЕДЯНЫЕ ВЕРШИНЫ',
-  'die.0': 'ПЛЮХ!', 'die.1': 'ШЛЁП!', 'die.2': 'ЗЗЗАП!', 'die.3': 'ШШШ!', 'die.4': 'БРРР!',
+  'world.0': 'ДЖУНГЛИ', 'world.1': 'КОНФЕТЫ', 'world.2': 'НЕОН-СИТИ', 'world.3': 'ВУЛКАН', 'world.4': 'ЛЕДЯНЫЕ ВЕРШИНЫ', 'world.5': 'ЗАКАТНЫЕ ДЮНЫ',
+  'die.0': 'ПЛЮХ!', 'die.1': 'ШЛЁП!', 'die.2': 'ЗЗЗАП!', 'die.3': 'ШШШ!', 'die.4': 'БРРР!', 'die.5': 'ХЛЮП!',
   'feat.spin': 'ДОКТОР ВЕРТУШКА!', 'featLine.spin': 'Пять оборотов за один прыжок. Голова кружится?',
   'feat.tornado': 'ЛЯГУШКАДО!!', 'featLine.tornado': 'СЕМЬ оборотов за один прыжок. Невероятно.',
   'feat.flow': 'БЕЗ ТОРМОЗОВ!', 'featLine.flow': 'Целый уровень без потери скорости.',
@@ -39,5 +39,5 @@ export default {
   'feat.skim': 'ПОЦЕЛУЙ ВОЛНЫ!', 'featLine.skim': 'Коснулся воды и выжил.',
   'feat.shave': 'ВОЛОСОК ОТ БЕДЫ!', 'featLine.shave': 'На волосок от шипов.',
   'feat.clutch': 'СПАСЕНИЕ В ПОСЛЕДНИЙ МИГ!', 'featLine.clutch': 'Схватился в самую последнюю секунду!',
-  'new.title': 'НОВОЕ!', 'new.mush': 'Грибы-батуты', 'new.swarm': 'Рой мух', 'new.ring': 'Золотое кольцо', 'new.move': 'Движущийся крюк', 'new.spikeLow': 'Низкие шипы', 'new.mushChain': 'Цепочка грибов', 'new.ringArc': 'Двойное кольцо', 'new.fan': 'Вентилятор', 'new.saw': 'Пила', 'new.spikeHigh': 'Высокие шипы', 'new.tunnel': 'Шипы сверху и снизу', 'new.pad': 'Кувшинка-чекпойнт', 'new.boost': 'Ускоряющее кольцо',
+  'new.title': 'НОВОЕ!', 'new.mush': 'Грибы-батуты', 'new.swarm': 'Рой мух', 'new.ring': 'Золотое кольцо', 'new.move': 'Движущийся крюк', 'new.spikeLow': 'Низкие шипы', 'new.mushChain': 'Цепочка грибов', 'new.ringArc': 'Двойное кольцо', 'new.fan': 'Вентилятор', 'new.saw': 'Пила', 'new.spikeHigh': 'Высокие шипы', 'new.tunnel': 'Шипы сверху и снизу', 'new.pad': 'Кувшинка-чекпойнт', 'new.boost': 'Ускоряющее кольцо', 'new.dune': 'Сёрфинг по дюнам',
 };

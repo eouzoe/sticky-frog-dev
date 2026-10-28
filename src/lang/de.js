@@ -30,8 +30,8 @@ export default {
   'it.skins.ninja': 'Ninja-Frosch', 'it.skins.gold': 'Goldfrosch', 'it.skins.astro': 'Astro-Frosch', 'it.skins.king': 'Krötenkönig', 'it.skins.ape': 'Lianenaffe', 'it.skins.silkfrog': 'Seidenfrosch',
   'it.tongues.tongue': 'Froschzunge', 'it.tongues.yarn': 'Wollknäuel', 'it.tongues.vine': 'Dschungelliane', 'it.tongues.silk': 'Seidenfaden',
   'it.trails.none': 'Brise', 'it.trails.rainbow': 'Regenbogen', 'it.trails.fire': 'Feuer', 'it.trails.bubble': 'Blasen', 'it.trails.star': 'Sternenstaub',
-  'world.0': 'DSCHUNGEL', 'world.1': 'ZUCKERLAND', 'world.2': 'NEON-STADT', 'world.3': 'VULKAN', 'world.4': 'FROSTGIPFEL',
-  'die.0': 'PLATSCH!', 'die.1': 'KLATSCH!', 'die.2': 'ZACK!', 'die.3': 'ZISCH!', 'die.4': 'BRRR!',
+  'world.0': 'DSCHUNGEL', 'world.1': 'ZUCKERLAND', 'world.2': 'NEON-STADT', 'world.3': 'VULKAN', 'world.4': 'FROSTGIPFEL', 'world.5': 'ABENDDÜNEN',
+  'die.0': 'PLATSCH!', 'die.1': 'KLATSCH!', 'die.2': 'ZACK!', 'die.3': 'ZISCH!', 'die.4': 'BRRR!', 'die.5': 'SCHLÜRF!',
   'feat.spin': 'DREHDOKTOR!', 'featLine.spin': 'Fünf Drehungen in einem Sprung. Schon schwindelig?',
   'feat.tornado': 'FROSCHNADO!!', 'featLine.tornado': 'SIEBEN Drehungen in einem Sprung. Irre.',
   'feat.flow': 'VOLLE FAHRT!', 'featLine.flow': 'Ein ganzes Level ohne Tempoverlust.',
@@ -39,5 +39,5 @@ export default {
   'feat.skim': 'WELLENKÜSSER!', 'featLine.skim': 'Wasser berührt und überlebt.',
   'feat.shave': 'HAARSCHARF!', 'featLine.shave': 'Nur ein Haar von den Stacheln entfernt.',
   'feat.clutch': 'RETTUNG IM LETZTEN MOMENT!', 'featLine.clutch': 'In der allerletzten Sekunde gegriffen!',
-  'new.title': 'NEU!', 'new.mush': 'Sprungpilz', 'new.swarm': 'Fliegenschwarm', 'new.ring': 'Goldring', 'new.move': 'Wanderhaken', 'new.spikeLow': 'Bodenstacheln', 'new.mushChain': 'Pilzkette', 'new.ringArc': 'Doppelring', 'new.fan': 'Ventilator', 'new.saw': 'Sägeblatt', 'new.spikeHigh': 'Deckenstacheln', 'new.tunnel': 'Stachelzange', 'new.pad': 'Seerosen-Checkpoint', 'new.boost': 'Boost-Ring',
+  'new.title': 'NEU!', 'new.mush': 'Sprungpilz', 'new.swarm': 'Fliegenschwarm', 'new.ring': 'Goldring', 'new.move': 'Wanderhaken', 'new.spikeLow': 'Bodenstacheln', 'new.mushChain': 'Pilzkette', 'new.ringArc': 'Doppelring', 'new.fan': 'Ventilator', 'new.saw': 'Sägeblatt', 'new.spikeHigh': 'Deckenstacheln', 'new.tunnel': 'Stachelzange', 'new.pad': 'Seerosen-Checkpoint', 'new.boost': 'Boost-Ring', 'new.dune': 'Dünen-Surfen',
 };

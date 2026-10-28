@@ -12,7 +12,7 @@ const icon = (id, cls = 'i') => `<svg class="${cls}"><use href="#i-${id}" /></sv
 const portrait = (id) => `./ui/${id}.webp`;
 const fmt = (n) => Math.round(n).toLocaleString('en-US');
 export const FEATURED = SKINS.find((s) => s.featured);
-const WORLD_DEEP = ['#0f6b55', '#b02a74', '#2a1458', '#5a1a1a', '#1d5f94']; // 同 index.html body[data-world] 的 --w-deep
+const WORLD_DEEP = ['#0f6b55', '#b02a74', '#2a1458', '#5a1a1a', '#1d5f94', '#8e2f6b']; // 同 index.html body[data-world] 的 --w-deep
 
 export function setWorld(i) { document.body.dataset.world = String(i); }
 

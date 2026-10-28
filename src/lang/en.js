@@ -140,5 +140,5 @@ export default {
   'new.fan': 'Fan',
   'new.saw': 'Saw Blade',
   'new.spikeHigh': 'High Spikes',
-  'new.tunnel': 'Spike Squeeze', 'new.pad': 'Checkpoint Lily', 'new.boost': 'Boost Ring',
+  'new.tunnel': 'Spike Squeeze', 'new.pad': 'Checkpoint Lily', 'new.boost': 'Boost Ring', 'new.dune': 'Dune Surf',
 };

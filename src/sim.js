@@ -29,7 +29,7 @@ export const burstWarn = (b, t) => burstPhase(b, t) > b.P - BURST_WARN;
 export function duneH(d, x) {
   if (x < d.x0 || x > d.x1) return 0;
   const u = (x - d.x0) / (d.x1 - d.x0);
-  return d.lip ? d.H * (1 - Math.cos(u * Math.PI * 0.5)) : d.H * 0.5 * (1 - Math.cos(u * TAU));
+  return T.DUNE_BASE + (d.lip ? d.H * (1 - Math.cos(u * Math.PI * 0.5)) : d.H * 0.5 * (1 - Math.cos(u * TAU)));
 }
 export function duneSlope(d, x) {
   if (x < d.x0 || x > d.x1) return 0;

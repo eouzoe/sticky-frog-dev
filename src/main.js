@@ -38,7 +38,7 @@ const G = {
   timeScale: 1, slowT: 0, slowAmt: 0, hitStop: 0, fovKick: 0, acc: 0, hold: false,
   attachesTotal: 0, flipsTotal: 0, bestProg: 0, wins: 0, tongueWob: 0, tipPop: 1, lick: { x: 0, y: 0, t: 0 },
   cam: { x: 0, y: 7, d: T.CAM_DIST }, resultAt: 0, adBreak: false, lastResult: null, quality: 'high', fps: 60, bestFlip: 0,
-  ckpt: null, hiScore: 0, endless: false, coinPts: 0, runCoins: 0, sessionClears: 0, feats: createFeatTracker(), featLog: [], lastWin: null, shopHi: null, bought: null,
+  slideT: 0, slideSfxT: 0, ckpt: null, hiScore: 0, endless: false, coinPts: 0, runCoins: 0, sessionClears: 0, feats: createFeatTracker(), featLog: [], lastWin: null, shopHi: null, bought: null,
 };
 const juice = createJuice({ fx, frog, lvView, view, G, sfx: (n, o) => A.play(n, o), A, slowmo: (t) => slowmo(t), flash: (a) => UI.flash(a), vibrate: (p) => vibrate(p) });
 window.__game = {
@@ -57,6 +57,7 @@ window.__game = {
   // 測試用：讓無盡模式直接死（驗結算流程）
   forceDie() { const s = G.sim; if (s && s.mode !== 'dead') { s.mode = 'air'; s.tongue.state = 'idle'; s.y = 0.1; s.vy = -5; } },
   get view() { return view; }, // 測試用：量岩漿泡的螢幕位置
+  set freeze(v) { G.freeze = !!v; }, // 測試用：凍住物理（拍「拋起那一格」用；畫面照常畫）
   get sim() { return G.sim; }, // 測試用：冒煙直接調時間／蒼蠅數來造 1、2 星
   audio: A, ui: UI, i18n: { audit, setLang, t }, // 截圖／測試用：直接叫 UI（例如成就膠囊）、語言稽核
   setLow() { setLowQuality(); }, // 測試用：直接切到低畫質（C 材質）
@@ -94,7 +95,7 @@ function loadLevel(n) {
   if (fresh) G.lvBestScore = 0; // 換關：上一關的分數不算進這一關
 }
 // 無盡模式：每次一條新的隨機路線；世界每 ENDLESS_WORLD_LEN 單位輪替
-// 元素上限＝主線打過的關數（至少 60、最多 LEVEL_COUNT）：荷葉（63）、加速圈（69）要先在主線學過才會出現在無盡模式
+// 元素上限＝主線打過的關數（至少 60、最多 LEVEL_COUNT）：荷葉（63）、加速圈（69）、沙丘（76）要先在主線學過才會出現在無盡模式
 const endlessCap = () => Math.max(60, Math.min(LEVEL_COUNT, save.unlocked - 1));
 const ENDLESS_SPAN = 6000; // 背景道具一次鋪這麼長（換世界時才重鋪，避免背景跳動）
 function loadEndless() {
@@ -119,7 +120,7 @@ function restoreEaten() {
 function updateEndless() {
   const s = G.sim, L = G.lv;
   if (L.gen.x < s.x + 120 && extendEndless(L, s.x + 250)) { lvView.build(L, WORLDS[G.world]); restoreEaten(); }
-  const k = endlessWorld(s.x, save.unlocked > 60 ? 5 : 4); // 打過 4-15 才輪到冰峰
+  const k = endlessWorld(s.x, save.unlocked > 75 ? 6 : save.unlocked > 60 ? 5 : 4); // 打過 4-15 才輪到冰峰、打過 5-15 才輪到沙丘
   if (k !== G.world && s.mode !== 'dead') setEndlessWorld(k);
 }
 const endlessDist = () => Math.floor(Math.max(0, (G.sim?.maxX ?? 0) - G.lv.start.x));
@@ -145,7 +146,7 @@ function startLevel(n) {
   loadLevel(n);
   save.last = n; persist();
   enterPlaying(); clearHold(); UI.show(null); UI.hint(null);
-  G.cam.x = G.sim.x + 6; G.cam.y = T.CAM_MIN_Y; juice.levelIn(G.sim);
+  G.cam.x = G.sim.x + 6; G.cam.y = G.lv.world === 5 ? T.CAM_MIN_Y_DUNE : T.CAM_MIN_Y; juice.levelIn(G.sim);
   const ne = newElements(n)[0]; UI.newCard(ne ? t(`new.${ne}`) : null);
   UI.popup((n - 1) % 15 === 0 ? t('pop.worldLevel', { world: t(`world.${G.lv.world}`, null, WORLDS[G.lv.world].name), level: levelLabel(n) }) : t('pop.level', { level: levelLabel(n) }), innerWidth / 2, bigY(), 'big');
 }
@@ -243,6 +244,8 @@ function onEvent(e) {
       break;
     }
     case 'fan': sfx('fan'); juice.fan(s); break;
+    case 'dune': sfx('jelly'); juice.dune(e, w); break;
+    case 'launch': sfx('whoosh'); sfx('sparkle', { n: 1 }); juice.launch(e, w); break;
     case 'pad': {
       lvView.landPad(e.i); juice.pad(e, w); sfx('jelly');
       if (!G.endless) { G.ckpt = { ...padSnapshot(s), score: G.score }; pop(t('pop.checkpoint'), e.x, e.y + 2.6, 'gold'); }
@@ -506,6 +509,7 @@ function frame(now) {
   G.slowAmt = (1 - G.timeScale) / (1 - T.SLOWMO_SCALE);
   let dt = realDt * G.timeScale;
   if (G.hitStop > 0) { G.hitStop -= realDt; dt = 0; }
+  if (G.freeze) dt = 0;
   const s = G.sim;
   if (s && (G.state === 'playing' || G.state === 'menu' || G.state === 'over' || G.state === 'levels' || G.state === 'shop' || G.state === 'records')) {
     G.acc += dt; let n = 0;
@@ -530,6 +534,12 @@ function updatePlaying(realDt, dt) {
   if (G.overT > 0) { G.overT -= realDt; if (G.overT <= 0) { endlessOver(); return; } }
   if (G.winT > 0) { G.winT -= realDt; if (G.winT <= 0) { showLevelResult(); return; } }
   if (G.endless) updateEndless();
+  // 滑沙揚沙（每 0.05 秒 1 顆，壽命 0.5 秒，同時最多約 10 顆）＋沙沙聲
+  if (s.onDune >= 0 && s.mode !== 'dead' && s.mode !== 'won') {
+    G.slideT -= realDt; G.slideSfxT -= realDt;
+    if (G.slideT <= 0) { G.slideT = 0.05; juice.slide(s, WORLDS[G.lv.world]); }
+    if (G.slideSfxT <= 0) { G.slideSfxT = 0.2; sfx('slide'); }
+  }
   UI.hudCoins(save.coins);
   Object.assign(hudData, { endless: G.endless, dist: G.endless ? endlessDist() : 0, level: G.level, score: G.endless ? endlessScore() : G.score, flies: s.fliesGot, fliesTotal: G.lv.flies.length, time: s.time, prog: Math.max(0, Math.min(1, s.x / G.lv.goal.x)), best: G.bestProg, combo: G.combo, comboLeft: Math.max(0, G.comboT / T.COMBO_WINDOW), comboPulse: G.comboPulse });
   UI.hud(hudData);
@@ -595,7 +605,7 @@ function render(realDt, dt) {
   if (G.state === 'menu' || G.state === 'levels' || G.state === 'shop' || G.state === 'records') { tx = s.x - cam.aspect * (G.state === 'shop' ? 2.9 : 3.3); ty = 5.4; td = G.state === 'shop' ? 10 : 12; menuIdle(realDt); }
   else {
     const lx = Math.max(-6, Math.min(9, s.vx * T.CAM_LOOKAHEAD)), ly = Math.max(-4, Math.min(4, s.vy * T.CAM_LOOKAHEAD * 0.6));
-    tx = s.x + 3 + lx; ty = Math.max(T.CAM_MIN_Y, s.y + ly + 1.2);
+    tx = s.x + 3 + lx; ty = Math.max(G.lv.world === 5 ? T.CAM_MIN_Y_DUNE : T.CAM_MIN_Y, s.y + ly + 1.2); // 沙丘世界鏡頭最低高度調低，坡底看得到
     // 手機橫向（矮螢幕）拉近一點，青蛙才不會太小
     td = (Math.min(T.CAM_DIST_MAX, T.CAM_DIST + Math.max(0, sp - 9) * T.CAM_DIST_SPEED) - G.slowAmt * 4) * (innerHeight < 500 ? 0.82 : cam.aspect < 0.8 ? 1.5 : 1); // 直式（窄螢幕）拉遠，前方的鉤點才看得到
     if (s.mode === 'won') { tx = s.x + 1; ty = Math.max(5, s.y + 2.5); td = 17; }
