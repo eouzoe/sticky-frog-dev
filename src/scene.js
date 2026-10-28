@@ -128,7 +128,7 @@ export function createView(canvas) {
     const rnd = mulberry(w.name.length * 31 + Math.round(length));
     const span = length + 140;
     const [nameA, nameB] = BG_SETS[wi];
-    const nA = Math.ceil(span / 7), nB = Math.ceil(span / 9), nH = Math.ceil(span / 20), nC = Math.ceil(span / 16), nP = Math.ceil(span / 8);
+    const nA = Math.ceil(span / (wi === 5 ? 12 : 7)), nB = Math.ceil(span / 9), nH = Math.ceil(span / 20), nC = Math.ceil(span / 16), nP = Math.ceil(span / 8);
     // 背景件不投影（陰影圖只照鏡頭附近 22 單位，背景投影只是多畫一次）
     const A = new PartSet(bg, splitProp(nameA, wi).main, nA, { shadow: false, receive: false });
     const B = new PartSet(bg, splitProp(nameB, wi).main, nB, { shadow: false, receive: false });
@@ -142,7 +142,7 @@ export function createView(canvas) {
     for (let i = 0; i < nA; i++) {
       const s = 0.8 + rnd() * 0.7;
       // 大樓、火山又高又暗：往後推，角色前面不要壓一大塊深色
-      dummy.position.set(-50 + (i / nA) * span + rnd() * 4, 0, (wi >= 2 ? -30 : -22) - rnd() * 26); dummy.rotation.set(0, wi === 1 ? (rnd() - 0.5) * 0.6 : rnd() * 6, 0); dummy.scale.set(s * (wi === 5 ? 1.5 : 1), s * (0.8 + rnd() * 0.5) * (wi === 4 ? 0.7 : wi === 5 ? 1.5 : 1), s * (wi === 5 ? 1.5 : 1));
+      dummy.position.set(-50 + (i / nA) * span + rnd() * 4, 0, (wi >= 2 ? -30 : -22) - rnd() * 26); dummy.rotation.set(0, wi === 1 ? (rnd() - 0.5) * 0.6 : rnd() * 6, 0); dummy.scale.set(s * (wi === 5 ? 1.25 : 1), s * (0.8 + rnd() * 0.5) * (wi === 4 ? 0.7 : wi === 5 ? 1.25 : 1), s * (wi === 5 ? 1.25 : 1));
       dummy.updateMatrix(); A.set(i, dummy.matrix);
     }
     for (let i = 0; i < nB; i++) {

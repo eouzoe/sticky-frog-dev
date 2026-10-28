@@ -67,11 +67,11 @@ export const WORLD_PAL = [
     trunk: '#6a4a3c', crown: '#1f7a78', crown2: '#f4fbff', accent: '#ff4f7a', cloud: '#ffffff',
     rock: '#4f7fb2', rock2: '#e4f1fb', lava: '#ffffff', ice: '#5fd0f8', ice2: '#ffffff', ice3: '#cfeefc' },
   // 夕陽沙丘：青綠鉤點（跟橘紫天空互補）、深靛核心＋緋紅尖的危險物、沙丘金黃（程序網格）；死亡地面是暗酒紅流沙
-  { name: 'SUNSET DUNES', petal: '#27d9c8', petal2: '#d6fff6', bud: '#fff3b0', leaf: '#37b79a', leaf2: '#b6f5d8', vine: '#1fa59a', pad: '#46dc9a', pad2: '#2aa874', vein: '#d8ffe9',
+  { name: 'SUNSET DUNES', petal: '#0fb3ae', petal2: '#9ff0e8', bud: '#fff3b0', leaf: '#37b79a', leaf2: '#b6f5d8', vine: '#1fa59a', pad: '#46dc9a', pad2: '#2aa874', vein: '#d8ffe9',
     cap: '#ff5aa5', capSpot: '#fff3b0', capUnder: '#ffe0ec', stem: '#fff1d6', wood: '#8a4b2a', blade: '#fff3b0',
     hazard: '#2a1346', hazardTip: '#ff2e63', saw: '#dfe8ff', sawStripe: '#ff2e63', hub: '#ff2e63', glow: 0,
     trunk: '#8a5a3a', crown: '#3aa86a', crown2: '#a8e88a', accent: '#ff5aa5', cloud: '#ffc79a',
-    rock: '#b45a46', rock2: '#f2b27c', lava: '#ffffff' },
+    rock: '#7c3b3f', rock2: '#cf7f5e', lava: '#ffffff' },
 ];
 
 function worldPalette(w) {
