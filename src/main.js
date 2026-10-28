@@ -591,9 +591,10 @@ function render(realDt, dt) {
   view.post.amount *= Math.exp(-realDt * 7);
   // 鏡頭：平滑跟隨 + 速度前瞻 + 隨速度拉遠 + FOV 衝擊 + 慢動作推近
   const cam = view.camera, c = G.cam;
-  let tx, ty, td;
+  let tx, ty, td, follow = false;
   if (G.state === 'menu' || G.state === 'levels' || G.state === 'shop' || G.state === 'records') { tx = s.x - cam.aspect * (G.state === 'shop' ? 2.9 : 3.3); ty = 5.4; td = G.state === 'shop' ? 10 : 12; menuIdle(realDt); }
   else {
+    follow = true;
     const lx = Math.max(-6, Math.min(9, s.vx * T.CAM_LOOKAHEAD)), ly = Math.max(-4, Math.min(4, s.vy * T.CAM_LOOKAHEAD * 0.6));
     tx = s.x + 3 + lx; ty = Math.max(T.CAM_MIN_Y, s.y + ly + 1.2);
     // 手機橫向（矮螢幕）拉近一點，青蛙才不會太小
@@ -602,6 +603,8 @@ function render(realDt, dt) {
   }
   const k = 1 - Math.exp(-realDt * 4.5);
   c.x += (tx - c.x) * k; c.y += (ty - c.y) * k; c.d += (td - c.d) * (1 - Math.exp(-realDt * 2.2));
+  // 平滑跟隨在高速時會落後好幾單位，直式畫面又窄，連轉時青蛙會飛出左緣：青蛙中心離畫面中心最多 60% 半寬（橫式很寬，幾乎碰不到）
+  if (follow) { const hw = c.d * Math.tan((cam.fov * Math.PI) / 360) * cam.aspect * 0.6; c.x = Math.max(s.x - hw, Math.min(s.x + hw, c.x)); }
   G.fovKick *= Math.exp(-realDt * 3.5);
   const fov = T.CAM_FOV + G.fovKick - G.slowAmt * 7;
   if (Math.abs(cam.fov - fov) > 0.01) { cam.fov = fov; cam.updateProjectionMatrix(); }
