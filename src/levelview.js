@@ -15,6 +15,7 @@ const GEO = {
   track: new THREE.BoxGeometry(1, 1, 0.05),
   column: new THREE.BoxGeometry(1, 1, 0.1),
   ripple: new THREE.TorusGeometry(1.35, 0.09, 8, 40),
+  padRim: (() => { const g = new THREE.TorusGeometry(1, 0.06, 8, 48); g.rotateX(Math.PI / 2); return g; })(), // 荷葉外框（平放在水面上，縮放成荷葉的橢圓）
   stump: new THREE.CylinderGeometry(1.1, 1.3, 4.5, 24),
   leaf: (() => { const g = new THREE.SphereGeometry(0.5, 12, 8); g.scale(1.5, 0.42, 0.8); g.translate(0.55, 0, 0); return g; })(), // 藤蔓上的葉子（軟膠橢圓，根在原點）
   flagPole: new THREE.CylinderGeometry(0.1, 0.1, 6, 12),
@@ -34,6 +35,7 @@ export function createLevelView(scene) {
     track: new THREE.MeshBasicMaterial({ color: '#000000', transparent: true, opacity: 0.16, depthWrite: false }),
     column: new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.12, depthWrite: false }),
     hi: new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.9, depthWrite: false }),
+    padRim: new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.95, depthWrite: false }),
   };
   // 目標高亮（兩個環：實心 + 外擴）
   const hi = new THREE.Mesh(GEO.ripple, mats.hi); hi.renderOrder = 2; scene.add(hi);
@@ -101,8 +103,9 @@ export function createLevelView(scene) {
     padFlagOff = softMaterial('#ffffff', q, { rough: 0.3 }); padFlagOn = softMaterial(P.accent ?? '#ff6fb5', q, { rough: 0.35 }); padFlagOn.side = THREE.DoubleSide; padFlagOff.side = THREE.DoubleSide;
     padObjs = level.pads.map((p) => {
       const o = dressProp(ART.models, 'prop-pad', wi, q); o.position.set(p.x, p.y - 0.07 * 1.6, 0); o.scale.set(p.w / 2, 1.6, 2.1); o.rotation.y = Math.PI; group.add(o);
-      const fp = new THREE.Mesh(GEO.flagPole, softMaterial('#ffffff', q, { rough: 0.3 })); fp.scale.set(0.8, 0.5, 0.8); fp.position.set(p.x + 2.3, p.y + 1.5, -0.9); fp.castShadow = true; group.add(fp);
-      const fl = new THREE.Mesh(GEO.flag, padFlagOff); fl.scale.setScalar(0.62); fl.position.set(p.x + 3.0, p.y + 2.4, -0.9); fl.castShadow = true; group.add(fl);
+      const fp = new THREE.Mesh(GEO.flagPole, softMaterial('#ffffff', q, { rough: 0.3 })); fp.scale.set(0.9, 0.75, 0.9); fp.position.set(p.x + 2.3, p.y + 2.25, -0.9); fp.castShadow = true; group.add(fp);
+      const fl = new THREE.Mesh(GEO.flag, padFlagOff); fl.scale.setScalar(0.95); fl.position.set(p.x + 3.3, p.y + 3.7, -0.9); fl.castShadow = true; group.add(fl);
+      const rim = new THREE.Mesh(GEO.padRim, mats.padRim); rim.position.set(p.x, p.y - 0.02, 0); rim.scale.set(p.w / 2 + 0.25, 1, 2.35); rim.renderOrder = 1; group.add(rim);
       return { o, fl };
     });
     const pole = new THREE.Mesh(GEO.flagPole, softMaterial('#ffffff', q, { rough: 0.3 })); pole.position.set(g.x - 1.5, g.y + 3, -1.6); pole.castShadow = true; group.add(pole);
