@@ -48,7 +48,7 @@ export const TUNE = {
   CAM_DIST_MAX: 30,
   CAM_LOOKAHEAD: 0.33,
   CAM_MIN_Y: 7.8, // 鏡頭最低高度：讓鉤點上方的圈圈、鋸片也在畫面內
-  CAM_MIN_Y_DUNE: 6.8, // 沙丘世界調低：青蛙在坡底（y 約 1–4）時不會貼在畫面最下緣，坡底看得到（鉤點最高 16，視野上緣 6.8＋8.9＝15.7）
+  CAM_MIN_Y_DUNE: 7.4, // 沙丘世界調低（7.8→7.4）：視野下緣 −1.5，連沙丘側壁（到 −1.4）都在畫面內；上緣 7.4＋8.9＝16.3，鉤點最高 16 還看得到
   // 招牌時刻
   SLOWMO_SCALE: 0.28,
   SLOWMO_TIME: 0.8, // 真實秒
@@ -94,8 +94,8 @@ export const WORLDS = [
     aurora: ['#3dffa8', '#38d8ff', '#b46cff'],
   },
   {
-    name: 'SUNSET DUNES', sky: ['#5a2a86', '#ffb06a'], fog: '#ffb88c', water: '#7a2f3d', waterEm: '#1c0408',
-    petal: '#27d9c8', bud: '#fff3b0', vine: '#1fa59a', cap: '#ff5aa5', capSpot: '#fff3b0', stem: '#fff1d6',
+    name: 'SUNSET DUNES', sky: ['#5a2a86', '#ffb06a'], fog: '#ffb88c', water: '#7a2f3d', waterEm: '#3a0a16',
+    petal: '#0fb3ae', bud: '#fff3b0', vine: '#1fa59a', cap: '#ff5aa5', capSpot: '#fff3b0', stem: '#fff1d6',
     hazard: '#2a1346', hazardTip: '#ff2e63', saw: '#dfe8ff', wood: '#8a4b2a', pad: '#46dc9a',
     hemi: ['#ffdcb4', '#7a3a63'], props: 'dunes', die: 'GULP!', bgHill: '#a8467e', bgHill2: '#d4628a',
     // 沙丘表面（levelview 程序網格）：谷底、坡面、頂緣高光、側面
