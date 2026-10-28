@@ -1,0 +1,18 @@
+[
+ {
+  "wait": 2500
+ },
+ {
+  "eval": "window.__game.start(1)"
+ },
+ {
+  "wait": 800
+ },
+ {
+  "eval": "(() => {\n  const G = window.__game, c = document.getElementById('newCard'), b = document.getElementById('newName');\n  const langs = ['en','es','pt','fr','de','tr','ru','ja','ko','id','zh-Hant','zh-Hans'];\n  const cjk = (l) => /^(ja|ko|zh)/.test(l);\n  const ids = ['mush','swarm','ring','move','spikeLow','mushChain','ringArc','fan','saw','spikeHigh','tunnel','pad','boost'];\n  const bad = [], all = [];\n  c.style.animation = 'none';\n  for (const l of langs) {\n    G.i18n.setLang(l);\n    for (const id of ids) {\n      const name = G.i18n.t('new.' + id);\n      G.ui.newCard(name); c.style.animation = 'none'; c.style.opacity = 1; c.style.transform = 'translateX(-50%)';\n      const fs = parseFloat(getComputedStyle(b).fontSize);\n      let issue = '';\n      if (b.scrollWidth > b.clientWidth + 0.5) issue += 'overflow ';\n      if (fs < 24) issue += 'small ';\n      if (!cjk(l)) {\n        const tn = b.firstChild; const re = /\\S+/g; let m;\n        while ((m = re.exec(tn.data))) {\n          const r = document.createRange(); r.setStart(tn, m.index); r.setEnd(tn, m.index + m[0].length);\n          const tops = new Set([...r.getClientRects()].map((q) => Math.round(q.top / 4)));\n          if (tops.size > 1) { issue += 'split:' + m[0] + ' '; break; }\n        }\n      }\n      all.push({ l, id, name, fs, w: Math.round(b.scrollWidth), cw: Math.round(b.clientWidth), issue });\n      if (issue) bad.push({ l, name, fs, issue });\n    }\n  }\n  G.ui.newCard(null); G.i18n.setLang('en');\n  window.__ncBad = bad.length;\n  const worst = all.slice().sort((a, z) => (a.fs - z.fs) || (z.w / z.cw - a.w / a.cw)).slice(0, 5).map((o) => `${o.l}|${o.name}|${o.fs}px`);\n  return JSON.stringify({ combos: all.length, bad: bad.length, badList: bad.slice(0, 8), worst5: worst });\n})()"
+ },
+ {
+  "assert": "window.__ncBad === 0",
+  "msg": "所有 NEW 字卡名稱 × 12 語言：不溢出、不斷字、字級 >= 24px"
+ }
+]

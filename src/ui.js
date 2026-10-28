@@ -98,7 +98,23 @@ export function hint(text, x, y) {
 export function newCard(name) {
   const c = $('newCard');
   if (!name) { c.hidden = true; c.classList.remove('on'); return; }
-  $('newName').textContent = name; c.hidden = false; c.classList.remove('on'); void c.offsetWidth; c.classList.add('on');
+  const b = $('newName');
+  b.textContent = name; c.hidden = false; c.classList.remove('on'); fitNewName(b); void c.offsetWidth; c.classList.add('on');
+}
+// 標題只准在空白處換行（CJK 照常逐字）：放不下（溢出、或有字被切成兩行／在連字號換行）就一路縮字級，下限 60%（24px）
+function fitNewName(b) {
+  const cjk = /^(ja|ko|zh)/.test(document.documentElement.lang || '');
+  const split = () => {
+    if (cjk || !b.firstChild) return false;
+    const tn = b.firstChild, re = /\S+/g; let m;
+    while ((m = re.exec(tn.data))) {
+      const r = document.createRange(); r.setStart(tn, m.index); r.setEnd(tn, m.index + m[0].length);
+      if (new Set([...r.getClientRects()].map((q) => Math.round(q.top / 4))).size > 1) return true;
+    }
+    return false;
+  };
+  let fs = 40; b.style.fontSize = '';
+  while (fs > 24 && (b.scrollWidth > b.clientWidth + 0.5 || split())) { fs -= 1; b.style.fontSize = `${fs}px`; }
 }
 
 // 跳字：同時最多 3 個；大字一次只留一個
