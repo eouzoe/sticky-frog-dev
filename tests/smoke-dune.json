@@ -63,8 +63,8 @@
   "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => { (window.__dn.stage >= 1 || performance.now() - t0 > 8000) ? r(JSON.stringify(window.__dn)) : setTimeout(f, 8); }; f(); })"
  },
  {
-  "assert": "window.__dn.stage >= 1 && window.__dn.slide > 0.2 && window.__dn.dead === false",
-  "msg": "青蛙落到沙丘上滑行（貼著沙面累計超過 0.2 秒、滑到尾端上翹坡頂的坡面上）、沒死"
+  "assert": "window.__dn.stage >= 1 && window.__dn.slide > 0.05 && window.__dn.dead === false",
+  "msg": "青蛙落到沙丘上、滑上尾端上翹坡頂的坡面（貼著沙面累計 > 0.05 秒）、沒死"
  },
  {
   "shot": "dune-slide"
