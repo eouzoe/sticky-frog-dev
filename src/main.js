@@ -57,6 +57,7 @@ window.__game = {
   // 測試用：讓無盡模式直接死（驗結算流程）
   forceDie() { const s = G.sim; if (s && s.mode !== 'dead') { s.mode = 'air'; s.tongue.state = 'idle'; s.y = 0.1; s.vy = -5; } },
   get view() { return view; }, // 測試用：量岩漿泡的螢幕位置
+  set camOverride(v) { G.camOv = v; }, // 測試用：{ p: [x,y,z], l: [x,y,z] } 把鏡頭擺到指定位置看（拍沙丘側面／斜角特寫用），null＝還原
   set freeze(v) { G.freeze = !!v; }, // 測試用：凍住物理（拍「拋起那一格」用；畫面照常畫）
   get sim() { return G.sim; }, // 測試用：冒煙直接調時間／蒼蠅數來造 1、2 星
   audio: A, ui: UI, i18n: { audit, setLang, t }, // 截圖／測試用：直接叫 UI（例如成就膠囊）、語言稽核
@@ -619,6 +620,7 @@ function render(realDt, dt) {
   if (Math.abs(cam.fov - fov) > 0.01) { cam.fov = fov; cam.updateProjectionMatrix(); }
   cam.position.set(c.x + fx.shake.x, c.y + fx.shake.y, c.d);
   cam.rotation.set(-0.04, 0, fx.shake.roll);
+  if (G.camOv) { cam.position.set(...G.camOv.p); cam.lookAt(...G.camOv.l); }
   view.update(tReal, c.x, Math.max(4, s.y), A.beatPos());
   view.render();
 }
