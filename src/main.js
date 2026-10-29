@@ -77,7 +77,10 @@ const persist = () => cg.saveJSON(SAVE_KEY, save);
 const skinOf = () => SKINS.find((s) => s.id === save.skin) ?? SKINS[1];
 const trailOf = () => TRAILS.find((t) => t.id === save.trail) ?? TRAILS[0];
 const tongueOf = () => TONGUES.find((t) => t.id === save.tongue) ?? TONGUES[0];
-function applyLook(sk = skinOf(), tr = trailOf(), tk = tongueOf()) { frog.setSkin(sk); fx.setTrail(tr); frog.setTongue(tk, tongueTexture(tk.tex)); }
+function applyLook(sk = skinOf(), tr = trailOf(), tk = tongueOf()) {
+  // 造型模型包還沒載（例如測試直接 look('cat')）：先載，載好再套；這一刻先維持現在的造型
+  if (!skinReady(sk.id)) { ensureSkin(sk.id).then(() => applyLook(sk, tr, tk), (e) => console.error('[skin load]', e)); if (!ART.models['char-frog']) return; sk = frog.st.skin ?? SKINS[1]; }
+  frog.setSkin(sk); fx.setTrail(tr); frog.setTongue(tk, tongueTexture(tk.tex)); }
 const vibrate = (p) => { try { navigator.vibrate?.(p); } catch { /* 不支援就算了 */ } };
 const sfx = (n, o) => A.play(n, o);
 
