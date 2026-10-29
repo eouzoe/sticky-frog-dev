@@ -80,6 +80,10 @@
   "msg": "滑到尾端上翹坡頂被拋起（vx > 8 離開沙面）、沒死"
  },
  {
+  "assert": "window.__game.sim.level.rings.filter((r, i) => r.trail !== undefined && window.__game.sim.rings[i]).length >= 4",
+  "msg": "沿軌跡滑行吃到金圈拾取物（軌跡上的圈 ≥ 4 個）"
+ },
+ {
   "shot": "dune-launch"
  },
  {

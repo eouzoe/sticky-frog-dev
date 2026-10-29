@@ -234,6 +234,7 @@ function onEvent(e) {
     case 'ring': {
       sfx('ring'); addCombo();
       const pts = addScore(T.SCORE_RING);
+      if (G.lv.rings[e.i]?.trail !== undefined) { pop(t('pop.ring', { pts }), e.x, e.y + 2.2, 'gold'); juice.ringTrail(e); break; } // 沙丘軌跡上的圈：輕量特效
       pop(t('pop.ring', { pts }), e.x, e.y + 2.6, 'big');
       juice.ring(e, e.speed > 16 || e.flips >= 1 ? T.SLOWMO_TIME : 0.45);
       break;

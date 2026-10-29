@@ -1,5 +1,6 @@
 // 90 關程序產生（種子固定）：同一關每次長一樣。難度＝全域進度 + 世界內進度。
 import { TUNE } from './config.js';
+import { duneH } from './sim.js';
 
 export const LEVEL_COUNT = 90;
 export const worldOf = (n) => Math.min(7, Math.floor((n - 1) / 15));
@@ -42,7 +43,7 @@ export const BOOST_REACH = 19, BOOST_Y = 14;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 // 部分關卡換種子（tests/sim-check.mjs 的自動玩家破不了或太難的）
-export const SALT = { 12: 7, 19: 3, 31: 11, 50: 14, 20: 1, 23: 1, 25: 2, 26: 1, 29: 1, 32: 1, 33: 1, 37: 2, 38: 3, 41: 1, 42: 4, 43: 1, 44: 1, 46: 5, 51: 1, 54: 3, 56: 1, 58: 1, 60: 3, 61: 2, 62: 1, 63: 3, 64: 1, 65: 5, 66: 1, 68: 1, 69: 4, 70: 3, 71: 1, 74: 12, 77: 2, 80: 9, 84: 13, 85: 1, 89: 2, 81: 3 };
+export const SALT = { 12: 7, 19: 3, 31: 11, 50: 14, 20: 1, 23: 1, 25: 2, 26: 1, 29: 1, 32: 1, 33: 1, 37: 2, 38: 3, 41: 1, 42: 4, 43: 1, 44: 1, 46: 5, 51: 1, 54: 3, 56: 1, 58: 1, 60: 3, 61: 2, 62: 1, 63: 3, 64: 1, 65: 5, 66: 1, 68: 1, 69: 4, 70: 3, 71: 1, 74: 12, 77: 2, 80: 9, 84: 13, 85: 5, 89: 2, 81: 3, 78: 6, 82: 4, 87: 2 };
 
 export function generateLevel(n, salt = SALT[n] ?? 0) {
   const r = mulberry32(n * 7919 + 1013 + salt * 100003);
@@ -254,6 +255,17 @@ export function addSegment(L, g, n, diff, plan = null) {
     }
     L.dunes.push({ x0: x1 - wl, x1, H: H2, lip: true, f });
     fly(x1 - 0.8, H2 + 2.6);
+    // 拾取物軌跡（既有的金圈，最多 8 個，只有這一種：蒼蠅會算進 3 星的蒼蠅比例、金幣沒有關卡裡的拾取物）：放手 → 落在沙丘起點 → 沿沙面 → 從 lip 拋起的弧線。
+    // trail＝片區編號、k＝順序（0＝軌跡起點）。位置跟著沙面高度走；沙面與拋起路徑上本來就沒有危險物（出口淨空）
+    {
+      const fl = L.dunes.filter((e) => e.f === f), hAt = (xx) => { for (const e of fl) if (xx >= e.x0 && xx <= e.x1) return duneH(e, xx); return 0; };
+      const lipX0 = x1 - wl, nAlong = Math.min(5, Math.max(2, Math.floor((lipX0 - x0 - 3) / 5) + 1));
+      let k = 0; const ring = (rx, ry) => L.rings.push({ x: rx, y: ry, trail: f, k: k++ });
+      ring(x0 - 0.5, 4.6);
+      for (let i = 0; i < nAlong; i++) { const rx = x0 + 3 + (lipX0 - x0 - 3) * (i + 0.5) / nAlong; ring(rx, hAt(rx) + 1.25); }
+      ring(x1 - 1.2, hAt(x1 - 1.2) + 1.5);
+      ring(x1 + 3.6, hAt(x1) + 2.2);
+    }
     for (const m of mid) hook(x + m.dx, m.y);
     x += gap; y = ny; hook(x, y);
     g.calm = 3;

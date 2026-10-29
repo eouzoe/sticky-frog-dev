@@ -75,6 +75,11 @@ export function createJuice(c) {
       fx.shock(e.x, e.y, 4.5, '#ffd23f', 0.5); fx.shock(e.x, e.y, 3, '#ffffff', 0.4, false, 0.07);
       c.slowmo(slow); G.fovKick -= 5; c.flash(0.15); small(0.12);
     },
+    // 沙丘軌跡上的金圈：比一般金圈輕（一圈星、一圈環、小震動；沒有慢動作、閃光），一排連吃不會洗版
+    ringTrail(e) {
+      lvView.takeRing(e.i); frog.jelly(2);
+      stars(e.x, e.y, 5, { speed: 7, size: 0.24 }); fx.shock(e.x, e.y, 3, '#ffd23f', 0.35); small(0.06);
+    },
     bounce(e, w) {
       lvView.squashMush(e.i); frog.squash(0.55, 0); frog.jelly(5); frog.jiggle(8);
       candy(e.x, e.y, 14, [w.cap, w.capSpot, '#ffffff'], { speed: 8, dir: Math.PI / 2, spread: 2.2 });
