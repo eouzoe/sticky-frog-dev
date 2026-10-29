@@ -18,6 +18,7 @@ import { t, itemName, setLang, onLang, detect, urlLang, navLangs, sdkInfo, mount
 import './i18n.css';
 import { ART, loadArt } from './art.js';
 import { createJuice } from './juice.js';
+import { TM } from './telemetry.js'; // 匿名遊玩數據；建置沒設 VITE_TELEMETRY_URL 時全是空操作
 
 const MIDGAME_EVERY = 3; // 每破 3 關，在換關的空檔插一次 midgame（SDK 自己還會限 3 分鐘一次）
 const CELEBRATE = 1.2; // 落荷葉後的短暫慶祝秒數，然後進結算畫面（等玩家按 NEXT）
@@ -142,7 +143,7 @@ function resetRun(fromStart = false) {
 function startLevel(n) {
   G.ignorePressUntil = performance.now() + 250; G.startedAt = performance.now();
   A.initAudio();
-  loadLevel(n);
+  loadLevel(n); TM.levelStart(n);
   save.last = n; persist();
   enterPlaying(); clearHold(); UI.show(null); UI.hint(null);
   G.cam.x = G.sim.x + 6; G.cam.y = T.CAM_MIN_Y; juice.levelIn(G.sim);
@@ -266,7 +267,7 @@ function onEvent(e) {
       UI.dieText(water ? t(`die.${G.lv.world}`, null, w.die) : t('pop.ouch'));
       const prog = G.endless ? 0 : Math.min(1, s.maxX / G.lv.goal.x);
       if (prog > 0.6) UI.popup(t('pop.soClose', { pct: Math.round(prog * 100) }), innerWidth / 2, innerHeight * 0.52, 'gold');
-      G.bestProg = Math.max(G.bestProg, prog);
+      G.bestProg = Math.max(G.bestProg, prog); if (!G.endless) TM.death(e.x, prog, e.cause);
       A.duckMusic(0.4, 0.4); vibrate([30, 40, 30]);
       G.combo = 0; cg.gameplayStop(); persist();
       if (G.endless) G.overT = 0.8; else G.restartT = T.RESTART_DELAY;
@@ -289,7 +290,7 @@ function levelCleared() {
   const s = G.sim, n = G.level;
   addCoins(CLEAR_COINS);
   const rate = rateStars({ flies: s.fliesGot, fliesTotal: G.lv.flies.length, time: s.time, par: G.lv.par });
-  recordStars(save, n, rate.stars);
+  recordStars(save, n, rate.stars); TM.clear(s.time, rate.stars, s.fliesGot);
   UI.clearSticker(true, t(rate.stars === 3 ? 'clear.perfect' : 'clear.clear'));
   { const p = view.project(s.x, s.y, 0.5); UI.coinFly([p.x, p.y], document.getElementById('hudCoins'), 3); }
   const newBest = G.score > (save.best[n] ?? 0) && (save.best[n] ?? 0) > 0;
@@ -323,7 +324,7 @@ async function advance() {
 // ---------- 無盡結算 ----------
 function endlessOver() {
   const dist = endlessDist(), score = endlessScore();
-  const newBest = dist > save.endlessBest && save.endlessBest > 0;
+  const newBest = dist > save.endlessBest && save.endlessBest > 0; TM.endlessOver(dist, score);
   save.endlessBest = Math.max(save.endlessBest, dist); save.endlessRuns++;
   const now = new Date(), day = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const rank = addLocal(save.lb, { score, dist, day });
@@ -354,6 +355,7 @@ async function doubleCoins() {
 // 沒有離開遊戲鈕。退回選單時把一個「下一步」推到最顯眼：新模式 → 新世界 → 買得起的東西（見 src/save.js nextStep）
 let menuStep = null;
 function toMenu() {
+  TM.leave('menu');
   if (G.state === 'playing' || G.state === 'paused') cg.gameplayStop();
   persist();
   G.state = 'menu'; clearHold(); UI.tryNow(null); UI.newCard(null);
@@ -670,7 +672,9 @@ async function boot() {
   applyLook(); UI.hudCoins(save.coins);
   A.setMusic(save.music); A.setSfx(save.sfx); UI.setToggles(save);
   cg.onMute((m) => A.setMuted(m));
+  TM.bind(() => ((G.state === 'playing' || G.state === 'paused') && !G.endless && G.sim ? { level: G.level, x: G.sim.maxX, prog: Math.min(1, G.sim.maxX / G.lv.goal.x) } : null));
   toMenu();
+  TM.menuReady(performance.now(), { lang: document.documentElement.lang, vw: innerWidth, vh: innerHeight, q: G.quality }); TM.notice(save.privSeen, () => { save.privSeen = true; persist(); });
   const ld = document.getElementById('boot'); ld?.classList.add('done'); setTimeout(() => ld?.classList.add('out'), 120); setTimeout(() => ld?.remove(), 600); // 載入畫面收掉
   cg.loadingStop();
   requestAnimationFrame((t) => { last = t; frame(t); });

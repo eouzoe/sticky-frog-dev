@@ -10,6 +10,7 @@ export const DEFAULT_SAVE = {
   seen: { endless: false, world: 0 }, // 玩家在選單上「已經看過」的解鎖（推薦只推新的）
   tutTouch: false, // 手機觸控教學看過了
   lang: '', // 玩家自己選的介面語言（空＝自動偵測）
+  privSeen: false, // 遊玩數據的隱私通知看過了
 };
 
 const int = (v, lo, hi, d) => (Number.isFinite(+v) ? Math.max(lo, Math.min(hi, Math.floor(+v))) : d);
@@ -22,7 +23,7 @@ export function normalizeSave(raw, levelCount) {
   const unlocked0 = s.unlocked;
   s.coins = int(r.coins, 0, 1e9, 0); s.grabs = int(r.grabs, 0, 1e9, 0); s.clears = int(r.clears ?? r.results, 0, 1e9, 0);
   s.endlessBest = int(r.endlessBest, 0, 1e9, 0); s.endlessRuns = int(r.endlessRuns, 0, 1e9, 0);
-  s.music = r.music !== false; s.sfx = r.sfx !== false; s.tutTouch = r.tutTouch === true;
+  s.music = r.music !== false; s.sfx = r.sfx !== false; s.tutTouch = r.tutTouch === true; s.privSeen = r.privSeen === true;
   s.best = obj(r.best); s.feats = obj(r.feats); s.lang = typeof r.lang === 'string' ? r.lang.slice(0, 12) : '';
   s.stars = {};
   for (const [k, v] of Object.entries(obj(r.stars))) { const n = Number(k), st = int(v, 0, 3, 0); if (Number.isInteger(n) && n >= 1 && n <= levelCount && st >= 1) s.stars[n] = st; }
