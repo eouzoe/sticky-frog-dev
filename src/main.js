@@ -1,7 +1,7 @@
 // 開機、主迴圈、狀態機、輸入、存檔、事件 → 手感回饋（音效／粒子／震動／慢動作／跳字）。
 import { cg } from './cg.js';
 import { TUNE as T, WORLDS, SKINS, TRAILS, TONGUES, FULL_LAUNCH } from './config.js';
-import { generateLevel, newElements, LEVEL_COUNT, levelLabel, createEndless, extendEndless, endlessWorld, ENDLESS_WORLD_LEN } from './level.js';
+import { generateLevel, newElements, LEVEL_COUNT, levelLabel, worldOf, createEndless, extendEndless, endlessWorld, ENDLESS_WORLD_LEN } from './level.js';
 import { createSim, step, movePos, flyPos, burstOn, burstWarn, padSnapshot } from './sim.js';
 import { makeBot } from './bot.js';
 import { createView } from './scene.js';
@@ -16,7 +16,9 @@ import { addLocal, submitPlatform } from './leaderboard.js';
 import { tongueTexture } from './tongues.js';
 import { t, itemName, setLang, onLang, detect, urlLang, navLangs, sdkInfo, mountPicker, enablePseudo, audit } from './i18n.js';
 import './i18n.css';
-import { ART, loadArt } from './art.js';
+import { ART, loadPack, packReady, ensureWorld, worldReady, ensureSkin, skinReady } from './art.js';
+import { WORLD_COUNT } from './packs-table.js';
+import { TIERS, pickTier, createGovernor } from './quality.js';
 import { createJuice } from './juice.js';
 
 const MIDGAME_EVERY = 3; // 每破 3 關，在換關的空檔插一次 midgame（SDK 自己還會限 3 分鐘一次）
@@ -59,7 +61,7 @@ window.__game = {
   get view() { return view; }, // 測試用：量岩漿泡的螢幕位置
   get sim() { return G.sim; }, // 測試用：冒煙直接調時間／蒼蠅數來造 1、2 星
   audio: A, ui: UI, i18n: { audit, setLang, t }, // 截圖／測試用：直接叫 UI（例如成就膠囊）、語言稽核
-  setLow() { setLowQuality(); }, // 測試用：直接切到低畫質（C 材質）
+  setLow() { setTier('low'); }, setTier(n) { setTier(n); }, // 測試用：直接切畫質（low＝C 材質）
   ballPos(i) { return lvView.ballPos(i); }, // 測試用：鉤點球實際畫出來的世界座標（藤蔓晃動驗收：必須等於 sim 錨點）
   autoplay: null, // 巡覽截圖用：設成 [rel, grabVy] 讓自動玩家操作
 
@@ -120,7 +122,7 @@ function updateEndless() {
   const s = G.sim, L = G.lv;
   if (L.gen.x < s.x + 120 && extendEndless(L, s.x + 250)) { lvView.build(L, WORLDS[G.world]); restoreEaten(); }
   const k = endlessWorld(s.x, save.unlocked > 60 ? 5 : 4); // 打過 4-15 才輪到冰峰
-  if (k !== G.world && s.mode !== 'dead') setEndlessWorld(k);
+  if (k !== G.world && s.mode !== 'dead') { if (worldReady(k)) setEndlessWorld(k); else ensureWorld(k).catch(() => {}); } // 下一個世界的模型還沒到就先照舊，到了再換
 }
 const endlessDist = () => Math.floor(Math.max(0, (G.sim?.maxX ?? 0) - G.lv.start.x));
 const endlessScore = () => G.score + endlessDist() * 10;
@@ -139,7 +141,33 @@ function resetRun(fromStart = false) {
   frog.squash(0.7, 0);
   if (G.state === 'playing') enterPlaying();
 }
-function startLevel(n) {
+// 世界背景模型只有開機那個世界先載：還沒載好就顯示載入狀態，載好再做 fn（最後一次呼叫才算數）
+let worldSeq = 0;
+// 這一關（n＝0 表示無盡）用得到的包：世界背景＋有後期道具的話再加 props 包
+const levelPacks = (n) => {
+  if (n === 0) return ['world-0', 'props'];
+  const lv = generateLevel(n);
+  return [`world-${worldOf(n)}`, ...(lv.fans.length || lv.saws.length || lv.rings.length || lv.boosts.length || lv.pads.length ? ['props'] : [])];
+};
+function whenLevel(n, fn) {
+  const need = levelPacks(n);
+  if (need.every((k) => packReady(k))) { fn(); return; }
+  const seq = ++worldSeq, wl = document.getElementById('wload');
+  wl?.classList.add('on');
+  Promise.all(need.map((k) => loadPack(k))).then(() => { if (seq === worldSeq) fn(); }, (e) => console.error('[world load]', e)).finally(() => { if (seq === worldSeq) wl?.classList.remove('on'); });
+}
+// 第一關開始後，把其他世界與造型的模型在背景慢慢載（一包一包、中間留空檔，不卡遊玩）
+let prefetched = false;
+function prefetchRest() {
+  if (prefetched) return; prefetched = true;
+  const list = ['props', ...Array.from({ length: WORLD_COUNT }, (_, w) => `world-${w}`), 'skin-cat', 'skin-ape', 'acc'];
+  let i = 0;
+  const next = () => { if (i >= list.length) return; loadPack(list[i++]).catch(() => {}).finally(() => setTimeout(next, 2500)); };
+  setTimeout(next, 4000);
+}
+function startLevel(n) { whenLevel(n, () => startLevelNow(n)); }
+function startLevelNow(n) {
+  prefetchRest();
   G.ignorePressUntil = performance.now() + 250; G.startedAt = performance.now();
   A.initAudio();
   loadLevel(n);
@@ -151,6 +179,10 @@ function startLevel(n) {
 }
 function startEndless() {
   if (save.unlocked <= ENDLESS_UNLOCK) return;
+  whenLevel(0, startEndlessNow);
+}
+function startEndlessNow() {
+  prefetchRest();
   G.ignorePressUntil = performance.now() + 250;
   A.initAudio(); G.sim = null; loadEndless();
   enterPlaying(); clearHold(); UI.show(null); UI.hint(null);
@@ -383,9 +415,15 @@ function openShop(hi = null) {
   sfx('click'); if (G.sim && G.sim.mode !== 'perch') resetRun(true); clearHold(); G.state = 'shop';
   G.shopHi = hi?.id ?? null; if (hi) UI.setShopTab(hi.tab);
   renderShop(); UI.show('shop'); UI.tryNow(null);
+  for (const k of ['skin-cat', 'skin-ape', 'acc']) loadPack(k).catch(() => {}); // 商店裡每個造型都可能被點：先把模型包載起來
 }
 function renderShop() {
   UI.renderShop(save, (tab, it) => {
+    if (tab === 'skins' && !skinReady(it.id)) { ensureSkin(it.id).then(() => shopPick(tab, it), (e) => console.error('[skin load]', e)); return; } // 貓、猿、配件的模型還沒載：載好再套
+    shopPick(tab, it);
+  }, G.shopHi);
+}
+function shopPick(tab, it) {
     let bought = false;
     if (!save.owned.includes(it.id)) {
       if (save.coins < it.price) { sfx('miss'); return; }
@@ -398,7 +436,6 @@ function renderShop() {
     else save.trail = it.id;
     applyLook(); persist(); renderShop();
     if (bought) { G.bought = it; UI.tryNow(it.name, it); } // 買完：慶祝＋立刻推「立即試玩」
-  }, G.shopHi);
 }
 function tryBought() {
   sfx('click'); UI.tryNow(null);
@@ -488,16 +525,21 @@ document.getElementById('over').addEventListener('pointerdown', (e) => { if (!is
 const hudData = {};
 const tipV = { x: 0, y: 0 }, mouth = { x: 0, y: 0, z: 0 }, tmp = { x: 0, y: 0 };
 const mood = { lookX: 0, lookY: 0, mouth: false, tongueWob: 0, tipPop: 1, scared: false };
-let last = performance.now(), fpsAcc = 0, fpsN = 0, lowSecs = 0, tReal = 0;
+let last = performance.now(), fpsAcc = 0, fpsN = 0, tReal = 0, gov = null;
+const MENU_FRAME_MS = 31; // 選單類畫面（待機動畫）上限約 30 fps：每兩個螢幕幀才畫一次，主執行緒忙碌量約減半
 
 function frame(now) {
   requestAnimationFrame(frame);
+  if (document.hidden) { last = now; return; } // 分頁隱藏：什麼都不做
+  const st = G.state;
+  if ((st === 'paused' || st === 'ad') && !view.dirty) { last = now; fpsAcc = 0; fpsN = 0; return; } // 暫停／看廣告：畫面沒變，不畫（視窗大小改變時 view.dirty 會補畫一次）
+  if ((st === 'menu' || st === 'levels' || st === 'shop' || st === 'records') && now - last < MENU_FRAME_MS) return;
   const realDt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now; tReal += realDt;
-  // 效能監看：平均 < 45 fps 持續 2 秒 → 降畫質
+  // 效能監看：每秒量一次實際 fps 交給畫質調整（src/quality.js）；開局 3 秒（建場景、編 shader）的卡頓不算
   fpsAcc += realDt; fpsN++;
   if (fpsAcc >= 1) {
     G.fps = Math.round(fpsN / fpsAcc); fpsAcc = 0; fpsN = 0;
-    if (G.state === 'playing' && !document.hidden) { lowSecs = G.fps < 45 ? lowSecs + 1 : 0; if (lowSecs >= 2 && G.quality === 'high') setLowQuality(); }
+    if (G.state === 'playing' && performance.now() - G.startedAt > 3000) { const nt = gov?.tick(G.fps); if (nt) setTier(nt); }
   }
   // 慢動作與 hit-stop
   if (G.slowT > 0) G.slowT -= realDt;
@@ -614,10 +656,13 @@ function render(realDt, dt) {
   view.render();
 }
 
-// 降畫質：pixelRatio 1、關陰影／後製，模型換成 C 路線材質（Lambert＋邊緣光）重新 dress
-function setLowQuality() {
-  G.quality = 'low'; ART.q = 'low'; view.setQuality(false); fx.setQuality(false);
-  if (!G.lv) return;
+// 換畫質級別（src/quality.js 的表）：像素比、陰影、後製、粒子上限直接換；材質種類變了（high↔low）要把場景、青蛙重新 dress
+function setTier(name) {
+  if (name === G.quality || !TIERS[name]) return;
+  const prev = TIERS[G.quality], cur = TIERS[name];
+  G.quality = name; ART.q = cur.mats; view.setQuality(cur); fx.setQuality(cur.mats === 'high', cur.fx);
+  fpsAcc = 0; fpsN = 0;
+  if (!G.lv || cur.mats === prev.mats) return;
   const w = WORLDS[G.lv.world];
   view.setTheme(w, G.endless ? Math.max(ENDLESS_SPAN, (G.sim?.x ?? 0) + 4000) : G.lv.length); lvView.build(G.lv, w); restoreEaten(); applyLook();
 }
@@ -654,12 +699,31 @@ function menuIdle(dt) {
 }
 
 // ---------- 開機 ----------
+// 順序（CrazyGames 版不變）：loadingStart → SDK init（同時下載核心模型）→ 讀存檔 → loadingStop。
+// 載入畫面是 index.html 內嵌的（不靠這包 JS）；這裡只負責把進度條推到真的進度。
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const onCG = /(^|\.)crazygames\.(com|ru)$/.test(location.hostname) || /crazygames/.test(document.referrer + (location.ancestorOrigins?.[0] ?? ''));
+const setBoot = (p) => window.__bootP?.(p);
+// 不在 CrazyGames 網域時 SDK 常常永遠不回（要等 cg.js 的 4 秒逾時）：網頁版最多等 WEB_SDK_MS，之後 SDK 晚到也沒關係（cg.js 會補送狀態）
+const WEB_SDK_MS = 1200;
+async function startSdk() {
+  if (import.meta.env.VITE_WEB) return; // 網頁版建置（VITE_WEB=1）：完全不碰 SDK
+  await Promise.race([window.__cgSdk, sleep(onCG ? 4000 : WEB_SDK_MS)]); // SDK 腳本是 async 載入的
+  const init = cg.init();
+  await (onCG ? init : Promise.race([init, sleep(WEB_SDK_MS)]));
+}
+// 存檔還沒讀之前（SDK 雲端存檔要 init 完才讀得到）先偷看 localStorage，猜該先載哪個世界與造型；猜錯只是讀完存檔後多等一個小包
+function peekSave() { try { const r = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null') ?? {}; return { last: Math.min(r.last || 1, r.unlocked || 1), skin: r.skin || DEFAULT_SAVE.skin }; } catch { return { last: 1, skin: DEFAULT_SAVE.skin }; } }
 async function boot() {
   cg.loadingStart();
-  await cg.init();
-  await loadArt(view.renderer); // 26 個 GLB（約 0.9 MB）；失敗就讓錯誤冒出來，不要默默用空模型
+  const hint = peekSave(), frac = {};
+  const prog = (k) => (f) => { frac[k] = f; setBoot(0.08 + 0.8 * (Object.values(frac).reduce((a, b) => a + b, 0) / 4)); };
+  const art = Promise.all([loadPack('core', prog('core')), ...levelPacks(hint.last).map((k) => loadPack(k, prog(k))), ensureSkin(hint.skin, prog('skin'))]);
+  await Promise.all([startSdk(), art]); // SDK 與素材同時進行
+  setBoot(0.92);
   let raw = null; try { raw = JSON.parse(cg.getItem(SAVE_KEY) || 'null'); } catch { raw = null; }
   save = normalizeSave(raw, LEVEL_COUNT); // 舊存檔（有 stars 欄位）也走這裡
+  await Promise.all([...levelPacks(Math.min(save.last, save.unlocked)).map((k) => loadPack(k)), ensureSkin(save.skin)]); // 偷看猜錯時補載
   // 介面語言：?lang= > 玩家自己選的 > CrazyGames locale > 瀏覽器 > English（src/i18n.js detect）；?lang=xx 是版面測試用的加長假語言
   if (urlLang() === 'xx') enablePseudo();
   setLang(detect({ url: urlLang(), saved: save.lang, sdk: sdkInfo(), nav: navLangs() }));
@@ -667,12 +731,14 @@ async function boot() {
   // 換語言時重算 JS 拼出來的字（選單的 PLAY 1-2、推薦鈕；暫停的關卡與分數），不管是從語言鈕還是直接 setLang
   onLang(() => { if (G.state === 'menu') toMenu(); else if (G.state === 'paused') pauseMeta(); });
   G.touch = matchMedia?.('(pointer: coarse)').matches ?? false;
+  const pick = pickTier(); gov = createGovernor(pick); setTier(gov.tier); // 一開始依裝置訊號決定畫質（要在第一次建場景、dress 之前）
   applyLook(); UI.hudCoins(save.coins);
   A.setMusic(save.music); A.setSfx(save.sfx); UI.setToggles(save);
   cg.onMute((m) => A.setMuted(m));
   toMenu();
+  setBoot(1);
   const ld = document.getElementById('boot'); ld?.classList.add('done'); setTimeout(() => ld?.classList.add('out'), 120); setTimeout(() => ld?.remove(), 600); // 載入畫面收掉
   cg.loadingStop();
   requestAnimationFrame((t) => { last = t; frame(t); });
 }
-boot();
+boot().catch((e) => { console.error('[boot]', e); window.__bootFail?.(); });

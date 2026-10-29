@@ -60,17 +60,17 @@ export function createFx(scene, renderer) {
   meshes[2].renderOrder = 3;
   let coin = null; // 金幣：prop-coin（模型載入後才建）
   function coinMesh() {
-    if (coin || !ART.models) return coin;
+    if (coin || !ART.models['prop-coin']) return coin;
     const p = splitProp('prop-coin', 0).main[0];
     coin = new THREE.InstancedMesh(p.geometry, p.material, 60); coin.frustumCulled = false; coin.count = 0; coin.userData.pm = p.matrix; scene.add(coin);
     return coin;
   }
 
   const P = { x: new Float32Array(MAX), y: new Float32Array(MAX), z: new Float32Array(MAX), vx: new Float32Array(MAX), vy: new Float32Array(MAX), vz: new Float32Array(MAX), life: new Float32Array(MAX), max: new Float32Array(MAX), size: new Float32Array(MAX), rot: new Float32Array(MAX), rv: new Float32Array(MAX), g: new Float32Array(MAX), drag: new Float32Array(MAX), shape: new Uint8Array(MAX), r: new Float32Array(MAX), gg: new Float32Array(MAX), b: new Float32Array(MAX) };
-  let alive = 0;
+  let alive = 0, cap = MAX; // cap：粒子池上限（畫質分級會調，見 src/quality.js）
 
   function spawn(x, y, z, vx, vy, vz, life, size, g, drag, shape, color) {
-    if (alive >= MAX) return;
+    if (alive >= cap) return;
     const i = alive++;
     P.x[i] = x; P.y[i] = y; P.z[i] = z; P.vx[i] = vx; P.vy[i] = vy; P.vz[i] = vz; P.life[i] = life; P.max[i] = life;
     P.size[i] = size; P.rot[i] = Math.random() * 6.28; P.rv[i] = (Math.random() - 0.5) * 14; P.g[i] = g; P.drag[i] = drag; P.shape[i] = shape;
@@ -78,7 +78,7 @@ export function createFx(scene, renderer) {
   }
   // 粒子預算：池子用掉七成後，新的爆發數量減半（大時刻疊在一起也不會吃光池子、掉幀）
   function burst(x, y, n, o = {}) {
-    if (alive > MAX * 0.7) n = Math.ceil(n / 2);
+    if (alive > cap * 0.7) n = Math.ceil(n / 2);
     const colors = o.colors ?? ['#ffffff'], sp = o.speed ?? 8, size = o.size ?? 0.25, life = o.life ?? 0.7;
     const dir = o.dir ?? null, spread = o.spread ?? Math.PI * 2;
     for (let k = 0; k < n; k++) {
@@ -132,7 +132,8 @@ export function createFx(scene, renderer) {
   const shake = { trauma: 0, t: 0, x: 0, y: 0, roll: 0 };
   const addTrauma = (a, big = false) => { shake.trauma = big ? Math.min(1, shake.trauma + a) : Math.max(shake.trauma, Math.min(1, a)); };
 
-  function setQuality(high) {
+  function setQuality(high, max = MAX) {
+    cap = Math.min(MAX, max);
     mats = makeMats(high);
     meshes.forEach((m, i) => { m.material = mats[[0, 1, 3, 4][i]]; });
   }

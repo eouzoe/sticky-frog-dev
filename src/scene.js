@@ -201,18 +201,23 @@ export function createView(canvas) {
   const postScene = new THREE.Scene(), postCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
   postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), postMat));
 
+  let dirty = true;
   function resize() {
     const w = innerWidth, h = innerHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h; camera.updateProjectionMatrix();
     if (rt) { rt.dispose(); rt = null; }
+    dirty = true; // 暫停時不畫：視窗大小變了要補畫一次
   }
   addEventListener('resize', resize); resize();
 
-  function setQuality(high) {
-    renderer.setPixelRatio(high ? Math.min(devicePixelRatio, 1.5) : 1);
-    renderer.shadowMap.enabled = high; sun.castShadow = high;
-    post.enabled = high; resize();
+  // tier＝src/quality.js TIERS 的一列
+  function setQuality(tier) {
+    renderer.setPixelRatio(Math.min(devicePixelRatio, tier.dpr));
+    const sh = tier.shadow > 0;
+    renderer.shadowMap.enabled = sh; sun.castShadow = sh;
+    if (sh && sun.shadow.mapSize.x !== tier.shadow) { sun.shadow.mapSize.set(tier.shadow, tier.shadow); sun.shadow.map?.dispose(); sun.shadow.map = null; }
+    post.enabled = tier.post; resize();
     scene.traverse((o) => { if (o.material && !Array.isArray(o.material)) o.material.needsUpdate = true; });
   }
 
@@ -233,6 +238,7 @@ export function createView(canvas) {
   }
 
   function render() {
+    dirty = false;
     renderer.info.reset();
     if (post.enabled && post.amount > 0.0015) {
       if (!rt) { const s = renderer.getDrawingBufferSize(new THREE.Vector2()); rt = new THREE.WebGLRenderTarget(s.x, s.y, { samples: 2 }); }
@@ -249,7 +255,8 @@ export function createView(canvas) {
     return scr;
   }
 
-  return { renderer, scene, camera, bubMesh, setTheme, update, render, project, post, setQuality, info: renderer.info };
+  const view = { renderer, scene, camera, bubMesh, setTheme, update, render, project, post, setQuality, info: renderer.info, get dirty() { return dirty; }, set dirty(v) { dirty = v; } };
+  return view;
 }
 
 export function mulberry(a) {

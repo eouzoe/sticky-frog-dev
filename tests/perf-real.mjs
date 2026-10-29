@@ -2,6 +2,7 @@
 // 一行重跑（一律包 heavy.sh；--build 會先 npm run build）：
 //   /Users/eason/Studio/games/crazygames/_tools/heavy.sh node tests/perf-real.mjs --build --label after --out tests/perf-after.json
 // 旗標：--dist <資料夾>（預設 ./dist）  --only A,B,C（預設三種都跑）  --port 5779
+//       --uncap：關掉垂直同步與 60fps 上限，讓影格時間反映真實成本（預設會被 60Hz 蓋住，改前改後都是 16.7ms，看不出差別）；只拿遊玩影格時間的數字，閒置／暫停的數字請用不加 --uncap 的結果
 // 情境：A 桌機 1280×720 不節流；B 手機 390×844 DSF3 觸控、CPU 4×、網路 9/1.5 Mbps RTT 170ms；C 慢手機 CPU 6×、1.6 Mbps RTT 560ms。
 // 限制：無頭瀏覽器用這台 Mac 的 GPU，GPU 負擔模擬不出來；CPU 節流只放慢主執行緒。真機要自己測。
 // SDK：sdk.crazygames.com 用假腳本代替（延遲 300ms 才回，init() 永遠不 resolve），重現「不在 CrazyGames 網域時要等 4 秒逾時」；該請求不計入數字。
@@ -131,7 +132,7 @@ async function runScenario(browser, key) {
   return r;
 }
 
-const browser = await chromium.launch({ executablePath: CHROME, headless: true, args: ['--use-gl=angle', '--use-angle=metal', '--enable-gpu', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
+const browser = await chromium.launch({ executablePath: CHROME, headless: true, args: ['--use-gl=angle', '--use-angle=metal', '--enable-gpu', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required', ...(argv.includes('--uncap') ? ['--disable-frame-rate-limit', '--disable-gpu-vsync'] : [])] });
 const result = { label: LABEL, at: new Date().toISOString(), dist: DIST, note: '無頭瀏覽器用這台 Mac 的 GPU，GPU 負擔模擬不出來；CPU 節流只放慢主執行緒', scenarios: {} };
 try {
   for (const k of ONLY) {
