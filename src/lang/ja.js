@@ -1,6 +1,7 @@
 // 日本語（カジュアル、短く元気に）。用語集: src/lang/README.md
 export default {
   'menu.play': 'プレイ {level}', 'menu.levels': 'ステージ', 'menu.endless': 'エンドレス', 'menu.shop': 'ショップ', 'menu.change': '変更',
+  'priv.note': '匿名のプレイ統計でステージを改善します。個人情報は集めません。', 'priv.link': 'プライバシー',
   'next.endless': '新登場：エンドレスモード', 'next.endlessSub': 'どこまでもスイング、自己ベストに挑戦',
   'next.world': '新ワールド：{world}', 'next.worldSub': 'ステージ{level}が解放されたよ',
   'next.get': '{item}をゲット', 'next.getSub': '所持 {coins} ・ 価格 {price}',
