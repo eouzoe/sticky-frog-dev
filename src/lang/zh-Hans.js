@@ -31,8 +31,8 @@ export default {
   'it.skins.ninja': '忍者蛙', 'it.skins.gold': '黄金蛙', 'it.skins.astro': '太空蛙', 'it.skins.king': '蟾蜍国王', 'it.skins.ape': '藤蔓猿', 'it.skins.silkfrog': '蚕丝蛙',
   'it.tongues.tongue': '青蛙舌头', 'it.tongues.yarn': '毛线球', 'it.tongues.vine': '丛林藤蔓', 'it.tongues.silk': '蚕丝线',
   'it.trails.none': '微风', 'it.trails.rainbow': '彩虹', 'it.trails.fire': '火焰', 'it.trails.bubble': '泡泡', 'it.trails.star': '星尘',
-  'world.0': '丛林', 'world.1': '糖果', 'world.2': '霓虹城', 'world.3': '火山', 'world.4': '冰峰',
-  'die.0': '扑通！', 'die.1': '啪叽！', 'die.2': '滋！', 'die.3': '滋滋！', 'die.4': '哆嗦！',
+  'world.0': '丛林', 'world.1': '糖果', 'world.2': '霓虹城', 'world.3': '火山', 'world.4': '冰峰', 'world.5': '夕阳沙丘',
+  'die.0': '扑通！', 'die.1': '啪叽！', 'die.2': '滋！', 'die.3': '滋滋！', 'die.4': '哆嗦！', 'die.5': '咕噜！',
   'feat.spin': '旋转博士！', 'featLine.spin': '一跳转五圈，头晕了吗？',
   'feat.tornado': '蛙卷风！！', 'featLine.tornado': '一跳转七圈，太离谱了吧。',
   'feat.flow': '一路畅通！', 'featLine.flow': '整关都没减速。',
@@ -40,5 +40,5 @@ export default {
   'feat.skim': '亲吻浪花！', 'featLine.skim': '碰到水还活得好好的。',
   'feat.shave': '擦边球！', 'featLine.shave': '离尖刺只差一根头发。',
   'feat.clutch': '绝地救援！', 'featLine.clutch': '最后一秒死死抓住了！',
-  'new.title': '新！', 'new.mush': '弹跳蘑菇', 'new.swarm': '苍蝇串', 'new.ring': '金圈', 'new.move': '移动钩点', 'new.spikeLow': '低处尖刺', 'new.mushChain': '连续蘑菇', 'new.ringArc': '双圈', 'new.fan': '风扇', 'new.saw': '锯片', 'new.spikeHigh': '高处尖刺', 'new.tunnel': '上下夹击', 'new.pad': '中途荷叶', 'new.boost': '加速圈',
+  'new.title': '新！', 'new.mush': '弹跳蘑菇', 'new.swarm': '苍蝇串', 'new.ring': '金圈', 'new.move': '移动钩点', 'new.spikeLow': '低处尖刺', 'new.mushChain': '连续蘑菇', 'new.ringArc': '双圈', 'new.fan': '风扇', 'new.saw': '锯片', 'new.spikeHigh': '高处尖刺', 'new.tunnel': '上下夹击', 'new.pad': '中途荷叶', 'new.boost': '加速圈', 'new.dune': '沙丘滑沙',
 };

@@ -31,8 +31,8 @@ export default {
   'it.skins.ninja': 'ニンジャガエル', 'it.skins.gold': 'ゴールデンガエル', 'it.skins.astro': '宇宙飛行士ガエル', 'it.skins.king': 'ヒキガエル王', 'it.skins.ape': 'ツタザル', 'it.skins.silkfrog': 'シルクガエル',
   'it.tongues.tongue': 'カエルの舌', 'it.tongues.yarn': '毛糸', 'it.tongues.vine': 'ジャングルのツタ', 'it.tongues.silk': 'シルクの糸',
   'it.trails.none': 'そよ風', 'it.trails.rainbow': 'レインボー', 'it.trails.fire': 'ファイア', 'it.trails.bubble': 'シャボン玉', 'it.trails.star': '星くず',
-  'world.0': 'ジャングル', 'world.1': 'キャンディ', 'world.2': 'ネオンシティ', 'world.3': '火山', 'world.4': '氷の山頂',
-  'die.0': 'ドボン！', 'die.1': 'ベチャッ！', 'die.2': 'ビリッ！', 'die.3': 'ジュッ！', 'die.4': 'ぶるっ！',
+  'world.0': 'ジャングル', 'world.1': 'キャンディ', 'world.2': 'ネオンシティ', 'world.3': '火山', 'world.4': '氷の山頂', 'world.5': '夕焼けの砂丘',
+  'die.0': 'ドボン！', 'die.1': 'ベチャッ！', 'die.2': 'ビリッ！', 'die.3': 'ジュッ！', 'die.4': 'ぶるっ！', 'die.5': 'ズブッ！',
   'feat.spin': 'グルグル博士！', 'featLine.spin': '1回のジャンプで5回転。目、まわってない？',
   'feat.tornado': 'ゲロネード！！', 'featLine.tornado': '1回のジャンプで7回転。信じられない！',
   'feat.flow': 'ノンストップ！', 'featLine.flow': 'ステージ丸ごと、一度も減速なし。',
@@ -40,5 +40,5 @@ export default {
   'feat.skim': '波にキス！', 'featLine.skim': '水に触れたのに生還！',
   'feat.shave': 'ヒゲそりギリギリ！', 'featLine.shave': 'トゲまであとほんの少し。',
   'feat.clutch': '土壇場セーブ！', 'featLine.clutch': 'ラスト1秒でつかんだ！',
-  'new.title': '新登場！', 'new.mush': 'バウンドキノコ', 'new.swarm': 'ハエの群れ', 'new.ring': '金のリング', 'new.move': '動くフック', 'new.spikeLow': '低いトゲ', 'new.mushChain': '連続キノコ', 'new.ringArc': 'ダブルリング', 'new.fan': 'ファン', 'new.saw': 'ノコギリ', 'new.spikeHigh': '高いトゲ', 'new.tunnel': '上下トゲ', 'new.pad': 'チェックポイントのハス', 'new.boost': 'ブーストリング',
+  'new.title': '新登場！', 'new.mush': 'バウンドキノコ', 'new.swarm': 'ハエの群れ', 'new.ring': '金のリング', 'new.move': '動くフック', 'new.spikeLow': '低いトゲ', 'new.mushChain': '連続キノコ', 'new.ringArc': 'ダブルリング', 'new.fan': 'ファン', 'new.saw': 'ノコギリ', 'new.spikeHigh': '高いトゲ', 'new.tunnel': '上下トゲ', 'new.pad': 'チェックポイントのハス', 'new.boost': 'ブーストリング', 'new.dune': 'サンドサーフ',
 };

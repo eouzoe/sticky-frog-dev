@@ -32,8 +32,8 @@ export default {
   'it.skins.ninja': 'Rana Ninja', 'it.skins.gold': 'Rana Dorada', 'it.skins.astro': 'Rana Astronauta', 'it.skins.king': 'Rey Sapo', 'it.skins.ape': 'Mono Liana', 'it.skins.silkfrog': 'Rana de Seda',
   'it.tongues.tongue': 'Lengua de Rana', 'it.tongues.yarn': 'Ovillo', 'it.tongues.vine': 'Liana de Selva', 'it.tongues.silk': 'Hilo de Seda',
   'it.trails.none': 'Brisa', 'it.trails.rainbow': 'Arcoíris', 'it.trails.fire': 'Fuego', 'it.trails.bubble': 'Burbujas', 'it.trails.star': 'Polvo de Estrellas',
-  'world.0': 'SELVA', 'world.1': 'CARAMELO', 'world.2': 'CIUDAD NEÓN', 'world.3': 'VOLCÁN', 'world.4': 'CUMBRES HELADAS',
-  'die.0': '¡CHOF!', 'die.1': '¡PLAF!', 'die.2': '¡ZAP!', 'die.3': '¡ZAS!', 'die.4': '¡BRRR!',
+  'world.0': 'SELVA', 'world.1': 'CARAMELO', 'world.2': 'CIUDAD NEÓN', 'world.3': 'VOLCÁN', 'world.4': 'CUMBRES HELADAS', 'world.5': 'DUNAS AL ATARDECER',
+  'die.0': '¡CHOF!', 'die.1': '¡PLAF!', 'die.2': '¡ZAP!', 'die.3': '¡ZAS!', 'die.4': '¡BRRR!', 'die.5': '¡GLUP!',
   'feat.spin': '¡DOCTOR TORNILLO!', 'featLine.spin': 'Cinco giros en un salto. ¿Ya te mareas?',
   'feat.tornado': '¡¡RANANADO!!', 'featLine.tornado': 'SIETE giros en un salto. Increíble.',
   'feat.flow': '¡SIN FRENOS!', 'featLine.flow': 'Un nivel entero sin perder velocidad.',
@@ -41,5 +41,5 @@ export default {
   'feat.skim': '¡BESO A LAS OLAS!', 'featLine.skim': 'Tocaste el agua y lo contaste.',
   'feat.shave': '¡AFEITADO AL RAS!', 'featLine.shave': 'A un pelo de los pinchos.',
   'feat.clutch': '¡SALVADA EN EL ÚLTIMO SEGUNDO!', 'featLine.clutch': '¡Te agarraste justo a tiempo!',
-  'new.title': '¡NUEVO!', 'new.mush': 'Seta saltarina', 'new.swarm': 'Enjambre de moscas', 'new.ring': 'Aro dorado', 'new.move': 'Gancho móvil', 'new.spikeLow': 'Pinchos bajos', 'new.mushChain': 'Cadena de setas', 'new.ringArc': 'Aro doble', 'new.fan': 'Ventilador', 'new.saw': 'Sierra', 'new.spikeHigh': 'Pinchos altos', 'new.tunnel': 'Pinchos arriba y abajo', 'new.pad': 'Nenúfar de control', 'new.boost': 'Aro de impulso',
+  'new.title': '¡NUEVO!', 'new.mush': 'Seta saltarina', 'new.swarm': 'Enjambre de moscas', 'new.ring': 'Aro dorado', 'new.move': 'Gancho móvil', 'new.spikeLow': 'Pinchos bajos', 'new.mushChain': 'Cadena de setas', 'new.ringArc': 'Aro doble', 'new.fan': 'Ventilador', 'new.saw': 'Sierra', 'new.spikeHigh': 'Pinchos altos', 'new.tunnel': 'Pinchos arriba y abajo', 'new.pad': 'Nenúfar de control', 'new.boost': 'Aro de impulso', 'new.dune': 'Surf de dunas',
 };

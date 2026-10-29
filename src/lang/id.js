@@ -31,8 +31,8 @@ export default {
   'it.skins.ninja': 'Katak Ninja', 'it.skins.gold': 'Katak Emas', 'it.skins.astro': 'Katak Astronot', 'it.skins.king': 'Raja Kodok', 'it.skins.ape': 'Monyet Sulur', 'it.skins.silkfrog': 'Katak Sutra',
   'it.tongues.tongue': 'Lidah Katak', 'it.tongues.yarn': 'Benang Wol', 'it.tongues.vine': 'Sulur Rimba', 'it.tongues.silk': 'Benang Sutra',
   'it.trails.none': 'Semilir', 'it.trails.rainbow': 'Pelangi', 'it.trails.fire': 'Api', 'it.trails.bubble': 'Gelembung', 'it.trails.star': 'Debu Bintang',
-  'world.0': 'RIMBA', 'world.1': 'PERMEN', 'world.2': 'KOTA NEON', 'world.3': 'GUNUNG BERAPI', 'world.4': 'PUNCAK BEKU',
-  'die.0': 'BYUR!', 'die.1': 'PLOK!', 'die.2': 'ZAP!', 'die.3': 'CESS!', 'die.4': 'BRRR!',
+  'world.0': 'RIMBA', 'world.1': 'PERMEN', 'world.2': 'KOTA NEON', 'world.3': 'GUNUNG BERAPI', 'world.4': 'PUNCAK BEKU', 'world.5': 'GURUN SENJA',
+  'die.0': 'BYUR!', 'die.1': 'PLOK!', 'die.2': 'ZAP!', 'die.3': 'CESS!', 'die.4': 'BRRR!', 'die.5': 'GLUK!',
   'feat.spin': 'DOKTER PUSING!', 'featLine.spin': 'Lima putaran dalam satu lompatan. Sudah pusing?',
   'feat.tornado': 'KATAKNADO!!', 'featLine.tornado': 'TUJUH putaran dalam satu lompatan. Gila.',
   'feat.flow': 'TANPA REM!', 'featLine.flow': 'Satu level penuh tanpa melambat.',
@@ -40,5 +40,5 @@ export default {
   'feat.skim': 'CIUM OMBAK!', 'featLine.skim': 'Nyentuh air dan masih selamat.',
   'feat.shave': 'TIPIS SEKALI!', 'featLine.shave': 'Sehelai rambut dari duri.',
   'feat.clutch': 'SELAMAT DI DETIK AKHIR!', 'featLine.clutch': 'Nyangkut di detik terakhir!',
-  'new.title': 'BARU!', 'new.mush': 'Jamur Pantul', 'new.swarm': 'Kawanan Lalat', 'new.ring': 'Cincin Emas', 'new.move': 'Kait Bergerak', 'new.spikeLow': 'Duri Rendah', 'new.mushChain': 'Rantai Jamur', 'new.ringArc': 'Cincin Ganda', 'new.fan': 'Kipas', 'new.saw': 'Gergaji', 'new.spikeHigh': 'Duri Tinggi', 'new.tunnel': 'Duri Atas-Bawah', 'new.pad': 'Teratai Checkpoint', 'new.boost': 'Cincin Pemacu',
+  'new.title': 'BARU!', 'new.mush': 'Jamur Pantul', 'new.swarm': 'Kawanan Lalat', 'new.ring': 'Cincin Emas', 'new.move': 'Kait Bergerak', 'new.spikeLow': 'Duri Rendah', 'new.mushChain': 'Rantai Jamur', 'new.ringArc': 'Cincin Ganda', 'new.fan': 'Kipas', 'new.saw': 'Gergaji', 'new.spikeHigh': 'Duri Tinggi', 'new.tunnel': 'Duri Atas-Bawah', 'new.pad': 'Teratai Checkpoint', 'new.boost': 'Cincin Pemacu', 'new.dune': 'Seluncur Gurun',
 };

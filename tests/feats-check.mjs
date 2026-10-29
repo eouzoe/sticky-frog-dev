@@ -43,6 +43,9 @@ check('speed 差一點', [], play(win, sim({ time: 100 / (K.SPEED - 0.2) })).fil
 // skim：掉到離落水線 SKIM_Y 以內又飛回去
 const dip = (low) => [[{ y: W + 2.5, vx: 3 }, null], [{ y: W + low }, null], [{ y: W + 2 }, null], [{ y: W + K.SKIM_BACK + 0.5 }, null]];
 check('skim 達成', ['skim'], play(dip(K.SKIM_Y - 0.1)));
+// 沙丘上方不是水：同樣的低飛，level 有沙丘蓋住那個 x 就不算，沒有就照算
+const sandLv = { ...lv(), dunes: [{ x0: -5, x1: 5, H: 2, lip: false }] };
+check('skim：低飛在沙丘上方不算 WAVE KISSER', [], play(dip(K.SKIM_Y - 0.1).map(([p, e]) => [{ ...p, level: sandLv }, e])));
 check('skim 差一點（太高）', [], play(dip(K.SKIM_Y + 0.1)));
 check('skim 沒救回來（落水）', [], play([[{ y: W + 2.5 }, null], [{ y: W + 0.1 }, null], [{ mode: 'dead' }, { type: 'die' }], [{ mode: 'air', y: 9 }, null]]));
 
@@ -54,12 +57,16 @@ check('shave 差一點', [], play([[{}, { type: 'close', gap: K.SHAVE + 0.02 }]]
 const clutch = (fy, fvy) => [[{}, { type: 'attach', fy: W + fy, fvy }], [{ mode: 'swing', y: W + 3 }, null], [{ y: W + K.CLUTCH_BACK + 0.5 }, null]];
 check('clutch 達成', ['clutch'], play(clutch(K.CLUTCH_Y - 0.3, K.CLUTCH_VY - 3)));
 check('clutch 差一點（黏得太高）', [], play(clutch(K.CLUTCH_Y + 0.3, K.CLUTCH_VY - 3)));
+check('clutch：在沙丘上方黏住不算 CLUTCH SAVE', [], play(clutch(K.CLUTCH_Y - 0.3, K.CLUTCH_VY - 3).map(([p, e]) => [{ ...p, level: sandLv }, e]), sim({ level: sandLv })));
 check('clutch 差一點（沒在往下掉）', [], play(clutch(K.CLUTCH_Y - 0.3, K.CLUTCH_VY + 3)));
 
 // 紀錄：第一次日期、最佳值、次數
 const rec = {};
 recordFeat(rec, 'shave', 0.1, new Date(2026, 9, 26)); recordFeat(rec, 'shave', 0.05); recordFeat(rec, 'shave', 0.2);
 check('紀錄：首次日期本地、最佳取小、次數', { first: '2026-10-26', best: 0.05, count: 3 }, rec.shave);
+// 滑沙不算停下：同樣停滯 0.2 秒的速度（< STALL_V），貼著沙面（onDune ≥ 0）不計、離開沙面照算
+check('NONSTOP：滑沙中速度低於門檻不算停滯', ['flow'], play([...fast, ...slow(0.2).map(([p, e]) => [{ ...p, onDune: 0 }, e]), ...fast, ...win], sim({ time: 99 })));
+check('NONSTOP：同樣的低速離開沙面就算停滯', [], play([...fast, ...slow(0.2).map(([p, e]) => [{ ...p, onDune: -1 }, e]), ...fast, ...win], sim({ time: 99 })));
 check('每種成就都有測到', true, FEATS.every((f) => ['spin', 'tornado', 'flow', 'speed', 'skim', 'shave', 'clutch'].includes(f.id)) && FEATS.length === 7);
 
 console.log(fails ? `FAILED ${fails}` : 'all ok');

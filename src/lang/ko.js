@@ -31,8 +31,8 @@ export default {
   'it.skins.ninja': '닌자 개구리', 'it.skins.gold': '황금 개구리', 'it.skins.astro': '우주비행사 개구리', 'it.skins.king': '두꺼비 왕', 'it.skins.ape': '덩굴 원숭이', 'it.skins.silkfrog': '실크 개구리',
   'it.tongues.tongue': '개구리 혀', 'it.tongues.yarn': '털실', 'it.tongues.vine': '정글 덩굴', 'it.tongues.silk': '비단 실',
   'it.trails.none': '산들바람', 'it.trails.rainbow': '무지개', 'it.trails.fire': '불꽃', 'it.trails.bubble': '비눗방울', 'it.trails.star': '별가루',
-  'world.0': '정글', 'world.1': '캔디', 'world.2': '네온 시티', 'world.3': '화산', 'world.4': '얼음 봉우리',
-  'die.0': '풍덩!', 'die.1': '철퍼덕!', 'die.2': '지직!', 'die.3': '치익!', 'die.4': '부르르!',
+  'world.0': '정글', 'world.1': '캔디', 'world.2': '네온 시티', 'world.3': '화산', 'world.4': '얼음 봉우리', 'world.5': '석양 사구',
+  'die.0': '풍덩!', 'die.1': '철퍼덕!', 'die.2': '지직!', 'die.3': '치익!', 'die.4': '부르르!', 'die.5': '꿀꺽!',
   'feat.spin': '빙글빙글 박사!', 'featLine.spin': '한 번 점프에 5회전. 어지럽지 않아?',
   'feat.tornado': '개굴 토네이도!!', 'featLine.tornado': '한 번 점프에 7회전. 말도 안 돼.',
   'feat.flow': '논스톱!', 'featLine.flow': '한 스테이지를 감속 없이 질주.',
@@ -40,5 +40,5 @@ export default {
   'feat.skim': '파도와 뽀뽀!', 'featLine.skim': '물에 닿고도 살아남았다.',
   'feat.shave': '털끝 차이!', 'featLine.shave': '가시와 머리카락 한 올 차이.',
   'feat.clutch': '막판 구출!', 'featLine.clutch': '마지막 1초에 붙잡았다!',
-  'new.title': 'NEW!', 'new.mush': '점프 버섯', 'new.swarm': '파리 떼', 'new.ring': '황금 링', 'new.move': '움직이는 고리', 'new.spikeLow': '낮은 가시', 'new.mushChain': '연속 버섯', 'new.ringArc': '더블 링', 'new.fan': '선풍기', 'new.saw': '톱날', 'new.spikeHigh': '높은 가시', 'new.tunnel': '위아래 가시', 'new.pad': '체크포인트 연잎', 'new.boost': '부스트 링',
+  'new.title': 'NEW!', 'new.mush': '점프 버섯', 'new.swarm': '파리 떼', 'new.ring': '황금 링', 'new.move': '움직이는 고리', 'new.spikeLow': '낮은 가시', 'new.mushChain': '연속 버섯', 'new.ringArc': '더블 링', 'new.fan': '선풍기', 'new.saw': '톱날', 'new.spikeHigh': '높은 가시', 'new.tunnel': '위아래 가시', 'new.pad': '체크포인트 연잎', 'new.boost': '부스트 링', 'new.dune': '모래 서핑',
 };

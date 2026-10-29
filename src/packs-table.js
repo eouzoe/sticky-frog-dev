@@ -15,6 +15,7 @@ export const PACKS = {
   'world-2': ['bg-city-a', 'bg-city-b'],
   'world-3': ['bg-volcano-a', 'bg-volcano-b', 'prop-geyser'],
   'world-4': ['bg-frost-a', 'bg-frost-b', 'bg-frost-c'],
+  'world-5': ['bg-dunes-a', 'bg-dunes-b', 'bg-dunes-c'],
 };
 export const WORLD_COUNT = Object.keys(PACKS).filter((k) => k.startsWith('world-')).length;
 export const packUrl = (name) => `./models/${name}.pack`;

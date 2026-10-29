@@ -1,7 +1,8 @@
 // 關卡物件的 3D 外觀（GLB 軟膠素材，同種物件全部 InstancedMesh）：鉤點花、蘑菇、尖刺、鋸片、風扇、圈圈、蒼蠅、終點荷葉＋葉牆。
 import * as THREE from 'three';
-import { movePos, flyPos, burstOn, burstWarn } from './sim.js';
-import { dressProp, softMaterial, WORLD_PAL } from './artkit.js';
+import { movePos, flyPos, burstOn, burstWarn, duneH, duneStart, duneEnd } from './sim.js';
+import { TUNE as T } from './config.js';
+import { dressProp, softMaterial, WORLD_PAL, initEnv } from './artkit.js';
 import { ART, splitProp, PartSet } from './art.js';
 
 const tmp = { x: 0, y: 0 };
@@ -22,6 +23,41 @@ const GEO = {
   flag: new THREE.PlaneGeometry(2.2, 1.4, 8, 2),
 };
 const flagBase = Float32Array.from(GEO.flag.attributes.position.array);
+
+// 沙丘表面：所有片區併成一個網格（一個 draw call）。高度場 y(x, z) = h(x)·g(z) − (1 − g(z))·1.2：
+// g(z) 在青蛙走的那條帶（z −2.2～1.0）是 1，往前（到 z 3.4）、往後（到 z −8）圓滑降到 0 沒入流沙；x 方向左緣有緩坡、lip 後面有背坡（sim 的 duneH），所以整個網格沒有任何垂直切面，物理（z=0）跟畫面一致。
+const SAND_Z = [-8, -6.4, -5, -3.8, -2.8, -2.2, -1, 0, 1, 1.5, 2.0, 2.5, 3.0, 3.4];
+const sandG = (z) => (z > 1 ? 0.5 * (1 + Math.cos(Math.PI * Math.min(1, (z - 1) / 2.4))) : z < -2.2 ? 0.5 * (1 + Math.cos(Math.PI * Math.min(1, (-2.2 - z) / 5.8))) : 1);
+function sandGeometry(dunes, pal) {
+  const C = pal.map((c) => new THREE.Color(c)), col = new THREE.Color();
+  const pos = [], rgb = [], idx = [];
+  const fields = new Map();
+  for (const d of dunes) { if (!fields.has(d.f)) fields.set(d.f, []); fields.get(d.f).push(d); }
+  for (const fl of fields.values()) {
+    const a = duneStart(fl[0]), b = duneEnd(fl[fl.length - 1]), N = Math.ceil((b - a) / 0.3), base = pos.length / 3;
+    for (let i = 0; i <= N; i++) {
+      const x = a + (b - a) * i / N;
+      let h = 0, hm = 1; for (const d of fl) if (x >= duneStart(d) && x <= duneEnd(d)) { h = duneH(d, x); hm = d.H + T.DUNE_BASE; break; }
+      for (const z of SAND_Z) {
+        const g = sandG(z), k = Math.min(1, h / hm);
+        col.copy(C[0]).lerp(C[1], Math.pow(k, 0.8)).lerp(C[2], Math.max(0, 0.3 - Math.abs(g - 0.6)) * 1.2 * k).lerp(C[3], (1 - g) * 0.85);
+        pos.push(x, h * g - (1 - g) * 1.2, z); rgb.push(col.r, col.g, col.b);
+      }
+    }
+    const W = SAND_Z.length;
+    for (let i = 0; i < N; i++) for (let r = 0; r < W - 1; r++) { const p0 = base + i * W + r, p1 = p0 + W, p2 = p0 + 1, p3 = p1 + 1; idx.push(p0, p2, p1, p1, p2, p3); }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(rgb, 3));
+  g.setIndex(idx); g.computeVertexNormals();
+  return g;
+}
+function sandMaterial(high) {
+  const m = high ? new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.42, metalness: 0, envMap: initEnv(null), envMapIntensity: 0.4 }) : new THREE.MeshLambertMaterial({ vertexColors: true });
+  m.onBeforeCompile = (sh) => { sh.fragmentShader = sh.fragmentShader.replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n totalEmissiveRadiance += vec3(0.34, 0.24, 0.12) * pow(1.0 - abs(dot(normal, normalize(vViewPosition))), 3.0) + diffuseColor.rgb * 0.1;'); };
+  m.customProgramCacheKey = () => `sand|${high}`;
+  return m;
+}
 
 // 彈性出場（0→1，帶過衝）：換關時物件由左到右依序「啵」地長出來
 const elastic = (u) => (u <= 0 ? 0 : u >= 1 ? 1 : 1 - Math.pow(2, -9 * u) * Math.cos(u * 10.5));
@@ -50,7 +86,7 @@ export function createLevelView(scene) {
 
   let fan = null, mush = null, fly = null, geyser = false, padObjs = [], padFlagOff = null, padFlagOn = null;
   function build(level, w) {
-    lv = level; wi = Math.max(0, Math.min(4, level.world ?? 0));
+    lv = level; wi = Math.max(0, Math.min(5, level.world ?? 0));
     const P = WORLD_PAL[wi], q = ART.q;
     for (const s of sets) s.dispose(group);
     for (const o of [...group.children]) group.remove(o);
@@ -89,6 +125,12 @@ export function createLevelView(scene) {
     level.saws.forEach((s, i) => S.track.set(i, mat(s.x, s.y, -0.3, 0, 0, 0, s.move.ax * 2 + 0.25, s.move.ay * 2 + 0.25, 1)));
     level.fans.forEach((f, i) => S.column.set(i, mat(f.x, (f.y0 + f.y1) / 2, -0.4, 0, 0, 0, f.w, f.y1 - f.y0, 1)));
     for (const k of ['pole', 'track', 'column']) S[k].commit();
+    // 沙丘（夕陽沙丘世界）：程序網格，一個 draw call
+    const live = level.dunes.filter((d) => !d.off);
+    if (live.length) {
+      const sm = new THREE.Mesh(sandGeometry(live, w.sand ?? ['#f0a14a', '#ffd070', '#fff0b8', '#c9722f']), sandMaterial(q === 'high'));
+      sm.receiveShadow = true; sm.frustumCulled = false; sm.renderOrder = 1; group.add(sm);
+    }
     // 起點木樁、終點荷葉、葉牆、旗子（各一個，不用 instancing）
     const stump = new THREE.Mesh(GEO.stump, softMaterial(P.wood, q, { rough: 0.5 }));
     stump.position.set(level.start.x, level.start.y - 2.25, 0); stump.castShadow = stump.receiveShadow = true; group.add(stump);

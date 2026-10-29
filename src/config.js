@@ -31,11 +31,20 @@ export const TUNE = {
   MUSH_VX: 10, // 從上面踩到蘑菇：固定往前 10、往上 19 彈出（可預測，連續蘑菇間距剛好一跳）
   MUSH_VY: 19,
   FAN_ACC: 64,
+  DUNE_APRON: 2.5, // 片區左緣的緩坡長度（0→DUNE_BASE，沒有垂直切面）
+  DUNE_BACK: 6, // lip 後面的背坡長度（從坡頂圓滑下降到 0，沒入流沙）
+  DUNE_BACK_VX: 12.5, // 落在背坡上：往前至少這個速度
+  DUNE_BACK_VY: 11, // ……往上至少這個速度（背面也算往前上方拋，不會把青蛙滑進流沙）
+  DUNE_SNAP: 0.45, // 貼地距離：貼著沙面的青蛙離沙面不到這個高度就繼續貼著（lip 與背坡除外）
+  DUNE_BASE: 0.5, // 沙丘谷底離水面的高度（高於浪，青蛙貼著谷底不會泡在水裡）；沙丘高度 H 是疊在這個底上面的
+  DUNE_FLOOR: 10, // 滑沙：貼著沙面時沿坡面往前的速度下限（單位/秒）；沒有它兩座沙丘之間的谷底會來回晃到停
+  DUNE_LIP_FLOOR: 17, // 尾端上翹坡頂（lip）上的速度下限：離開坡頂時用這個速度沿坡面方向拋出去
   WATER_Y: 0,
   COMBO_WINDOW: 2.8, // 連擊：這麼多秒內沒有新動作就斷
   SCORE_FLIP: 100,
   SCORE_FLY: 50,
   SCORE_RING: 150,
+  SCORE_RING_TRAIL: 30, // 沙丘軌跡上的金圈（ring.trail）只給一般金圈的五分之一，免得一片 8 個圈把這個世界的分數／金幣灌高
   SCORE_BOUNCE: 25,
   SCORE_GRAB: 10,
   // 鏡頭
@@ -45,6 +54,7 @@ export const TUNE = {
   CAM_DIST_MAX: 30,
   CAM_LOOKAHEAD: 0.33,
   CAM_MIN_Y: 7.8, // 鏡頭最低高度：讓鉤點上方的圈圈、鋸片也在畫面內
+  CAM_MIN_Y_DUNE: 7.4, // 沙丘世界調低（7.8→7.4）：視野下緣 −1.5，連沙丘側壁（到 −1.4）都在畫面內；上緣 7.4＋8.9＝16.3，鉤點最高 16 還看得到
   // 招牌時刻
   SLOWMO_SCALE: 0.28,
   SLOWMO_TIME: 0.8, // 真實秒
@@ -55,7 +65,7 @@ export const TUNE = {
   PAR_SPEED: 10.5, // 3 星時間：關卡長度 / 這個速度 + 3 秒
 };
 
-// 世界：每 15 關換一個（目前 5 個、75 關）（色盤、背景、障礙外觀）
+// 世界：每 15 關換一個（目前 6 個、90 關）（色盤、背景、障礙外觀）
 export const WORLDS = [
   {
     name: 'JUNGLE', sky: ['#a8e6ff', '#fff3b0'], fog: '#d6f2d8', water: '#2ec4c4', waterEm: '#000000',
@@ -88,6 +98,14 @@ export const WORLDS = [
     hemi: ['#ffffff', '#86b4dc'], props: 'frost', die: 'BRRR!', bgHill: '#8fbbe6', bgHill2: '#c4def5',
     // 極光帶（scene.js）：三個色停靠點
     aurora: ['#3dffa8', '#38d8ff', '#b46cff'],
+  },
+  {
+    name: 'SUNSET DUNES', sky: ['#5a2a86', '#ffb06a'], fog: '#ffb88c', water: '#4e2233', waterEm: '#220812',
+    petal: '#0fb3ae', bud: '#fff3b0', vine: '#1fa59a', cap: '#ff5aa5', capSpot: '#fff3b0', stem: '#fff1d6',
+    hazard: '#2a1346', hazardTip: '#ff2e63', saw: '#dfe8ff', wood: '#8a4b2a', pad: '#46dc9a',
+    hemi: ['#ffdcb4', '#7a3a63'], props: 'dunes', die: 'GULP!', bgHill: '#a8467e', bgHill2: '#d4628a',
+    // 沙丘表面（levelview 程序網格）：谷底、坡面、頂緣高光、側面
+    sand: ['#f0a14a', '#ffd070', '#fff0b8', '#c9722f'],
   },
 ];
 

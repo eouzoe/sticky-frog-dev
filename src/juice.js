@@ -75,6 +75,11 @@ export function createJuice(c) {
       fx.shock(e.x, e.y, 4.5, '#ffd23f', 0.5); fx.shock(e.x, e.y, 3, '#ffffff', 0.4, false, 0.07);
       c.slowmo(slow); G.fovKick -= 5; c.flash(0.15); small(0.12);
     },
+    // 沙丘軌跡上的金圈：比一般金圈輕（一圈星、一圈環、小震動；沒有慢動作、閃光），一排連吃不會洗版
+    ringTrail(e) {
+      lvView.takeRing(e.i); frog.jelly(2);
+      stars(e.x, e.y, 5, { speed: 7, size: 0.24 }); fx.shock(e.x, e.y, 3, '#ffd23f', 0.35); small(0.06);
+    },
     bounce(e, w) {
       lvView.squashMush(e.i); frog.squash(0.55, 0); frog.jelly(5); frog.jiggle(8);
       candy(e.x, e.y, 14, [w.cap, w.capSpot, '#ffffff'], { speed: 8, dir: Math.PI / 2, spread: 2.2 });
@@ -94,6 +99,26 @@ export function createJuice(c) {
       const a = Math.atan2(e.dy, e.dx);
       stars(e.x, e.y, 8, { colors: [w.petal, '#ffffff', '#fff3a0'], speed: 12, dir: a, spread: 0.5, size: 0.28 });
       fx.shock(e.x, e.y, 3.6, w.petal, 0.4); frog.jiggle(5); G.fovKick = Math.max(G.fovKick, 6); small(0.1);
+    },
+    // 沙丘落地（一次：一圈沙色環＋6 顆沙粒，小震動；沒有停格、慢動作、閃光）
+    dune(e, w) {
+      const sd = w.sand ?? ['#f0a14a', '#ffd070', '#fff0b8'];
+      frog.squash(0.7, 0); frog.jelly(3);
+      candy(e.x, e.y - 0.5, 6, [sd[1], sd[2], sd[0]], { speed: 5, dir: Math.PI / 2, spread: 2.4, size: 0.24 });
+      fx.shock(e.x, e.y - 0.5, 2.8, sd[2], 0.35, true); small(Math.min(0.14, 0.04 + e.speed * 0.004));
+    },
+    // 坡頂拋起（一次：兩圈衝擊環＋8 顆星往前上方＋8 顆沙粒，視野拉開一點，小震動；沒有停格、慢動作、閃光）
+    launch(e, w) {
+      const sd = w.sand ?? ['#f0a14a', '#ffd070', '#fff0b8'], a = Math.atan2(e.vy, e.vx);
+      fx.shock(e.x, e.y, 4.2, w.petal, 0.4); fx.shock(e.x, e.y, 2.6, '#ffffff', 0.3, false, 0.07);
+      stars(e.x, e.y, 8, { colors: [w.petal, '#fff0b8', '#ffffff'], speed: 11, dir: a, spread: 0.7, size: 0.28 });
+      candy(e.x, e.y - 0.4, 8, [sd[1], sd[2], sd[0]], { speed: 7, dir: a, spread: 1.6, size: 0.26 });
+      frog.jiggle(5); G.fovKick = Math.max(G.fovKick, 5); small(0.14);
+    },
+    // 滑行揚沙（呼叫端每 0.05 秒一次，一次 1 顆；粒子池本來就有上限）
+    slide(s, w) {
+      const sd = w.sand ?? ['#f0a14a', '#ffd070', '#fff0b8'];
+      fx.burst(s.x - 0.5, s.y - 0.55, 1, { colors: [sd[1], sd[2], sd[0]], speed: 3, size: 0.2, grav: 9, life: 0.5, shape: SH.CANDY, dir: Math.PI * 0.75, spread: 1.2, jitter: 0.2 });
     },
     fan(s) { bubbles(s.x, s.y - 0.5, 5, { speed: 5, dir: Math.PI / 2, spread: 0.6, grav: -6 }); },
     // 成就（UI 線負責 DOM 大字；這裡只做場景配合）

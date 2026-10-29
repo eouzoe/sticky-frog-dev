@@ -35,7 +35,7 @@
 
 | | |
 |---|---|
-| 關卡 | 75 關，每 15 關一個世界：Jungle、Candy、Neon City、Volcano、Frostbite Peaks |
+| 關卡 | 90 關，每 15 關一個世界：Jungle、Candy、Neon City、Volcano、Frostbite Peaks、Sunset Dunes（76 關起有滑沙：落在沙丘上不會死，沿坡面往前滑、從尾端坡頂被拋起；沙面上有一排金圈引路，拿掉沙丘也過得了） |
 | 評星 | 過關 1 顆；吃到七成以上的蒼蠅加 1 顆；在標準時間內過關再加 1 顆 |
 | 無盡模式 | 破第 5 關解鎖。越遠越難，每跑一段換一個世界 |
 | 成就 | 打出漂亮的操作時當場跳出來稱讚：SPIN DOCTOR（一次滯空轉 5 圈）、FROGNADO（7 圈）、NONSTOP、SPEED DEMON、WAVE KISSER、CLOSE SHAVE、CLUTCH SAVE |

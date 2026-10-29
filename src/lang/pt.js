@@ -31,8 +31,8 @@ export default {
   'it.skins.ninja': 'Sapo Ninja', 'it.skins.gold': 'Sapo Dourado', 'it.skins.astro': 'Sapo Astronauta', 'it.skins.king': 'Rei Sapo', 'it.skins.ape': 'Macaco de Cipó', 'it.skins.silkfrog': 'Sapo de Seda',
   'it.tongues.tongue': 'Língua de Sapo', 'it.tongues.yarn': 'Novelo', 'it.tongues.vine': 'Cipó da Selva', 'it.tongues.silk': 'Fio de Seda',
   'it.trails.none': 'Brisa', 'it.trails.rainbow': 'Arco-íris', 'it.trails.fire': 'Fogo', 'it.trails.bubble': 'Bolhas', 'it.trails.star': 'Poeira Estelar',
-  'world.0': 'SELVA', 'world.1': 'DOCES', 'world.2': 'CIDADE NEON', 'world.3': 'VULCÃO', 'world.4': 'PICOS GELADOS',
-  'die.0': 'PLOFT!', 'die.1': 'PLAFT!', 'die.2': 'ZAP!', 'die.3': 'TORREI!', 'die.4': 'BRRR!',
+  'world.0': 'SELVA', 'world.1': 'DOCES', 'world.2': 'CIDADE NEON', 'world.3': 'VULCÃO', 'world.4': 'PICOS GELADOS', 'world.5': 'DUNAS AO PÔR DO SOL',
+  'die.0': 'PLOFT!', 'die.1': 'PLAFT!', 'die.2': 'ZAP!', 'die.3': 'TORREI!', 'die.4': 'BRRR!', 'die.5': 'GLUP!',
   'feat.spin': 'DOUTOR PIÃO!', 'featLine.spin': 'Cinco giros num pulo só. Já ficou tonto?',
   'feat.tornado': 'SAPONADO!!', 'featLine.tornado': 'SETE giros num pulo só. Surreal.',
   'feat.flow': 'SEM FREIO!', 'featLine.flow': 'Uma fase inteira sem perder o ritmo.',
@@ -40,5 +40,5 @@ export default {
   'feat.skim': 'BEIJA-ONDA!', 'featLine.skim': 'Tocou na água e sobreviveu.',
   'feat.shave': 'BARBA FEITA!', 'featLine.shave': 'Por um fio dos espinhos.',
   'feat.clutch': 'SALVOU NA HORA H!', 'featLine.clutch': 'Agarrou no último segundo!',
-  'new.title': 'NOVO!', 'new.mush': 'Cogumelo saltitante', 'new.swarm': 'Enxame de moscas', 'new.ring': 'Anel dourado', 'new.move': 'Gancho móvel', 'new.spikeLow': 'Espinhos baixos', 'new.mushChain': 'Fila de cogumelos', 'new.ringArc': 'Anel duplo', 'new.fan': 'Ventilador', 'new.saw': 'Serra', 'new.spikeHigh': 'Espinhos altos', 'new.tunnel': 'Espinhos em cima e embaixo', 'new.pad': 'Vitória-régia de checkpoint', 'new.boost': 'Anel de impulso',
+  'new.title': 'NOVO!', 'new.mush': 'Cogumelo saltitante', 'new.swarm': 'Enxame de moscas', 'new.ring': 'Anel dourado', 'new.move': 'Gancho móvel', 'new.spikeLow': 'Espinhos baixos', 'new.mushChain': 'Fila de cogumelos', 'new.ringArc': 'Anel duplo', 'new.fan': 'Ventilador', 'new.saw': 'Serra', 'new.spikeHigh': 'Espinhos altos', 'new.tunnel': 'Espinhos em cima e embaixo', 'new.pad': 'Vitória-régia de checkpoint', 'new.boost': 'Anel de impulso', 'new.dune': 'Surf nas dunas',
 };

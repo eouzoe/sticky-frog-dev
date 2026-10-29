@@ -7,7 +7,8 @@ import { createEndless, extendEndless, endlessDiff, endlessWorld, ENDLESS_WORLD_
 import { createSim, step } from '../src/sim.js';
 import { makeBot } from '../src/bot.js';
 
-export const TARGET = 4 * ENDLESS_WORLD_LEN; // 跑完四個世界（1800 單位，難度 0.12 → 0.81）
+export const TARGET = Number(process.env.ENDLESS_TARGET ?? 4 * ENDLESS_WORLD_LEN); // 預設跑完四個世界（1800 單位，難度 0.12 → 0.81）；ENDLESS_TARGET=2800 ENDLESS_CAP=90 會一路接力穿過沙丘世界那一段（2250–2700）
+const CAP = Number(process.env.ENDLESS_CAP ?? 75);
 const SEEDS = Number(process.argv[2] ?? 12);
 const PARAMS = [];
 for (const rel of [0.25, 0.4, 0.55, 0.7]) for (const gv of [-2, 2, 6]) PARAMS.push([rel, gv]);
@@ -18,7 +19,7 @@ const LEG = 60, BEAM = 6;
 const clone = (s) => ({ ...structuredClone({ ...s, level: null }), level: s.level });
 let fails = 0, soloBest = 0;
 for (let seed = 1; seed <= SEEDS; seed++) {
-  const L = createEndless(seed, 75); // 打過第 75 關：荷葉（63）、加速圈（69）都學過了
+  const L = createEndless(seed, CAP); // 預設打過第 75 關：荷葉（63）、加速圈（69）都學過了；CAP=90 連沙丘（76）也學過
   let beam = [createSim(L)], legs = 0, stuck = null;
   while (beam[0].maxX < TARGET) {
     const next = [];
@@ -63,11 +64,21 @@ for (let seed = 1; seed <= SEEDS; seed++) {
   const ok = lo === 0 && p75 > 0 && b75 > 0;
   if (!ok) { fails++; console.log(`FAIL 無盡元素上限 cap60 荷葉＋加速圈=${lo}（要 0）cap75 荷葉=${p75} 加速圈=${b75}（都要 >0）`); } else console.log(`OK 無盡元素上限：cap60 荷葉＋加速圈=0、cap75 荷葉=${p75} 加速圈=${b75}（12 個種子、到 ${TARGET}）`);
 }
+// 沙丘（76 關）：cap=75 的無盡不出現；cap=90 的無盡在第 6 個世界那一段（x 2250–2700）出現，而且只出現在那一段
+{
+  let d75 = 0, d90 = 0, outside = 0;
+  for (let seed = 1; seed <= 12; seed++) {
+    const A = createEndless(seed, 75); extendEndless(A, 3000); d75 += A.dunes.length;
+    const B = createEndless(seed, 90); extendEndless(B, 3000); d90 += B.dunes.filter((d) => !d.off).length; outside += B.dunes.filter((d) => endlessWorld(d.x0, 6) !== 5).length;
+  }
+  const ok = d75 === 0 && d90 > 0 && outside === 0;
+  if (!ok) { fails++; console.log(`FAIL 無盡沙丘 cap75=${d75}（要 0）cap90=${d90}（要 >0）不在沙丘世界段=${outside}（要 0）`); } else console.log(`OK 無盡沙丘：cap75=0、cap90=${d90} 片（12 個種子、到 3000）、全部在沙丘世界那一段`);
+}
 // 輪替：預設前四個世界；count=5（打過第 60 關）冰峰（世界 4）要出現，而且四個世界時不會出現
 {
   const seq = (c) => Array.from({ length: c * 3 }, (_, i) => endlessWorld(i * ENDLESS_WORLD_LEN + 10, c));
-  const ok4 = seq(4).every((w) => w >= 0 && w <= 3) && new Set(seq(4)).size === 4, ok5 = new Set(seq(5)).size === 5 && seq(5).includes(4);
-  if (!ok4 || !ok5) { fails++; console.log(`FAIL 世界輪替 4 個=${ok4} 5 個=${ok5}`); } else console.log('OK 世界輪替：4 個世界不含冰峰、5 個世界含冰峰');
+  const ok4 = seq(4).every((w) => w >= 0 && w <= 3) && new Set(seq(4)).size === 4, ok5 = new Set(seq(5)).size === 5 && seq(5).includes(4), ok6 = new Set(seq(6)).size === 6 && seq(6).includes(5);
+  if (!ok4 || !ok5 || !ok6) { fails++; console.log(`FAIL 世界輪替 4 個=${ok4} 5 個=${ok5} 6 個=${ok6}`); } else console.log('OK 世界輪替：4 個世界不含冰峰、5 個世界含冰峰、6 個世界含沙丘');
 }
 console.log(`target=${TARGET} failed=${fails}/${SEEDS}  (single-param best run reached ${soloBest.toFixed(0)})`);
 process.exit(fails ? 1 : 0);

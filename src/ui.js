@@ -12,7 +12,7 @@ const icon = (id, cls = 'i') => `<svg class="${cls}"><use href="#i-${id}" /></sv
 const portrait = (id) => `./ui/${id}.webp`;
 const fmt = (n) => Math.round(n).toLocaleString('en-US');
 export const FEATURED = SKINS.find((s) => s.featured);
-const WORLD_DEEP = ['#0f6b55', '#b02a74', '#2a1458', '#5a1a1a', '#1d5f94']; // 同 index.html body[data-world] 的 --w-deep
+const WORLD_DEEP = ['#0f6b55', '#b02a74', '#2a1458', '#5a1a1a', '#1d5f94', '#8e2f6b']; // 同 index.html body[data-world] 的 --w-deep
 
 export function setWorld(i) { document.body.dataset.world = String(i); }
 
@@ -237,7 +237,7 @@ export function nextUp(text, sub, pic = null) {
 // ---------- 選關：世界卡片＋15 顆關卡膠珠（每關最佳星數；星數不鎖關） ----------
 let worldTab = 0;
 const starRow = (n, cls = 'st') => `<span class="${cls}">${[0, 1, 2].map((i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('')}</span>`;
-export function renderLevels(save, onPick) {
+export function renderLevels(save, onPick, onTab) {
   const tabs = $('worldTabs'); tabs.innerHTML = '';
   WORLDS.forEach((w, i) => {
     const first = i * 15 + 1, locked = first > save.unlocked;
@@ -246,7 +246,7 @@ export function renderLevels(save, onPick) {
     b.className = `wcard${i === worldTab ? ' on' : ''}${locked ? ' locked' : ''}`;
     b.style.cssText = `--s0:${w.sky[0]};--s1:${w.sky[1]};--d:${WORLD_DEEP[i]};--p:${w.petal}`;
     b.innerHTML = `<i class="blob"></i>${locked ? `<span class="lk">${icon('lock')}</span>` : ''}<span class="wn" data-fit>${t(`world.${i}`, null, w.name)}</span><span class="wp" data-fit>${locked ? t('levels.open', { level: levelLabel(first - 1) }) : `&#9733; ${got}/45`}</span>`;
-    b.onclick = () => { if (locked) { A.play('ui_nope'); return; } worldTab = i; renderLevels(save, onPick); };
+    b.onclick = () => { if (locked) { A.play('ui_nope'); return; } worldTab = i; renderLevels(save, onPick, onTab); onTab?.(i); };
     tabs.appendChild(b);
   });
   const total = Object.values(save.stars).reduce((a, b) => a + b, 0);

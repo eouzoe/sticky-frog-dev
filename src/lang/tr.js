@@ -31,8 +31,8 @@ export default {
   'it.skins.ninja': 'Ninja Kurbağa', 'it.skins.gold': 'Altın Kurbağa', 'it.skins.astro': 'Astronot Kurbağa', 'it.skins.king': 'Kurbağa Kral', 'it.skins.ape': 'Sarmaşık Maymun', 'it.skins.silkfrog': 'İpek Kurbağa',
   'it.tongues.tongue': 'Kurbağa Dili', 'it.tongues.yarn': 'Yün Yumağı', 'it.tongues.vine': 'Orman Sarmaşığı', 'it.tongues.silk': 'İpek İplik',
   'it.trails.none': 'Esinti', 'it.trails.rainbow': 'Gökkuşağı', 'it.trails.fire': 'Ateş', 'it.trails.bubble': 'Baloncuklar', 'it.trails.star': 'Yıldız Tozu',
-  'world.0': 'ORMAN', 'world.1': 'ŞEKERLEME', 'world.2': 'NEON ŞEHİR', 'world.3': 'YANARDAĞ', 'world.4': 'BUZ ZİRVELER',
-  'die.0': 'ŞAP!', 'die.1': 'ŞAPLAK!', 'die.2': 'ÇAT!', 'die.3': 'CIZZ!', 'die.4': 'BRRR!',
+  'world.0': 'ORMAN', 'world.1': 'ŞEKERLEME', 'world.2': 'NEON ŞEHİR', 'world.3': 'YANARDAĞ', 'world.4': 'BUZ ZİRVELER', 'world.5': 'KUM TEPELERİ',
+  'die.0': 'ŞAP!', 'die.1': 'ŞAPLAK!', 'die.2': 'ÇAT!', 'die.3': 'CIZZ!', 'die.4': 'BRRR!', 'die.5': 'GLUP!',
   'feat.spin': 'FIRDOLA DOKTORU!', 'featLine.spin': 'Tek zıplayışta beş dönüş. Başın döndü mü?',
   'feat.tornado': 'KURBAĞA KASIRGASI!!', 'featLine.tornado': 'Tek zıplayışta YEDİ dönüş. İnanılmaz.',
   'feat.flow': 'FRENSİZ!', 'featLine.flow': 'Koca bir bölüm hiç yavaşlamadan.',
@@ -40,5 +40,5 @@ export default {
   'feat.skim': 'DALGA ÖPÜCÜĞÜ!', 'featLine.skim': 'Suya dokundun ve kurtuldun.',
   'feat.shave': 'KIL PAYI!', 'featLine.shave': 'Dikenlerden bir tüy farkla.',
   'feat.clutch': 'SON SANİYE KURTARIŞI!', 'featLine.clutch': 'Tam son saniyede yakaladın!',
-  'new.title': 'YENİ!', 'new.mush': 'Zıplayan Mantar', 'new.swarm': 'Sinek Sürüsü', 'new.ring': 'Altın Halka', 'new.move': 'Hareketli Kanca', 'new.spikeLow': 'Alçak Dikenler', 'new.mushChain': 'Mantar Zinciri', 'new.ringArc': 'Çift Halka', 'new.fan': 'Fan', 'new.saw': 'Testere', 'new.spikeHigh': 'Yüksek Dikenler', 'new.tunnel': 'Alt-Üst Dikenler', 'new.pad': 'Kontrol Noktası Nilüfer', 'new.boost': 'Hız Halkası',
+  'new.title': 'YENİ!', 'new.mush': 'Zıplayan Mantar', 'new.swarm': 'Sinek Sürüsü', 'new.ring': 'Altın Halka', 'new.move': 'Hareketli Kanca', 'new.spikeLow': 'Alçak Dikenler', 'new.mushChain': 'Mantar Zinciri', 'new.ringArc': 'Çift Halka', 'new.fan': 'Fan', 'new.saw': 'Testere', 'new.spikeHigh': 'Yüksek Dikenler', 'new.tunnel': 'Alt-Üst Dikenler', 'new.pad': 'Kontrol Noktası Nilüfer', 'new.boost': 'Hız Halkası', 'new.dune': 'Kum Kayma',
 };

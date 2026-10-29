@@ -31,8 +31,8 @@ export default {
   'it.skins.ninja': 'Grenouille Ninja', 'it.skins.gold': 'Grenouille Dorée', 'it.skins.astro': 'Grenouille Astronaute', 'it.skins.king': 'Roi Crapaud', 'it.skins.ape': 'Singe Liane', 'it.skins.silkfrog': 'Grenouille de Soie',
   'it.tongues.tongue': 'Langue de Grenouille', 'it.tongues.yarn': 'Pelote', 'it.tongues.vine': 'Liane de Jungle', 'it.tongues.silk': 'Fil de Soie',
   'it.trails.none': 'Brise', 'it.trails.rainbow': 'Arc-en-ciel', 'it.trails.fire': 'Feu', 'it.trails.bubble': 'Bulles', 'it.trails.star': 'Poussière d’Étoiles',
-  'world.0': 'JUNGLE', 'world.1': 'BONBONS', 'world.2': 'VILLE NÉON', 'world.3': 'VOLCAN', 'world.4': 'PICS GLACÉS',
-  'die.0': 'SPLOTCH !', 'die.1': 'SPLAT !', 'die.2': 'ZAP !', 'die.3': 'GRÉSILLE !', 'die.4': 'BRRR !',
+  'world.0': 'JUNGLE', 'world.1': 'BONBONS', 'world.2': 'VILLE NÉON', 'world.3': 'VOLCAN', 'world.4': 'PICS GLACÉS', 'world.5': 'DUNES DU COUCHANT',
+  'die.0': 'SPLOTCH !', 'die.1': 'SPLAT !', 'die.2': 'ZAP !', 'die.3': 'GRÉSILLE !', 'die.4': 'BRRR !', 'die.5': 'GLOUP !',
   'feat.spin': 'DOCTEUR TOURNIQUET !', 'featLine.spin': 'Cinq tours en un seul saut. Tu as la tête qui tourne ?',
   'feat.tornado': 'GRENOUILLADO !!', 'featLine.tornado': 'SEPT tours en un saut. Hallucinant.',
   'feat.flow': 'SANS FREIN !', 'featLine.flow': 'Un niveau entier sans ralentir.',
@@ -40,5 +40,5 @@ export default {
   'feat.skim': 'BAISER DE VAGUE !', 'featLine.skim': 'Tu as touché l’eau et tu t’en es sorti.',
   'feat.shave': 'RASAGE DE PRÈS !', 'featLine.shave': 'À un poil des pointes.',
   'feat.clutch': 'SAUVÉ DE JUSTESSE !', 'featLine.clutch': 'Accroché à la toute dernière seconde !',
-  'new.title': 'NOUVEAU !', 'new.mush': 'Champignon rebondissant', 'new.swarm': 'Essaim de mouches', 'new.ring': 'Anneau doré', 'new.move': 'Crochet mobile', 'new.spikeLow': 'Piques basses', 'new.mushChain': 'Chaîne de champignons', 'new.ringArc': 'Double anneau', 'new.fan': 'Ventilateur', 'new.saw': 'Scie', 'new.spikeHigh': 'Piques hautes', 'new.tunnel': 'Piques haut et bas', 'new.pad': 'Nénuphar de reprise', 'new.boost': 'Anneau turbo',
+  'new.title': 'NOUVEAU !', 'new.mush': 'Champignon rebondissant', 'new.swarm': 'Essaim de mouches', 'new.ring': 'Anneau doré', 'new.move': 'Crochet mobile', 'new.spikeLow': 'Piques basses', 'new.mushChain': 'Chaîne de champignons', 'new.ringArc': 'Double anneau', 'new.fan': 'Ventilateur', 'new.saw': 'Scie', 'new.spikeHigh': 'Piques hautes', 'new.tunnel': 'Piques haut et bas', 'new.pad': 'Nénuphar de reprise', 'new.boost': 'Anneau turbo', 'new.dune': 'Surf des dunes',
 };

@@ -24,7 +24,7 @@
   "wait": 1200
  },
  {
-  "assert": "document.querySelectorAll('#worldTabs .wcard').length === 5 && !document.querySelectorAll('#worldTabs .wcard')[4].classList.contains('locked')",
+  "assert": "document.querySelectorAll('#worldTabs .wcard').length === 6 && !document.querySelectorAll('#worldTabs .wcard')[4].classList.contains('locked')",
   "msg": "\u9078\u95dc\u6709 5 \u500b\u4e16\u754c\u5206\u9801\u3001\u7b2c 5 \u500b\u5df2\u89e3\u9396"
  },
  {

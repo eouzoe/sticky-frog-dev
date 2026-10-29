@@ -18,7 +18,7 @@ function seen(L) {
   o.spikeHigh = L.spikes.some((a) => a.hang && !L.spikes.some((b) => b.pole && Math.abs(a.x - b.x) < 1e-9));
   o.mushChain = L.mush.filter((m) => m.y === 2).length >= 2;
   o.ringArc = L.rings.some((a) => L.rings.some((b) => a !== b && Math.abs(a.x - b.x) < 5 && Math.abs(a.y - b.y) > 1.5 && Math.abs(a.y - b.y) < 2.5));
-  o.pad = L.pads.length > 0; o.boost = L.boosts.some((b) => !b.off);
+  o.pad = L.pads.length > 0; o.boost = L.boosts.some((b) => !b.off); o.dune = L.dunes.some((d) => !d.off);
   return o;
 }
 let bad = 0; const first = {};
