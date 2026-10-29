@@ -31,12 +31,14 @@ const INIT = `(() => {
   window.__seed = (a) => { Math.random = () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
   window.__seed(1);
 })();`;
-const SCENES = [
+const ONE = opt('scene', null); // --scene l1：只拍一個場景
+const ALL_SCENES = [
   { name: 'menu', level: 0, frames: 90 },
   { name: 'l1', level: 1, frames: 240 },
   { name: 'l48-volcano', level: 48, frames: 240 },
   { name: 'l20-candy', level: 20, frames: 240 },
 ];
+const SCENES = ONE ? ALL_SCENES.filter((x) => x.name === ONE) : ALL_SCENES;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const VIEW = MOBILE ? { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true } : { viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 };
 
@@ -50,7 +52,8 @@ async function shootAll(browser, dist, q, tag) {
       const errs = []; page.on('pageerror', (e) => errs.push(String(e)));
       await page.goto(`http://127.0.0.1:${PORT}/${q ? `?q=${q}` : ''}`, { waitUntil: 'domcontentloaded' });
       await page.waitForFunction(() => window.__game?.state === 'menu', null, { timeout: 60000, polling: 100 });
-      await page.evaluate(() => window.__step(30));
+      // 選單階段不推時間：新版選單只畫 15fps，推了兩版的動畫時鐘就對不齊；遊玩畫面從第 0 格開始兩版逐格相同
+      if (!sc.level) await page.evaluate(() => window.__step(30));
       if (sc.level) {
         await page.evaluate((n) => { window.__seed(777); window.__game.autoplay = null; window.__game.start(n); }, sc.level);
         await page.waitForFunction(() => window.__game.state === 'playing', null, { timeout: 60000, polling: 50 }); // 新版要等世界模型下載，期間不推虛擬時間
