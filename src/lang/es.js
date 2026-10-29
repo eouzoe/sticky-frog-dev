@@ -1,6 +1,7 @@
 // Español (neutro, tuteo; mayúsculas de estilo arcade). Glosario: src/lang/README.md
 export default {
   'menu.play': 'JUGAR {level}', 'menu.levels': 'NIVELES', 'menu.endless': 'INFINITO', 'menu.shop': 'TIENDA', 'menu.change': 'cambiar',
+  'priv.note': 'Estadísticas de juego anónimas para mejorar los niveles. Sin datos personales.', 'priv.link': 'Privacidad',
   'next.endless': 'NUEVO: MODO INFINITO', 'next.endlessSub': 'columpíate sin parar y bate tu récord',
   'next.world': 'NUEVO MUNDO: {world}', 'next.worldSub': 'el nivel {level} está abierto',
   'next.get': 'CONSIGUE {item}', 'next.getSub': 'tienes {coins} · cuesta {price}',

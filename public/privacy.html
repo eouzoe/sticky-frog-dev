@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sticky Frog – Privacy</title>
+<style>
+  body { font: 16px/1.6 system-ui, sans-serif; max-width: 680px; margin: 0 auto; padding: 24px 16px 48px; color: #12301f; background: #f2fbf4; }
+  h1 { font-size: 26px; } h2 { font-size: 18px; margin-top: 28px; } code { background: #dff3e4; padding: 1px 5px; border-radius: 4px; }
+  hr { border: 0; border-top: 1px solid #b8dcc3; margin: 32px 0; }
+</style>
+</head>
+<body>
+<h1>Sticky Frog – Privacy</h1>
+<p>Sticky Frog collects <b>anonymous play statistics</b> so we can see which levels are too hard, too easy, or make people leave, and fix them. We do not collect personal data and there is no account or login.</p>
+
+<h2>What we collect</h2>
+<ul>
+  <li>A random anonymous ID stored in your browser (<code>localStorage</code>), and a random ID for each visit. They are not linked to your name, email, or any account.</li>
+  <li>Game events: session start, level start, death (level, position, progress, cause, seconds), level clear (seconds, stars, deaths, flies), leaving a level (where, and whether you went back to the menu or closed or switched away from the tab), and Endless-mode results (distance, score).</li>
+  <li>Technical basics: game version, interface language, desktop or mobile, window size, graphics quality, load time, and your country (derived by our server host from the connection).</li>
+</ul>
+
+<h2>What we do not collect</h2>
+<ul>
+  <li>No name, email, or any personal information. No advertising ID. No cookies.</li>
+  <li>Your IP address is <b>not stored</b>. Your browser's user-agent string is not stored (only desktop vs. mobile).</li>
+  <li>No data from other sites or apps.</li>
+</ul>
+
+<h2>Why</h2>
+<p>Only to improve level design and keep the game fun. The data is not sold or shared with third parties. It is stored on Cloudflare (Workers and D1).</p>
+
+<h2>How to turn it off</h2>
+<p>Add <code>?notelemetry</code> to the game's address (for example <code>https://…/?notelemetry</code>) and nothing is sent. You can also clear this site's data in your browser to discard your anonymous ID.</p>
+
+<h2>Contact</h2>
+<p>Questions or deletion requests: please contact the developer through the game's CrazyGames page.</p>
+
+<hr>
+<h1 lang="zh-Hant">隱私權說明（繁體中文）</h1>
+<div lang="zh-Hant">
+<p>Sticky Frog 會蒐集<b>匿名的遊玩統計</b>，用來知道哪些關卡太難、太簡單或讓人離開，進而改進。我們不蒐集個人資料，也沒有帳號或登入。</p>
+<p><b>蒐集：</b>瀏覽器內的隨機匿名 ID（<code>localStorage</code>）與每次造訪的隨機 ID；遊戲事件（開始遊戲、開始關卡、死亡的關卡／位置／進度／死因／秒數、過關的秒數／星數／死亡次數、離開關卡的位置與方式、無盡模式的距離與分數）；以及遊戲版本、介面語言、桌機或手機、視窗大小、畫質、載入時間，和由伺服器主機依連線判斷的國家。</p>
+<p><b>不蒐集：</b>姓名、電子郵件等任何個資、廣告 ID、cookie。<b>不儲存 IP 位址</b>，也不儲存瀏覽器的 user agent（只記桌機或手機）。</p>
+<p><b>用途：</b>僅用於改進關卡設計。資料不會販售或提供給第三方，存放於 Cloudflare（Workers 與 D1）。</p>
+<p><b>如何關閉：</b>在遊戲網址後加上 <code>?notelemetry</code>，就不會送出任何資料；清除瀏覽器的網站資料即可丟棄匿名 ID。</p>
+</div>
+</body>
+</html>

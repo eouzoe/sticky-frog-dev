@@ -1,6 +1,7 @@
 // Русский (на «ты»). Глоссарий: src/lang/README.md
 export default {
   'menu.play': 'ИГРАТЬ {level}', 'menu.levels': 'УРОВНИ', 'menu.endless': 'БЕСКОНЕЧНО', 'menu.shop': 'МАГАЗИН', 'menu.change': 'сменить',
+  'priv.note': 'Анонимная статистика игры помогает улучшать уровни. Личные данные не собираются.', 'priv.link': 'Конфиденциальность',
   'next.endless': 'НОВОЕ: БЕСКОНЕЧНЫЙ РЕЖИМ', 'next.endlessSub': 'качайся без конца и бей рекорд',
   'next.world': 'НОВЫЙ МИР: {world}', 'next.worldSub': 'уровень {level} открыт',
   'next.get': 'ВОЗЬМИ {item}', 'next.getSub': 'у тебя {coins} · стоит {price}',

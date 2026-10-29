@@ -1,0 +1,10 @@
+# sticky-frog-telemetry：匿名遊玩數據收集端。
+# database_id 是佔位字串：真正的 ID 放在 gitignored 的 wrangler.local.toml（複製本檔、改 id），部署與報告都用 -c wrangler.local.toml。
+name = "sticky-frog-telemetry"
+main = "src/index.js"
+compatibility_date = "2025-10-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sticky-frog-telemetry"
+database_id = "00000000-0000-0000-0000-000000000000"
