@@ -526,7 +526,7 @@ const hudData = {};
 const tipV = { x: 0, y: 0 }, mouth = { x: 0, y: 0, z: 0 }, tmp = { x: 0, y: 0 };
 const mood = { lookX: 0, lookY: 0, mouth: false, tongueWob: 0, tipPop: 1, scared: false };
 let last = performance.now(), fpsAcc = 0, fpsN = 0, tReal = 0, gov = null;
-const MENU_FRAME_MS = 31; // 選單類畫面（待機動畫）上限約 30 fps：每兩個螢幕幀才畫一次，主執行緒忙碌量約減半
+const MENU_FRAME_MS = 62; // 選單類畫面（待機動畫）上限約 15 fps（螢幕 60Hz 時每四幀畫一次）：待機動畫慢吞吞沒關係，主執行緒忙碌量大減
 
 function frame(now) {
   requestAnimationFrame(frame);
@@ -534,7 +534,8 @@ function frame(now) {
   const st = G.state;
   if ((st === 'paused' || st === 'ad') && !view.dirty) { last = now; fpsAcc = 0; fpsN = 0; return; } // 暫停／看廣告：畫面沒變，不畫（視窗大小改變時 view.dirty 會補畫一次）
   if ((st === 'menu' || st === 'levels' || st === 'shop' || st === 'records') && now - last < MENU_FRAME_MS) return;
-  const realDt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now; tReal += realDt;
+  // 選單 15fps 時一幀 66ms，dt 上限放寬到 0.1 才不會動畫變慢
+  const realDt = Math.min(st === 'playing' ? 0.05 : 0.1, Math.max(0, (now - last) / 1000)); last = now; tReal += realDt;
   // 效能監看：每秒量一次實際 fps 交給畫質調整（src/quality.js）；開局 3 秒（建場景、編 shader）的卡頓不算
   fpsAcc += realDt; fpsN++;
   if (fpsAcc >= 1) {

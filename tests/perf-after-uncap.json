@@ -1,0 +1,188 @@
+{
+  "label": "after-uncap",
+  "at": "2026-10-29T08:03:29.289Z",
+  "dist": "/Users/eason/Studio/games/crazygames/hook-hero/.claude/worktrees/slim/dist",
+  "note": "無頭瀏覽器用這台 Mac 的 GPU，GPU 負擔模擬不出來；CPU 節流只放慢主執行緒",
+  "scenarios": {
+    "A": {
+      "name": "桌機 1280×720 不節流",
+      "fcpMs": 80,
+      "bootVisibleMs": 41,
+      "menuReadyMs": 1552,
+      "menuIdle5s": {
+        "renderPerSec": 16.38,
+        "rafPerSec": 2139.85,
+        "busyRatio": 0.434
+      },
+      "playMs": 4804,
+      "firstPlayFrameMs": 15339,
+      "beforeFirstPlay": {
+        "requests": 8,
+        "rawBytes": 1311435,
+        "wireBytes": 615222
+      },
+      "requestList": [
+        "/ raw=58256 wire=14001",
+        "/fonts/baloo2-extrabold-latin.woff2 raw=10564 wire=10741",
+        "/assets/index-5XbvIyvX.js raw=873466 wire=221686",
+        "/assets/index-DG0Yawmj.css raw=1903 wire=811",
+        "/ui/cat-turn-boot.webp raw=22640 wire=22817",
+        "/models/core.pack raw=280575 wire=280767",
+        "/models/world-0.pack raw=49781 wire=49972",
+        "/ui/tree.webp raw=14250 wire=14427"
+      ],
+      "level1Autoplay10s": {
+        "frameMsP50": 1.9,
+        "frameMsP95": 4.4,
+        "frameCount": 4426,
+        "drawCalls": 71,
+        "triangles": 301395,
+        "quality": "high",
+        "state": "result",
+        "busyRatio": 0.945,
+        "renderPerSec": 435.9
+      },
+      "pause5s": {
+        "renderPerSec": 0,
+        "rafPerSec": 4501.18,
+        "busyRatio": 0.395
+      },
+      "volcanoAutoplay10s": {
+        "frameMsP50": 2.1,
+        "frameMsP95": 5.1,
+        "frameCount": 4146,
+        "drawCalls": 73,
+        "triangles": 460906,
+        "quality": "high",
+        "state": "playing",
+        "busyRatio": 0.961,
+        "renderPerSec": 413.93
+      },
+      "totalAll": {
+        "requests": 16,
+        "rawBytes": 1934018,
+        "wireBytes": 1239336
+      }
+    },
+    "B": {
+      "name": "手機 390×844 DSF3 CPU4× 9Mbps/1.5Mbps RTT170",
+      "fcpMs": 428,
+      "bootVisibleMs": 405,
+      "menuReadyMs": 2155,
+      "menuIdle5s": {
+        "renderPerSec": 15.98,
+        "rafPerSec": 1130.12,
+        "busyRatio": 0.486
+      },
+      "playMs": 317,
+      "firstPlayFrameMs": 9418,
+      "beforeFirstPlay": {
+        "requests": 8,
+        "rawBytes": 1311435,
+        "wireBytes": 615222
+      },
+      "requestList": [
+        "/ raw=58256 wire=14001",
+        "/fonts/baloo2-extrabold-latin.woff2 raw=10564 wire=10741",
+        "/assets/index-5XbvIyvX.js raw=873466 wire=221686",
+        "/assets/index-DG0Yawmj.css raw=1903 wire=811",
+        "/ui/cat-turn-boot.webp raw=22640 wire=22817",
+        "/models/core.pack raw=280575 wire=280767",
+        "/models/world-0.pack raw=49781 wire=49972",
+        "/ui/tree.webp raw=14250 wire=14427"
+      ],
+      "level1Autoplay10s": {
+        "frameMsP50": 3.3,
+        "frameMsP95": 6.8,
+        "frameCount": 2644,
+        "drawCalls": 71,
+        "triangles": 301395,
+        "quality": "mid",
+        "state": "result",
+        "busyRatio": 0.989,
+        "renderPerSec": 263.77
+      },
+      "pause5s": {
+        "renderPerSec": 0,
+        "rafPerSec": 57.35,
+        "busyRatio": 0.016
+      },
+      "volcanoAutoplay10s": {
+        "frameMsP50": 4.7,
+        "frameMsP95": 8.4,
+        "frameCount": 2017,
+        "drawCalls": 73,
+        "triangles": 461454,
+        "quality": "mid",
+        "state": "playing",
+        "busyRatio": 0.987,
+        "renderPerSec": 201.05
+      },
+      "totalAll": {
+        "requests": 16,
+        "rawBytes": 1934018,
+        "wireBytes": 1239336
+      }
+    },
+    "C": {
+      "name": "慢手機 390×844 DSF3 CPU6× 1.6Mbps RTT560",
+      "fcpMs": 1336,
+      "bootVisibleMs": 1275,
+      "menuReadyMs": 5151,
+      "menuIdle5s": {
+        "renderPerSec": 16.16,
+        "rafPerSec": 910.67,
+        "busyRatio": 0.499
+      },
+      "playMs": 421,
+      "firstPlayFrameMs": 12741,
+      "beforeFirstPlay": {
+        "requests": 8,
+        "rawBytes": 1311435,
+        "wireBytes": 615222
+      },
+      "requestList": [
+        "/ raw=58256 wire=14001",
+        "/fonts/baloo2-extrabold-latin.woff2 raw=10564 wire=10741",
+        "/assets/index-5XbvIyvX.js raw=873466 wire=221686",
+        "/assets/index-DG0Yawmj.css raw=1903 wire=811",
+        "/ui/cat-turn-boot.webp raw=22640 wire=22817",
+        "/models/core.pack raw=280575 wire=280767",
+        "/models/world-0.pack raw=49781 wire=49972",
+        "/ui/tree.webp raw=14250 wire=14427"
+      ],
+      "level1Autoplay10s": {
+        "frameMsP50": 7.1,
+        "frameMsP95": 13.9,
+        "frameCount": 1212,
+        "drawCalls": 71,
+        "triangles": 301395,
+        "quality": "mid",
+        "state": "result",
+        "busyRatio": 0.988,
+        "renderPerSec": 120.59
+      },
+      "pause5s": {
+        "renderPerSec": 0,
+        "rafPerSec": 57.54,
+        "busyRatio": 0.014
+      },
+      "volcanoAutoplay10s": {
+        "frameMsP50": 6.2,
+        "frameMsP95": 10.7,
+        "frameCount": 1508,
+        "drawCalls": 73,
+        "triangles": 461062,
+        "quality": "mid",
+        "state": "playing",
+        "busyRatio": 0.99,
+        "renderPerSec": 150.27
+      },
+      "totalAll": {
+        "requests": 15,
+        "rawBytes": 1752744,
+        "wireBytes": 1057679
+      }
+    }
+  }
+}
