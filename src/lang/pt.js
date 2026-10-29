@@ -1,6 +1,7 @@
 // Português (Brasil; maiúsculas de estilo arcade). Glossário: src/lang/README.md
 export default {
   'menu.play': 'JOGAR {level}', 'menu.levels': 'FASES', 'menu.endless': 'INFINITO', 'menu.shop': 'LOJA', 'menu.change': 'trocar',
+  'priv.note': 'Estatísticas de jogo anônimas ajudam a melhorar as fases. Sem dados pessoais.', 'priv.link': 'Privacidade',
   'next.endless': 'NOVO: MODO INFINITO', 'next.endlessSub': 'balance sem parar e bata seu recorde',
   'next.world': 'NOVO MUNDO: {world}', 'next.worldSub': 'a fase {level} está liberada',
   'next.get': 'PEGUE {item}', 'next.getSub': 'você tem {coins} · custa {price}',

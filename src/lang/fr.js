@@ -1,6 +1,7 @@
 // Français (tutoiement; majuscules façon arcade). Glossaire : src/lang/README.md
 export default {
   'menu.play': 'JOUER {level}', 'menu.levels': 'NIVEAUX', 'menu.endless': 'INFINI', 'menu.shop': 'BOUTIQUE', 'menu.change': 'changer',
+  'priv.note': 'Des statistiques de jeu anonymes nous aident à améliorer les niveaux. Aucune donnée personnelle.', 'priv.link': 'Confidentialité',
   'next.endless': 'NOUVEAU : MODE INFINI', 'next.endlessSub': 'balance-toi sans fin, bats ton record',
   'next.world': 'NOUVEAU MONDE : {world}', 'next.worldSub': 'le niveau {level} est ouvert',
   'next.get': 'PRENDS {item}', 'next.getSub': 'tu as {coins} · ça coûte {price}',

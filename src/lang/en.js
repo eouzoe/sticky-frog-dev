@@ -7,6 +7,7 @@ export default {
   'menu.endless': 'ENDLESS',
   'menu.shop': 'SHOP',
   'menu.change': 'change',
+  'priv.note': 'Anonymous play stats help us improve levels. No personal data.', 'priv.link': 'Privacy',
   'next.endless': 'NEW: ENDLESS MODE',
   'next.endlessSub': 'swing forever, chase your best',
   'next.world': 'NEW WORLD: {world}',

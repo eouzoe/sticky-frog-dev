@@ -101,12 +101,14 @@ src/
 ├── audio.js         WebAudio 即時合成的音效與每個世界的音樂（沒有音檔）
 ├── ui.js            DOM 介面：選單、HUD、結算、商店
 ├── i18n.js, lang/   12 種語言、語言偵測、長字自動縮字
+├── telemetry.js     匿名遊玩數據（沒設 VITE_TELEMETRY_URL 時是空殼）
 ├── leaderboard.js   本機前 10 名＋CrazyGames 排行榜接口
 └── cg.js            CrazyGames SDK v3 包裝
 public/
 ├── models/          GLB 模型（Blender 製作、meshopt 壓縮）
 ├── ui/              商店角色頭像
 └── fonts/           Baloo 2 ExtraBold（SIL OFL 1.1）
+server/telemetry/    遙測收資料端（Worker＋D1）與報告腳本
 tests/               Node 檢查與瀏覽器冒煙步驟
 ```
 
@@ -155,11 +157,30 @@ for f in tests/*-check.mjs; do node "$f" > /dev/null && echo "ok   $f" || echo "
 | `feats-check.mjs` | 每種成就「達成」與「差一點」都判對 |
 | `save-check.mjs` | 舊存檔相容、下一步推薦、本機排行 |
 | `i18n-check.mjs` | 12 種語言的字串齊全 |
+| `telemetry-check.mjs` | 遙測：沒設網址不送、事件欄位、排隊分批、不送的情況 |
 | `unlock-check.mjs`、`pad-check.mjs`、`boost-check.mjs`、`burst-check.mjs` | 解鎖順序、中途荷葉、加速圈、特效數量上限 |
 
 `tests/smoke-*.json` 是瀏覽器冒煙步驟，用 Playwright 實際開遊戲操作。執行工具（`smoke.sh`、`shot.mjs`）目前放在這個 repo 外面，還沒搬進來。
 
 開發用的掛鉤在 `window.__game`，例如 `__game.start(12)` 直接開第 12 關、`__game.autoplay = [0.25, -10]` 讓自動玩家接手、`__game.look('cat')` 換角色。
+
+## 遊玩數據
+
+匿名記錄「哪一關、哪個位置死掉或離開」，用來找太難、太簡單、讓人離開的關卡。**預設關閉**：建置時沒設 `VITE_TELEMETRY_URL` 就完全不發請求。
+
+```bash
+# 開啟（建置版本建議帶 commit）
+VITE_TELEMETRY_URL=https://<你的 worker>.workers.dev/e VITE_BUILD=$(git rev-parse --short HEAD) npm run build
+```
+
+- 事件：`session_start`、`level_start`、`death`、`level_clear`、`level_abandon`、`endless_over`（欄位見 `server/telemetry/src/index.js` 的 `EVENTS`）。
+- 存：隨機匿名 ID（localStorage）、每次載入的 session ID、版本、關卡、位置、進度、死因、秒數、星數、語言、裝置類別（桌機／手機）、視窗大小、畫質、開機到選單的毫秒、國家（Cloudflare 提供）。
+- 不存：個資、IP、user agent、cookie。
+- 不送：`?notelemetry`、`__game.autoplay` 開著的局、localhost 開發（遙測網址本身也是 localhost 的本機測試除外）。
+- 新玩家第一次看到選單會有一行小字通知，連到 `public/privacy.html`（英文＋繁中）。
+- 收資料端在 `server/telemetry/`（Cloudflare Worker＋D1）。部署：複製 `wrangler.toml` 成 gitignored 的 `wrangler.local.toml` 並填入自己的 D1 `database_id`，`npx wrangler d1 execute sticky-frog-telemetry -c wrangler.local.toml --remote --file schema.sql`，再 `npx wrangler deploy -c wrangler.local.toml`。
+- 看報告：`node server/telemetry/report.mjs`（查線上 D1，輸出 markdown：每關通關率、死亡／放棄位置、關卡漏斗、開機時間；異常樣本篩除規則寫在報告開頭）。`--local` 查本機 D1、`--out 檔名` 寫檔。
+- 驗證：`node tests/telemetry-check.mjs`（遊戲端）、`node server/telemetry/test-worker.mjs <端點> --local|--remote`（收資料端的合格／不合格批次）。
 
 ## 目前狀態
 

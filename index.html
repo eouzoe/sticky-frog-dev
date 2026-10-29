@@ -155,6 +155,8 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
 .hero .tag { position: relative; min-height: 46px; font-size: 18px; padding: 0 18px; margin-top: -8px; }
 .hero .tag small { font-size: 13px; opacity: .65; margin-left: 4px; }
 #menu .toggles { position: absolute; left: var(--safe-l); bottom: var(--safe-b); display: flex; gap: 10px; }
+#privNote { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--safe-b) + 6px); width: max-content; max-width: 56vw; text-align: center; font: 600 12px/1.3 system-ui, sans-serif; color: #fff; text-shadow: 0 1px 2px rgba(10, 40, 30, .7); pointer-events: auto; }
+#privNote a { color: #fff; text-decoration: underline; }
 
 /* LEVELS */
 .lvBody { position: absolute; left: var(--safe-l); right: var(--safe-r); top: 84px; bottom: 16px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
@@ -436,6 +438,7 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
   .cap { height: 42px; font-size: 22px; } .cap .i { font-size: 30px; }
   .ttl { font-size: 30px; }
   #menu .wrap { display: flex; flex-direction: column; justify-content: flex-start; padding: 70px 16px 84px; gap: 6px; }
+  #privNote { max-width: calc(100vw - 32px); bottom: calc(var(--safe-b) + 58px); }
   #menu .col { display: contents; }
   #logo { order: 1; font-size: 74px; margin-bottom: 0; }
   .hero { order: 2; align-self: center; margin: 0 0 4px; } .hero img { width: min(230px, 28vh); margin-bottom: 16px; } .hero .pad { height: 46px; bottom: 30px; } .hero .tag { min-height: 44px; font-size: 15px; }
@@ -537,6 +540,7 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
     <div class="hero" data-in><div class="pad"></div><img id="heroImg" alt="" data-i18n-aria="aria.hero" /><button id="heroTag" data-fit class="b tag"><span id="heroName"></span><small data-i18n="menu.change"></small></button></div>
   </div>
   <div class="toggles" data-in><button class="bub musicT" data-i18n-aria="aria.music"><svg class="i"><use href="#i-music" /></svg><i class="slash"></i></button><button class="bub sfxT" data-i18n-aria="aria.sound"><svg class="i"><use href="#i-sound" /></svg><i class="slash"></i></button><button class="bub langT" data-i18n-aria="set.language" aria-haspopup="true"><svg class="i"><use href="#i-globe" /></svg><b class="langCode"></b></button></div>
+  <div id="privNote" style="display:none"><span data-i18n="priv.note"></span> <a href="privacy.html" target="_blank" rel="noopener" data-i18n="priv.link"></a></div>
 </div>
 
 <div id="levels" class="screen">

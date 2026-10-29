@@ -1,6 +1,7 @@
 // 简体中文（活泼短句）。词汇表：src/lang/README.md
 export default {
   'menu.play': '开始 {level}', 'menu.levels': '关卡', 'menu.endless': '无尽模式', 'menu.shop': '商店', 'menu.change': '更换',
+  'priv.note': '匿名的游玩统计帮助我们改进关卡，不收集个人信息。', 'priv.link': '隐私',
   'next.endless': '新登场：无尽模式', 'next.endlessSub': '一路荡不停，挑战你的最高纪录',
   'next.world': '新世界：{world}', 'next.worldSub': '第 {level} 关解锁啦',
   'next.get': '拿下{item}', 'next.getSub': '你有 {coins} ・ 售价 {price}',

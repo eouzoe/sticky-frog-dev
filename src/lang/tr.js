@@ -1,6 +1,7 @@
 // Türkçe (sen; büyük harf: i → İ, CSS uppercase ve lang=tr halleder ama düğme metinleri elle büyük yazıldı). Sözlük: src/lang/README.md
 export default {
   'menu.play': 'OYNA {level}', 'menu.levels': 'BÖLÜMLER', 'menu.endless': 'SONSUZ', 'menu.shop': 'MAĞAZA', 'menu.change': 'değiştir',
+  'priv.note': 'Anonim oyun istatistikleri bölümleri iyileştirmemize yardım eder. Kişisel veri yok.', 'priv.link': 'Gizlilik',
   'next.endless': 'YENİ: SONSUZ MOD', 'next.endlessSub': 'durmadan salın, rekorunu kır',
   'next.world': 'YENİ DÜNYA: {world}', 'next.worldSub': '{level}. bölüm açıldı',
   'next.get': '{item} AL', 'next.getSub': '{coins} altının var · fiyatı {price}',

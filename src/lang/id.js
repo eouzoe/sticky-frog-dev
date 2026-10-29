@@ -1,6 +1,7 @@
 // Bahasa Indonesia (santai, kapital ala arcade). Glosarium: src/lang/README.md
 export default {
   'menu.play': 'MAIN {level}', 'menu.levels': 'LEVEL', 'menu.endless': 'TANPA BATAS', 'menu.shop': 'TOKO', 'menu.change': 'ganti',
+  'priv.note': 'Statistik bermain anonim membantu kami memperbaiki level. Tanpa data pribadi.', 'priv.link': 'Privasi',
   'next.endless': 'BARU: MODE TANPA BATAS', 'next.endlessSub': 'berayun terus, kejar rekormu',
   'next.world': 'DUNIA BARU: {world}', 'next.worldSub': 'level {level} sudah terbuka',
   'next.get': 'AMBIL {item}', 'next.getSub': 'kamu punya {coins} · harganya {price}',

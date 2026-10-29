@@ -1,6 +1,7 @@
 // Deutsch (du-Form; Großbuchstaben: ß → SS). Glossar: src/lang/README.md
 export default {
   'menu.play': 'SPIELEN {level}', 'menu.levels': 'LEVEL', 'menu.endless': 'ENDLOS', 'menu.shop': 'SHOP', 'menu.change': 'ändern',
+  'priv.note': 'Anonyme Spielstatistiken helfen uns, Level zu verbessern. Keine persönlichen Daten.', 'priv.link': 'Datenschutz',
   'next.endless': 'NEU: ENDLOS-MODUS', 'next.endlessSub': 'schwing ewig weiter, jag deinen Rekord',
   'next.world': 'NEUE WELT: {world}', 'next.worldSub': 'Level {level} ist offen',
   'next.get': 'HOL DIR {item}', 'next.getSub': 'du hast {coins} · kostet {price}',

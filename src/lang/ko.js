@@ -1,6 +1,7 @@
 // 한국어 (반말 느낌의 짧고 경쾌한 게임 말투). 용어집: src/lang/README.md
 export default {
   'menu.play': '플레이 {level}', 'menu.levels': '스테이지', 'menu.endless': '무한 모드', 'menu.shop': '상점', 'menu.change': '변경',
+  'priv.note': '익명 플레이 통계로 스테이지를 개선합니다. 개인정보는 수집하지 않습니다.', 'priv.link': '개인정보',
   'next.endless': '신규: 무한 모드', 'next.endlessSub': '끝없이 스윙하며 최고 기록에 도전',
   'next.world': '새 월드: {world}', 'next.worldSub': '스테이지 {level} 열림',
   'next.get': '{item} 받기', 'next.getSub': '보유 {coins} · 가격 {price}',

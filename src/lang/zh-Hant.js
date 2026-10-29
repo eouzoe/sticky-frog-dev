@@ -1,6 +1,7 @@
 // 繁體中文（台灣用語，活潑短句）。詞彙表：src/lang/README.md
 export default {
   'menu.play': '開始 {level}', 'menu.levels': '關卡', 'menu.endless': '無盡模式', 'menu.shop': '商店', 'menu.change': '更換',
+  'priv.note': '匿名的遊玩統計幫助我們改進關卡，不收集個人資料。', 'priv.link': '隱私',
   'next.endless': '新登場：無盡模式', 'next.endlessSub': '一路盪不停，挑戰你的最高紀錄',
   'next.world': '新世界：{world}', 'next.worldSub': '第 {level} 關解鎖囉',
   'next.get': '拿下{item}', 'next.getSub': '你有 {coins} ・ 售價 {price}',
