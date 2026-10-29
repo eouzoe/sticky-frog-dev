@@ -44,6 +44,7 @@ export const TUNE = {
   SCORE_FLIP: 100,
   SCORE_FLY: 50,
   SCORE_RING: 150,
+  SCORE_RING_TRAIL: 30, // 沙丘軌跡上的金圈（ring.trail）只給一般金圈的五分之一，免得一片 8 個圈把這個世界的分數／金幣灌高
   SCORE_BOUNCE: 25,
   SCORE_GRAB: 10,
   // 鏡頭

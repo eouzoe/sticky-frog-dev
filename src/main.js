@@ -2,7 +2,7 @@
 import { cg } from './cg.js';
 import { TUNE as T, WORLDS, SKINS, TRAILS, TONGUES, FULL_LAUNCH } from './config.js';
 import { generateLevel, newElements, LEVEL_COUNT, levelLabel, worldOf, createEndless, extendEndless, endlessWorld, ENDLESS_WORLD_LEN } from './level.js';
-import { createSim, step, movePos, flyPos, burstOn, burstWarn, padSnapshot } from './sim.js';
+import { createSim, step, movePos, flyPos, burstOn, burstWarn, padSnapshot, ringPoints } from './sim.js';
 import { makeBot } from './bot.js';
 import { createView } from './scene.js';
 import { createLevelView } from './levelview.js';
@@ -233,7 +233,7 @@ function onEvent(e) {
     }
     case 'ring': {
       sfx('ring'); addCombo();
-      const pts = addScore(T.SCORE_RING);
+      const pts = addScore(ringPoints(G.lv, e.i));
       if (G.lv.rings[e.i]?.trail !== undefined) { pop(t('pop.ring', { pts }), e.x, e.y + 2.2, 'gold'); juice.ringTrail(e); break; } // 沙丘軌跡上的圈：輕量特效
       pop(t('pop.ring', { pts }), e.x, e.y + 2.6, 'big');
       juice.ring(e, e.speed > 16 || e.flips >= 1 ? T.SLOWMO_TIME : 0.45);

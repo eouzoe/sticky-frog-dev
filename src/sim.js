@@ -43,6 +43,8 @@ export function duneSlope(d, x) {
   const w = d.x1 - d.x0, u = (x - d.x0) / w;
   return d.lip ? d.H * Math.PI * 0.5 / w * Math.sin(u * Math.PI * 0.5) : d.H * Math.PI / w * Math.sin(u * TAU);
 }
+// 這顆金圈吃到給幾分：沙丘軌跡上的圈（ring.trail）用 SCORE_RING_TRAIL，其餘 SCORE_RING
+export const ringPoints = (lv, i) => (lv.rings[i]?.trail !== undefined ? T.SCORE_RING_TRAIL : T.SCORE_RING);
 export function duneAt(lv, x) {
   const ds = lv.dunes;
   if (ds) for (let i = 0; i < ds.length; i++) { const d = ds[i]; if (!d.off && x >= duneStart(d) && x <= duneEnd(d)) return i; }
