@@ -22,5 +22,8 @@ jobs:
             if node "$f" > /dev/null; then echo "ok   $f"; else echo "FAIL $f"; fails=$((fails + 1)); fi
           done
           exit $fails
+      - name: telemetry server (Vitest in workerd)
+        working-directory: server/telemetry
+        run: npm ci && npm test
       - name: build
         run: npm run build
