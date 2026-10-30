@@ -3,33 +3,32 @@ import { TUNE as T } from './config.ts';
 import { duneAt } from './sim.ts';
 import type { Sim, SimEvent } from './types.ts';
 
+// 門檻一律偏嚴：成就是「自己都覺得很強」的瞬間，太容易拿就廉價，跳太頻繁會打斷手感
 export const FEAT_T = {
-  SPIN: 5, // 一次滯空轉滿幾圈
-  TORNADO: 7, // 7 圈：另一個更稀有的成就
-  FLOW_STALL: 0.1, // 整關「停滯」（速度 < STALL_V）總秒數 ≤ 這個值
+  SPIN: 7, // 一次滯空轉滿幾圈
+  TORNADO: 10, // 10 圈：另一個更稀有的成就
+  FLOW_STALL: 0.05, // 整關「停滯」（速度 < STALL_V）總秒數 ≤ 這個值
   STALL_V: 13,
   FLOW_MIN_LEN: 60, // 太短的關不算
-  SPEED: 18, // 平均水平速度（單位/秒）≥ 這個值＝超快通關
-  SKIM_Y: 1.0, // 青蛙中心離「落水線」只剩這麼高又飛回去
-  SKIM_BACK: 4, // 回到這個高度以上才算救回來
-  SHAVE: 0.12, // 擦過尖刺／鋸片：最近距離離碰撞邊緣 ≤ 這個值
-  CLUTCH_Y: 3.5, // 黏住的瞬間青蛙中心低於這個高度、而且正在往下掉
-  CLUTCH_VY: -6,
-  CLUTCH_BACK: 6, // 之後回到這個高度以上才算拉回
+  SPEED: 22, // 平均水平速度（單位/秒）≥ 這個值＝超快通關
+  SKIM_Y: 0.45, // 青蛙中心離「落水線」只剩這麼高又飛回去
+  SKIM_BACK: 5, // 回到這個高度以上才算救回來
+  SHAVE: 0.06, // 擦過尖刺／鋸片：最近距離離碰撞邊緣 ≤ 這個值
 };
 export type FeatThresholds = typeof FEAT_T;
 
-export type FeatId = 'spin' | 'tornado' | 'flow' | 'speed' | 'skim' | 'shave' | 'clutch';
+export type FeatId = 'spin' | 'tornado' | 'flow' | 'speed' | 'skim' | 'shave';
+/** 大貼紙＋慢動作＋號角只給這兩個；其他成就簡單跳一下字就好（使用者：醒目提示留給 7 圈以上） */
+export const BIG_FEATS: ReadonlySet<FeatId> = new Set<FeatId>(['spin', 'tornado']);
 export interface FeatDef { id: FeatId; name: string; line: string; coins: number; better: 'max' | 'min'; fmt: (v: number) => string }
 // better：'max'＝數字越大越強、'min'＝越小越強；fmt 給紀錄頁顯示（英文備援）
 export const FEATS: readonly FeatDef[] = [
-  { id: 'spin', name: 'SPIN DOCTOR!', line: 'Five spins in one jump. Dizzy yet?', coins: 25, better: 'max', fmt: (v) => `${v} spins` },
-  { id: 'tornado', name: 'FROGNADO!!', line: 'SEVEN spins in one jump. Unreal.', coins: 60, better: 'max', fmt: (v) => `${v} spins` },
+  { id: 'spin', name: 'SPIN DOCTOR!', line: 'Seven spins in one jump. Dizzy yet?', coins: 25, better: 'max', fmt: (v) => `${v} spins` },
+  { id: 'tornado', name: 'FROGNADO!!', line: 'TEN spins in one jump. Unreal.', coins: 60, better: 'max', fmt: (v) => `${v} spins` },
   { id: 'flow', name: 'NONSTOP!', line: 'A whole level without slowing down.', coins: 25, better: 'min', fmt: (v) => `${v.toFixed(2)}s stalled` },
   { id: 'speed', name: 'SPEED DEMON!', line: 'That was way too fast.', coins: 25, better: 'max', fmt: (v) => `${v.toFixed(1)} m/s` },
   { id: 'skim', name: 'WAVE KISSER!', line: 'Touched the water and lived.', coins: 20, better: 'min', fmt: (v) => `${v.toFixed(2)} m above` },
   { id: 'shave', name: 'CLOSE SHAVE!', line: 'A hair away from the spikes.', coins: 20, better: 'min', fmt: (v) => `${v.toFixed(2)} m gap` },
-  { id: 'clutch', name: 'CLUTCH SAVE!', line: 'Grabbed it at the very last second!', coins: 25, better: 'min', fmt: (v) => `${v.toFixed(2)} m high` },
 ];
 export const featById = (id: string): FeatDef | undefined => FEATS.find((f) => f.id === id);
 
@@ -41,10 +40,10 @@ const WATER = T.WATER_Y + 0.15; // sim 的落水判定線（青蛙中心）
 
 export function createFeatTracker(K: FeatThresholds = FEAT_T) {
   // padded＝這一輪停過中途荷葉：荷葉＝停下來過，不能拿 NONSTOP
-  const st = { stall: 0, dip: Infinity, clutch: null as number | null, padded: false };
+  const st = { stall: 0, dip: Infinity, padded: false };
   return {
     st,
-    reset() { st.stall = 0; st.dip = Infinity; st.clutch = null; st.padded = false; },
+    reset() { st.stall = 0; st.dip = Infinity; st.padded = false; },
     // 每個 sim 步呼叫一次；回傳這一步達成的成就（每次回傳新陣列，呼叫端迭代時不怕被清掉）
     tick(s: Sim, dt: number): FeatHit[] {
       if (s.mode !== 'air' && s.mode !== 'swing') return [];
@@ -58,7 +57,6 @@ export function createFeatTracker(K: FeatThresholds = FEAT_T) {
         if (st.dip <= K.SKIM_Y) out.push({ id: 'skim', value: st.dip });
         st.dip = Infinity;
       }
-      if (st.clutch !== null && h > K.CLUTCH_BACK) { out.push({ id: 'clutch', value: st.clutch }); st.clutch = null; }
       return out;
     },
     event(e: SimEvent, s: Sim): FeatHit[] {
@@ -68,8 +66,7 @@ export function createFeatTracker(K: FeatThresholds = FEAT_T) {
         if (e.n >= K.TORNADO) out.push({ id: 'tornado', value: e.n, silent: e.n > K.TORNADO });
       }
       else if (e.type === 'close' && e.gap !== undefined && e.gap <= K.SHAVE) out.push({ id: 'shave', value: Math.max(0, e.gap) });
-      else if (e.type === 'attach' && e.fy !== undefined && e.fy - WATER < K.CLUTCH_Y && e.fvy < K.CLUTCH_VY && !(duneAt(s.level, s.x) >= 0)) st.clutch = e.fy - WATER;
-      else if (e.type === 'die') { st.dip = Infinity; st.clutch = null; }
+      else if (e.type === 'die') st.dip = Infinity;
       else if (e.type === 'pad') st.padded = true;
       else if (e.type === 'win' && !s.level.endless) {
         const len = s.level.goal.x - s.level.start.x;

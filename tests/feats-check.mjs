@@ -24,10 +24,11 @@ function play(steps, s0 = sim()) {
 }
 
 // spin／tornado
-check('spin 達成（5 圈）', ['spin'], play([1, 2, 3, 4, 5].map((n) => [{}, { type: 'flip', n }])));
-check('spin 差一點（4 圈）', [], play([1, 2, 3, 4].map((n) => [{}, { type: 'flip', n }])));
-check('tornado 達成（7 圈，spin 只跳一次）', ['spin', 'tornado'], play([1, 2, 3, 4, 5, 6, 7].map((n) => [{}, { type: 'flip', n }])));
-check('tornado 差一點（6 圈）', ['spin'], play([1, 2, 3, 4, 5, 6].map((n) => [{}, { type: 'flip', n }])));
+const flips = (n) => play(Array.from({ length: n }, (_, i) => [{}, { type: 'flip', n: i + 1 }]));
+check('spin 達成（K.SPIN 圈）', ['spin'], flips(K.SPIN));
+check('spin 差一點', [], flips(K.SPIN - 1));
+check('tornado 達成（K.TORNADO 圈，spin 只跳一次）', ['spin', 'tornado'], flips(K.TORNADO));
+check('tornado 差一點', ['spin'], flips(K.TORNADO - 1));
 
 // flow：停滯總秒數
 const fast = Array.from({ length: 600 }, () => [{ vx: 20 }, null]);
@@ -53,12 +54,6 @@ check('skim 沒救回來（落水）', [], play([[{ y: W + 2.5 }, null], [{ y: W
 check('shave 達成', ['shave'], play([[{}, { type: 'close', gap: K.SHAVE - 0.02 }]]));
 check('shave 差一點', [], play([[{}, { type: 'close', gap: K.SHAVE + 0.02 }]]));
 
-// clutch：快落水時黏住、之後拉回高處
-const clutch = (fy, fvy) => [[{}, { type: 'attach', fy: W + fy, fvy }], [{ mode: 'swing', y: W + 3 }, null], [{ y: W + K.CLUTCH_BACK + 0.5 }, null]];
-check('clutch 達成', ['clutch'], play(clutch(K.CLUTCH_Y - 0.3, K.CLUTCH_VY - 3)));
-check('clutch 差一點（黏得太高）', [], play(clutch(K.CLUTCH_Y + 0.3, K.CLUTCH_VY - 3)));
-check('clutch：在沙丘上方黏住不算 CLUTCH SAVE', [], play(clutch(K.CLUTCH_Y - 0.3, K.CLUTCH_VY - 3).map(([p, e]) => [{ ...p, level: sandLv }, e]), sim({ level: sandLv })));
-check('clutch 差一點（沒在往下掉）', [], play(clutch(K.CLUTCH_Y - 0.3, K.CLUTCH_VY + 3)));
 
 // 紀錄：第一次日期、最佳值、次數
 const rec = {};
@@ -67,7 +62,7 @@ check('紀錄：首次日期本地、最佳取小、次數', { first: '2026-10-2
 // 滑沙不算停下：同樣停滯 0.2 秒的速度（< STALL_V），貼著沙面（onDune ≥ 0）不計、離開沙面照算
 check('NONSTOP：滑沙中速度低於門檻不算停滯', ['flow'], play([...fast, ...slow(0.2).map(([p, e]) => [{ ...p, onDune: 0 }, e]), ...fast, ...win], sim({ time: 99 })));
 check('NONSTOP：同樣的低速離開沙面就算停滯', [], play([...fast, ...slow(0.2).map(([p, e]) => [{ ...p, onDune: -1 }, e]), ...fast, ...win], sim({ time: 99 })));
-check('每種成就都有測到', true, FEATS.every((f) => ['spin', 'tornado', 'flow', 'speed', 'skim', 'shave', 'clutch'].includes(f.id)) && FEATS.length === 7);
+check('每種成就都有測到', true, FEATS.every((f) => ['spin', 'tornado', 'flow', 'speed', 'skim', 'shave'].includes(f.id)) && FEATS.length === 6);
 
 console.log(fails ? `FAILED ${fails}` : 'all ok');
 process.exit(fails ? 1 : 0);
