@@ -6,11 +6,11 @@
 
 ## 語言
 
-介面支援 12 種語言（`src/lang/` 每種一個檔，清單與順序在 `src/i18n.js` 的 `LANGS`）：English（en）、Español（es）、Português BR（pt）、Français（fr）、Deutsch（de）、Türkçe（tr）、Русский（ru）、日本語（ja）、한국어（ko）、Indonesia（id）、繁體中文（zh-Hant）、简体中文（zh-Hans）。偵測順序：`?lang=` > 玩家自選 > CrazyGames locale > 瀏覽器語言 > English；檢查用 `node tests/i18n-check.mjs`。
+介面支援 12 種語言（`src/lang/` 每種一個檔，清單與順序在 `src/i18n.ts` 的 `LANGS`）：English（en）、Español（es）、Português BR（pt）、Français（fr）、Deutsch（de）、Türkçe（tr）、Русский（ru）、日本語（ja）、한국어（ko）、Indonesia（id）、繁體中文（zh-Hant）、简体中文（zh-Hans）。偵測順序：`?lang=` > 玩家自選 > CrazyGames locale > 瀏覽器語言 > English；檢查用 `bun tests/i18n-check.mjs`。
 
 ## 玩法
 
-- 側視 2.5D（青蛙只在 XY 平面動，世界是 3D＋景深視差）。美術是「軟膠公仔」：亮面糖果色、邊緣光、黑亮大眼、圓滾滾（Blender 做的 GLB，來源 `hook-hero-art` d0f791d）；低畫質自動換成 Lambert＋邊緣光的便宜材質。
+- 側視 2.5D（青蛙只在 XY 平面動，世界是偽 3D：原版 GLB 離線烘焙成精靈圖集，執行時用透視投影＋固定深度的視差捲軸層）。美術是「軟膠公仔」：亮面糖果色、邊緣光、黑亮大眼、圓滾滾（Blender 做的 GLB，來源 `hook-hero-art` d0f791d，只在 `tools/bake/` 用）。
 - **按住**：舌頭射向前方最近的鉤點花（目標會先出現白色光環），黏住後做單擺；按住期間舌頭會慢慢收短「打氣」，越擺越快。
 - **放開**：帶著擺盪的速度飛出去，並依速度自動翻滾；轉滿一圈＝FLIP，兩圈 DOUBLE、三圈 TRIPLE FLIP（慢動作＋FOV 推近＝招牌時刻）。
 - 蒼蠅靠近時舌頭自動舔掉；穿過金色圈圈加分＋慢動作；彈跳蘑菇把你彈回空中；風扇往上吹；尖刺球、鋸片碰到就失敗；掉進水（糖漿、霓虹運河、岩漿）＝失敗，0.5 秒內從頭重來。
@@ -29,37 +29,37 @@
 
 選關（或直接 PLAY 最新一關）→ 15–40 秒的短關卡（擺盪、翻滾、吃蒼蠅；**金幣即時入帳**，HUD 右上角跳動）→ 落上荷葉 → 1.6 秒慶祝（慢動作＋彩帶＋CLEAR! +25）→ 結算畫面（三星、停住等玩家按下一關）。第二輪一度拿掉結算改成自動進下一關，2026-10-26 使用者決定完整加回。
 
-- 90 關，每 15 關換一個世界：JUNGLE → CANDY → NEON CITY → VOLCANO → FROSTBITE PEAKS → SUNSET DUNES（色盤、天空、水、背景道具、障礙外觀全換；冰峰有極光帶與浮冰，音樂 84 bpm D 小調鈴音；夕陽沙丘有大太陽、砂岩平頂山／仙人掌／棕櫚，死亡地面是會轉的流沙，音樂 100 bpm 降 B 弗里吉安屬音階撥弦）。**滑沙**（76 關起，`lv.dunes`，`src/sim.js` `duneH`）：落在沙丘上不會死，沿坡面往前的速度至少 `DUNE_FLOOR`，尾端 lip 用 `DUNE_LIP_FLOOR` 把青蛙往前上方拋起，背坡也往前上方拋；沙面上一排金圈（`ring.trail`，每片最多 8 個）引路；沙丘只是安全網，拿掉也過得了（`tests/dune-check.mjs --nodune`）。61 關以後 `diff` 每世界 0.45→0.85，節奏表在 `src/level.js` `PLAN`，種子用 `tests/salt-search.mjs` 篩。
+- 90 關，每 15 關換一個世界：JUNGLE → CANDY → NEON CITY → VOLCANO → FROSTBITE PEAKS → SUNSET DUNES（色盤、天空、水、背景道具、障礙外觀全換；冰峰有極光帶與浮冰，音樂 84 bpm D 小調鈴音；夕陽沙丘有大太陽、砂岩平頂山／仙人掌／棕櫚，死亡地面是會轉的流沙，音樂 100 bpm 降 B 弗里吉安屬音階撥弦）。**滑沙**（76 關起，`lv.dunes`，`src/sim.ts` `duneH`）：落在沙丘上不會死，沿坡面往前的速度至少 `DUNE_FLOOR`，尾端 lip 用 `DUNE_LIP_FLOOR` 把青蛙往前上方拋起，背坡也往前上方拋；沙面上一排金圈（`ring.trail`，每片最多 8 個）引路；沙丘只是安全網，拿掉也過得了（`tests/dune-check.mjs --nodune`）。61 關以後 `diff` 每世界 0.45→0.85，節奏表在 `src/level.ts` `PLAN`，種子用 `tests/salt-search.mjs` 篩。
 - 新元素依序解鎖：蘑菇（第 3 關）、蒼蠅串（4）、圈圈（5）、移動鉤點（6）、低處尖刺（8）、連續蘑菇（9）、風扇（11）、雙圈（12）、鋸片（14）、高處尖刺（20）、上下夾擊（24）。
 - **無盡模式**（破 1-5 解鎖）：同一個段落產生器無限往後接，難度隨距離上升（上限＝第 60 關），每 450 單位換一個世界（閃光＋世界名）。分數＝距離 × 10 ＋ 翻滾、蒼蠅、圈圈等分數；死了就結算（距離、分數、最佳、本機名次）。
-- **成就＝當下的捧場**（`src/feats.js`）：做出很強的操作時畫面中上方跳出大字＋一句話＋金幣：SPIN DOCTOR（一次滯空 5 圈）、FROGNADO（7 圈）、NONSTOP（整關幾乎沒停滯）、SPEED DEMON（超快通關）、WAVE KISSER（擦過水面又飛回去）、CLOSE SHAVE（擦過尖刺／鋸片）、CLUTCH SAVE（快落水時黏住拉回）。門檻用自動玩家分布訂（一般玩法約 14% 的關卡出現一次），選單皇冠鈕「MY HIGHLIGHTS」看第一次達成日期、最佳數值、次數＋無盡前 10 名。
+- **成就＝當下的捧場**（`src/feats.ts`）：SPIN DOCTOR（一次滯空 7 圈）與 FROGNADO（10 圈）用大貼紙＋一句話＋金幣，NONSTOP（整關幾乎沒停滯）、SPEED DEMON（超快通關）、WAVE KISSER（擦過水面又飛回去）、CLOSE SHAVE（擦過石頭／蝴蝶）在角色旁簡單跳字。門檻刻意偏嚴（使用者：常跳就廉價），選單皇冠鈕「MY HIGHLIGHTS」看第一次達成日期、最佳數值、次數＋無盡前 10 名。
 - **商店**三個分頁：HEROES（看板角色 Spinny Cat 300 置頂、9 隻青蛙、Vine Ape 650、Silk Frog 900；買角色送招牌舌頭）、TONGUES（Frog Tongue、Yarn 180、Jungle Vine 260、Silk Thread 340：顏色、粗細、材質貼圖、捲曲、舌尖大小、黏上時的粒子都不同）、TRAILS。貓、猿人、蛛絲青蛙現在是青蛙換色佔位，模型等美術線。
 - **選單沒有離開鈕**；退回選單時最顯眼的黃色鈕推「下一步」：新模式 → 新世界 → 買得起的東西（商店裡那件會發光標 CAN BUY）。買完跳「立即試玩」直接帶新造型進遊戲。
-- **排行榜**：CrazyGames SDK v3 有 `user.submitScore`（只開放受邀遊戲、金鑰在 Developer Portal、榜單由平台在遊戲外顯示），接在 `src/leaderboard.js`；`src/config.js` 的 `LB_KEY` 填金鑰就開始送無盡分數，空字串＝只存本機前 10 名。
+- **排行榜**：CrazyGames SDK v3 有 `user.submitScore`（只開放受邀遊戲、金鑰在 Developer Portal、榜單由平台在遊戲外顯示），接在 `src/leaderboard.ts`；`src/config.ts` 的 `LB_KEY` 填金鑰就開始送無盡分數，空字串＝只存本機前 10 名。
 - 廣告：目前不接（Basic Launch 期間平台不放廣告）。Full Launch 時再依 docs.crazygames.com/sdk/video-ads 加回。
 
 ## 手感清單（18 項，全做）
 
 | # | 項目 | 做在哪 |
 |---|---|---|
-| 1 | 創傷值式畫面震動（平方曲線、衰減、含微旋轉；**分級**：高頻小事件取 max、大事件累加；強度 `SHAKE_SCALE`、衰減 `SHAKE_DECAY`） | `src/fx.js` `shake`／`addTrauma`；`src/juice.js` 各事件配方 |
-| 2 | Hit-stop（蘑菇 45 ms、落水 60 ms、尖刺 110 ms） | `src/main.js` `G.hitStop` |
-| 3 | 慢動作（TRIPLE FLIP、穿圈、落荷葉；timeScale 漸變） | `src/main.js` `slowmo()`、`frame()` |
-| 4 | 擠壓伸展（起跳、黏住、放開、彈跳、撞牆、落地；沿速度方向） | `src/frog.js` `squash()`（三層 pivot 沿任意軸縮放） |
-| 5 | 粒子爆發（軟膠語彙：亮面糖果碎片、圓角彩紙、圓潤閃星、泡泡、3D 金幣；物件池＋InstancedMesh；7 圈翻滾有天上彩紙雨） | `src/fx.js` `burst()`、`src/juice.js` |
-| 6 | 跳字（FLIP!、+50、BOING!、RING!、TRIPLE FLIP!，彈出縮放） | `src/ui.js` `popup()`、`index.html` `.pp` |
-| 7 | 連擊（2.8 秒內沒新動作就斷；音高、字級、倍率隨連擊升高） | `src/main.js` `addCombo()`、`src/audio.js` flip／attach |
-| 8 | 鏡頭：平滑跟隨＋速度前瞻＋隨速度拉遠＋放開時 FOV 衝擊＋慢動作推近 | `src/main.js` `render()` |
-| 9 | 死亡閃白、大事件全螢幕閃光 | `src/ui.js` `flash()` |
-| 10 | 速度拖尾緞帶＋高速速度線 | `src/fx.js` trail／lines |
-| 11 | 果凍衝擊環（圓管、衝過頭回彈；可延遲連發，7 圈翻滾四圈彩色） | `src/fx.js` `shock()` |
-| 12 | 每個動作都有音效（多層合成、音高隨機 ±7%） | `src/audio.js` `play()` |
-| 13 | 程序音樂循環（每世界不同調）＋大時刻 ducking | `src/audio.js` `startMusic()`／`duckMusic()` |
-| 14 | UI 動畫（按鈕 hover／按下彈跳、面板 overshoot 彈入、成就大字彈入、HUD 金幣跳動、無盡距離累加） | `index.html` CSS、`src/ui.js` `feat()`／`hudCoins()`／`showOver()` |
-| 15 | 預備動作（起跳前蹲 70 ms、舌頭射出前張嘴） | `src/sim.js` `crouch`、`src/frog.js` |
-| 16 | 待機動畫（呼吸、眨眼、鉤點花旋轉搖擺、蒼蠅嗡嗡、水面波浪、旗子飄） | `src/frog.js`、`src/levelview.js`、`src/scene.js` |
-| 17 | 手機震動（包 try） | `src/main.js` `vibrate()` |
-| 18 | 輕量後製（CSS 暈影；受擊色差脈衝，只有脈衝時多一個 pass，低畫質自動關） | `index.html` `#vignette`、`src/scene.js` `render()` |
+| 1 | 創傷值式畫面震動（平方曲線、衰減、含微旋轉；**分級**：高頻小事件取 max、大事件累加；強度 `SHAKE_SCALE`、衰減 `SHAKE_DECAY`） | `src/render/fx.ts` `shake`／`addTrauma`；`src/juice.ts` 各事件配方 |
+| 2 | Hit-stop（蘑菇 45 ms、落水 60 ms、尖刺 110 ms） | `src/main.ts` `G.hitStop` |
+| 3 | 慢動作（TRIPLE FLIP、穿圈、落荷葉；timeScale 漸變） | `src/main.ts` `slowmo()`、`frame()` |
+| 4 | 擠壓伸展（起跳、黏住、放開、彈跳、撞牆、落地；沿速度方向） | `src/render/character.ts` `squash()`／`jelly()` |
+| 5 | 粒子爆發（軟膠語彙：亮面糖果碎片、圓角彩紙、圓潤閃星、泡泡、3D 金幣；物件池＋一個批次；7 圈翻滾有天上彩紙雨） | `src/render/fx.ts` `burst()`、`src/juice.ts` |
+| 6 | 跳字（7 圈以上的翻轉、RING!、CLOSE CALL、正中紅心，彈出縮放；門檻偏嚴） | `src/ui.ts` `popup()`、`index.html` `.pp` |
+| 7 | 連擊（2.8 秒內沒新動作就斷；音高、字級、倍率隨連擊升高） | `src/main.ts` `addCombo()`、`src/audio-engine.ts` flip／attach |
+| 8 | 鏡頭：平滑跟隨＋速度前瞻＋隨速度拉遠＋放開時 FOV 衝擊＋慢動作推近 | `src/main.ts` `render()` |
+| 9 | 死亡閃白、大事件全螢幕閃光 | `src/ui.ts` `flash()` |
+| 10 | 速度拖尾緞帶＋高速速度線 | `src/render/fx.ts` trail／lines |
+| 11 | 果凍衝擊環（圓管、衝過頭回彈；可延遲連發，7 圈翻滾四圈彩色） | `src/render/fx.ts` `shock()` |
+| 12 | 每個動作都有音效（多層合成、音高隨機 ±7%） | `src/audio-engine.ts` `play()` |
+| 13 | 程序音樂循環（每世界不同調）＋大時刻 ducking | `src/audio-engine.ts` `startMusic()`／`duckMusic()` |
+| 14 | UI 動畫（按鈕 hover／按下彈跳、面板 overshoot 彈入、成就大字彈入、HUD 金幣飛到才跳、無盡距離累加） | `index.html` CSS、`src/ui.ts` `feat()`／`hudCoins()`／`overDist()` |
+| 15 | 預備動作（起跳前蹲 70 ms、舌頭射出前張嘴） | `src/sim.ts` `crouch`、`src/render/character.ts` |
+| 16 | 待機動畫（呼吸、眨眼、鉤點花旋轉搖擺、蒼蠅嗡嗡、水面波浪、旗子飄） | `src/render/character.ts`、`src/render/level.ts`、`src/render/view.ts` |
+| 17 | 手機震動（包 try） | `src/main.ts` `vibrate()` |
+| 18 | 輕量後製（CSS 暈影；沒有全螢幕著色器 pass） | `index.html` `#vignette` |
 
 另外：關卡進度條（含本關最遠紀錄標記）、死在 60% 之後跳「SO CLOSE! 87%」、擦過危險物「CLOSE CALL!」、每關開場大字標題、世界通關 `happytime`。
 
@@ -67,16 +67,15 @@
 
 ## 調參常數在哪
 
-全部在 `src/config.js`：`TUNE`（物理、舌頭、翻滾、分數、鏡頭、慢動作）、`WORLDS`（四個世界的色盤）、`SKINS`／`TONGUES`／`TRAILS`（價格、舌頭外觀）、`LB_KEY`。關卡產生在 `src/level.js`（段落 `addSegment`、無盡 `endlessDiff`／`ENDLESS_WORLD_LEN`）。成就門檻在 `src/feats.js` `FEAT_T`；換關廣告間隔、慶祝秒數、金幣換算在 `src/main.js` 檔頭（`MIDGAME_EVERY`、`CELEBRATE`、`COIN_PTS`、`CLEAR_COINS`）；無盡解鎖關在 `src/save.js` `ENDLESS_UNLOCK`。
+全部在 `src/config.ts`：`TUNE`（物理、舌頭、翻滾、分數、鏡頭、慢動作）、`WORLDS`（六個世界的色盤）、`SKINS`／`TONGUES`／`TRAILS`（價格、外觀）、`THEMES`（主題資料包：組合包價、道具與音效替換表）、`LB_KEY`。關卡產生在 `src/level.ts`（段落 `addSegment`、無盡 `createEndless`、主題系列關卡從第 91 關起）。成就門檻在 `src/feats.ts` `FEAT_T`；跳字門檻與金幣換算在 `src/main.ts` 檔頭（`FLIP_POP`、`CLOSE_GAP`、`COIN_PTS`、`CLEAR_COINS`、`PERFECT_COINS`）；一局結束的節拍秒數在 `src/beat.ts`；無盡解鎖關在 `src/save.ts` `ENDLESS_UNLOCK`。
 
 ## 檔案
 
-- `src/sim.js`：純物理（不依賴 three），可在 Node 跑。
-- `src/level.js`：60 關種子程序產生＋`SALT` 換種子表。
-- `src/scene.js`、`src/levelview.js`、`src/frog.js`、`src/fx.js`：渲染。`src/artkit.js`（美術線的執行時模組：載入、換色、高低畫質材質）、`src/art.js`（開機載入 26 個 GLB、把道具拆成 InstancedMesh 組）、`src/juice.js`（每個事件的特效配方：果凍、粒子、停格、慢動作、震動、音效層）。模型在 `public/models/`。
-- `src/audio.js`：WebAudio 合成。`src/ui.js`：DOM 介面。`src/main.js`：主迴圈與狀態機。`src/cg.js`：CrazyGames SDK 包裝（未改）。
-- `tests/sim-check.mjs`：自動玩家跑 60 關（12 組參數），全部可破才 exit 0。
-- `tests/endless-check.mjs`：無盡模式自動玩家接力，12 個種子都要跑完四個世界（1800 單位）。`tests/feats-check.mjs`：成就偵測（每種達成／差一點）。`tests/save-check.mjs`：舊存檔相容、下一步推薦、本機榜。`tests/feat-dist.mjs`：成就門檻分布。`tests/smoke-*.json`：冒煙步驟。
+- `src/sim.ts`：純物理（不依賴渲染器），可在 Node／Bun 跑。
+- `src/level.ts`：90 關種子程序產生＋`SALT` 換種子表；主題系列關卡接在後面。
+- `src/render/`：自寫 WebGL2 偽 3D——`gl.ts`（精靈批次、貼圖表、context lost 重建）、`atlas.ts`（圖集用到才載）、`view.ts`（鏡頭投影、天空、水面、固定深度的視差捲軸層）、`level.ts`（關卡物件）、`character.ts`（角色）、`fx.ts`（粒子）、`paint.ts`＋`palette.ts`（小形狀與世界色盤）、`portraits.ts`／`cat-stage.ts`（頭像與旋轉貓）。素材是 `tools/bake/` 離線烘焙的圖集（`src/art/atlas-*.webp`＋同名 json），原版 GLB 只在烘焙時用。
+- `src/audio.ts`（門面）＋`src/audio-engine.ts`（WebAudio 合成，第一次手勢才載）。`src/ui.ts`：DOM 介面。`src/main.ts`：主迴圈與輸入；流程狀態機在 `src/flow.ts`、一局結束的節拍在 `src/beat.ts`；`src/juice.ts`：事件特效配方（選單出來後才載）。`src/cg.ts`：CrazyGames SDK 包裝。
+- `tests/*-check.mjs`：`bun run check` 全跑（sim、endless、feats、save、flow、beat、i18n、telemetry、unlock、quality、pad、boost、burst、dune、ring-score）。`tests/smoke-*.json`：冒煙步驟（執行器不在 repo）。`tools/perf/`：Playwright 量測與驗證腳本（用法見 docs/PLAN.md）。
 
 ## 設計上改了什麼、為什麼
 
@@ -96,22 +95,18 @@
 
 ## 驗證
 
-- `node tests/sim-check.mjs`：自動玩家 12 組參數跑 60 關，60/60 可破（exit 0）。`node tests/endless-check.mjs`、`node tests/feats-check.mjs`、`node tests/save-check.mjs` 都 exit 0。
-- 冒煙（一律包 heavy.sh）：
-  ```
-  /Users/eason/Studio/games/crazygames/_tools/heavy.sh /Users/eason/Studio/games/crazygames/_tools/smoke.sh /Users/eason/Studio/games/crazygames/hook-hero 5715 /Users/eason/Studio/games/crazygames/hook-hero/tests/smoke-desktop.json <輸出資料夾> [--no-sdk]
-  /Users/eason/Studio/games/crazygames/_tools/heavy.sh /Users/eason/Studio/games/crazygames/_tools/smoke.sh /Users/eason/Studio/games/crazygames/hook-hero 5715 /Users/eason/Studio/games/crazygames/hook-hero/tests/smoke-mobile.json <輸出資料夾> --mobile
-  ```
-  桌機步驟用真實的 Space 按住／放開序列玩第 1 關（序列取自自動玩家，在 Node 加 ±30 ms 抖動實測約 9 成能自然破關、過半會 TRIPLE FLIP），斷言黏上 ≥ 3 次、前進、分數 > 0；沒自然落地才用 `__game.forceWin()` 收尾。
+- `bun run check`：型別、oxlint、全部 `tests/*-check.mjs`（約 2–3 分鐘），任一失敗 exit 1。
+- 瀏覽器驗證：`bun tools/perf/<腳本>.mjs <網址>`（flowcheck 一局結束流程、themecheck 主題資料包、hazards 障礙物、worlds 六世界截圖、bootmarks 開機量測……），截圖輸出到 `tools/perf/shots/`（不進版本控制）。正式建置要帶 `?debug=1` 才有 `window.__game`。
+- 冒煙 JSON（`tests/smoke-*.json`）的執行器在原作者本機，不在 repo；桌機步驟用真實的 Space 按住／放開序列玩第 1 關，斷言黏上 ≥ 3 次、前進、分數 > 0；沒自然落地才用 `__game.forceWin()` 收尾。
 - 巡覽截圖（非驗收）：`tests/tour-worlds.json`、`tests/tour-hazards.json`、`tests/tour-skins.json`（用 `__game.autoplay`／`__game.look()`）。
-- 除錯掛鉤 `window.__game`：`state`、`level`、`score`、`attachesTotal`、`flips`、`bestFlip`、`maxX`、`deaths`、`fps`、`quality`、`drawCalls`、`result`；`start(n)`、`forceWin()`、`look(skin, trail)`、`autoplay = [rel, grabVy]`。
+- 除錯掛鉤 `window.__game`（只在開發伺服器或 `?debug=1` 掛）：`state`、`flow`、`beat`、`level`、`score`、`attachesTotal`、`flips`、`bestFlip`、`maxX`、`deaths`、`fps`、`quality`、`result`、`levelResult`、`theme`；`start(n)`、`startEndless()`、`forceWin()`、`forceDie()`、`skip()`、`buySet(id)`、`look(skin, trail, tongue)`、`autoplay = [rel, grabVy]`、`camOverride`、`freeze`。
 
-## 大小（第一輪的數字）
+## 大小
 
-`dist` 約 1.6 MB、28 個檔：index.html＋一支 JS（770 KB，gzip 208 KB，three.js 佔大部分）＋`models/` 26 個 meshopt 壓縮的 GLB（共約 880 KB）。沒有圖片、音檔、字型。
+核心 JS 約 142 KB（gzip 57 KB）；語系、音效引擎、手感回饋、貓舞台是各自的小檔，用到才載；圖集 webp 每張數十到數百 KB，依世界與造型用到才載；沒有 GLB、沒有字型檔以外的大檔。
 
 ## 已知問題
 
 - 音效／音樂只在無頭瀏覽器跑過（無錯誤），沒有人耳試聽過音量平衡。
-- 難度只用自動玩家驗證「可破」，後段關卡（40 關以後）對真人可能偏難，需要真人試玩調 `src/level.js` 的間距與危險物高度。
+- 難度只用自動玩家驗證「可破」，後段關卡（40 關以後）對真人可能偏難，需要真人試玩調 `src/level.ts` 的間距與危險物高度。
 - 失焦（點到 iframe 外）會自動暫停，這是刻意的。

@@ -9,7 +9,6 @@
 </p>
 
 <p align="center">
-  <img alt="three.js" src="https://img.shields.io/badge/three.js-0.186.1-000000?logo=threedotjs&logoColor=white">
   <img alt="Vite" src="https://img.shields.io/badge/Vite-8.3.5-646CFF?logo=vite&logoColor=white">
   <img alt="CrazyGames SDK" src="https://img.shields.io/badge/CrazyGames%20SDK-v3-6C2BD9">
   <img alt="i18n" src="https://img.shields.io/badge/i18n-12%20languages-2EA44F">
@@ -63,16 +62,17 @@
 
 ## 快速開始
 
-需要 Node.js 18 以上。
+需要 [Bun](https://bun.sh)（有 `devenv.nix`，用 devenv 的話 `devenv shell` 就有）。
 
 ```bash
-npm install
-npm run dev        # 開發伺服器，網址看終端機輸出
-npm run build      # 輸出到 dist/，這份就是上傳 CrazyGames 的版本
-npm run preview    # 在本機跑 dist/
+bun install
+bun run dev        # 開發伺服器（5173）
+bun run build      # 輸出到 dist/，這份就是上傳 CrazyGames 的版本
+bun run preview    # 在本機跑 dist/
+bun run check      # 型別、oxlint、tests/*-check.mjs
 ```
 
-`dist/` 裡全部用相對路徑（`vite.config.js` 的 `base: './'`），放在任何子路徑底下都能跑。
+`dist/` 裡全部用相對路徑（`vite.config.ts` 的 `base: './'`），放在任何子路徑底下都能跑。
 
 目前不接廣告：CrazyGames 在 Basic Launch 期間不放廣告，Full Launch 時再加回。
 
@@ -80,64 +80,65 @@ npm run preview    # 在本機跑 dist/
 
 ```
 src/
-├── main.js          主迴圈、狀態機、鏡頭、輸入
-├── sim.js           純物理（不依賴 three.js，可以在 Node 跑）
-├── level.js         種子程序產生的關卡、無盡模式段落
-├── bot.js           自動玩家（驗證關卡可破、截圖巡覽用）
-├── feats.js         成就偵測與門檻
-├── save.js          存檔、舊存檔相容、選單「下一步」推薦（純邏輯）
-├── config.js        所有調參常數：物理、鏡頭、世界色盤、角色、舌頭、拖尾
-├── scene.js         three.js 場景、天空、水面、後製
-├── levelview.js     關卡物件的 3D 外觀（同種物件用 InstancedMesh）
-├── frog.js          主角模型、擠壓伸展、眨眼、舌頭緞帶
-├── tongues.js       舌頭材質（程式畫的貼圖：毛線、藤蔓、蛛絲）
-├── art.js           載入 GLB 素材、畫質切換
-├── artkit.js        美術 runtime：換色、軟膠材質
-├── fx.js            粒子、衝擊環、拖尾、畫面震動
-├── juice.js         每個遊戲事件的特效配方（停格、慢動作、粒子、震動、音效）
-├── audio.js         WebAudio 即時合成的音效與每個世界的音樂（沒有音檔）
-├── ui.js            DOM 介面：選單、HUD、結算、商店
-├── i18n.js, lang/   12 種語言、語言偵測、長字自動縮字
-├── telemetry.js     匿名遊玩數據（沒設 VITE_TELEMETRY_URL 時是空殼）
-├── leaderboard.js   本機前 10 名＋CrazyGames 排行榜接口
-└── cg.js            CrazyGames SDK v3 包裝
+├── main.ts          主迴圈、輸入、鏡頭、事件 → 手感回饋
+├── flow.ts          流程狀態機（純函式）；beat.ts 一局結束的固定節拍
+├── sim.ts           純物理（不依賴渲染器，可以在 Node／Bun 跑）
+├── level.ts         種子程序產生的關卡、無盡模式段落、主題系列關卡
+├── bot.ts           自動玩家（驗證關卡可破、截圖巡覽用）
+├── feats.ts         成就偵測與門檻
+├── save.ts          存檔、舊存檔相容、本機與雲端合併、選單「下一步」推薦（純邏輯）
+├── config.ts        所有調參常數：物理、鏡頭、世界色盤、角色、舌頭、拖尾、主題資料包
+├── render/          自寫 WebGL2 偽 3D：gl（精靈批次）、atlas（圖集用到才載）、view（投影、天空、水面、視差捲軸層）、
+│                    level、character、fx（粒子）、paint＋palette（小形狀與色盤）、portraits／cat-stage（頭像、旋轉貓）
+├── art/             離線烘焙的精靈圖集（atlas-*.webp＋json）：共用、小形狀、六個世界、每個造型、旋轉貓
+├── juice.ts         每個遊戲事件的特效配方（停格、慢動作、粒子、震動、音效；選單出來後才載）
+├── audio.ts         音效門面；audio-engine.ts 是 WebAudio 即時合成（第一次手勢才載，沒有音檔）
+├── ui.ts            DOM 介面：選單、HUD、過關與無盡結束浮層、商店、選關
+├── i18n.ts, lang/   12 種語言（各自小檔、用到才載）、語言偵測、長字自動縮字
+├── telemetry.ts     匿名遊玩數據（沒設 VITE_TELEMETRY_URL 時是空殼）
+├── leaderboard.ts   本機前 10 名＋CrazyGames 排行榜接口
+└── cg.ts            CrazyGames SDK v3 包裝（存檔本機永遠鏡像）
 public/
-├── models/          GLB 模型（Blender 製作、meshopt 壓縮）
 ├── ui/              商店角色頭像
 └── fonts/           Baloo 2 ExtraBold（SIL OFL 1.1）
+tools/
+├── bake/            離線烘焙：原版 GLB → 精靈圖集（無頭 Chrome）、小形狀光柵
+├── cat/             旋轉貓素材（yt-dlp＋ffmpeg）
+└── perf/            Playwright 量測與驗證腳本（開機、遊玩剖析、流程、主題、截圖）
 server/telemetry/    遙測收資料端（Worker＋D1）與報告腳本
-tests/               Node 檢查與瀏覽器冒煙步驟
+tests/               bun run check 跑的檢查（*-check.mjs）與瀏覽器冒煙步驟
 ```
 
 ### 架構
 
 ```mermaid
 flowchart LR
-  input["輸入<br/>滑鼠・Space・觸控"] --> main["main.js<br/>主迴圈・狀態機"]
-  level["level.js<br/>關卡產生"] --> sim
-  main --> sim["sim.js<br/>純物理"]
-  sim -- 遊戲事件 --> juice["juice.js<br/>特效配方"]
-  juice --> fx["fx.js"]
-  juice --> audio["audio.js"]
-  juice --> ui["ui.js"]
-  main --> view["scene.js・levelview.js・frog.js<br/>three.js 渲染"]
-  art["art.js・artkit.js<br/>GLB 素材"] --> view
-  main <--> cg["cg.js<br/>CrazyGames SDK"]
-  main <--> save["save.js<br/>存檔"]
+  input["輸入<br/>滑鼠・Space・觸控"] --> main["main.ts<br/>主迴圈"]
+  main --> flow["flow.ts・beat.ts<br/>狀態機・節拍"]
+  level["level.ts<br/>關卡產生"] --> sim
+  main --> sim["sim.ts<br/>純物理"]
+  sim -- 遊戲事件 --> juice["juice.ts<br/>特效配方"]
+  juice --> fx["render/fx.ts"]
+  juice --> audio["audio.ts"]
+  juice --> ui["ui.ts"]
+  main --> view["render/view.ts・level.ts・character.ts<br/>WebGL2 偽 3D"]
+  art["art/atlas-*.webp<br/>離線烘焙的圖集"] --> view
+  main <--> cg["cg.ts<br/>CrazyGames SDK"]
+  main <--> save["save.ts<br/>存檔"]
 ```
 
-物理（`sim.js`）和關卡（`level.js`）不碰 three.js，所以 Node 裡的自動玩家跑的就是遊戲裡同一套物理。調關卡難度可以先在 Node 驗證每一關都破得了，不用開瀏覽器。
+物理（`sim.ts`）和關卡（`level.ts`）不碰渲染器，所以 Node／Bun 裡的自動玩家跑的就是遊戲裡同一套物理。調關卡難度可以先在 Node 驗證每一關都破得了，不用開瀏覽器。
 
 ## 調參
 
 | 想改什麼 | 去哪裡 |
 |---|---|
-| 重力、舌頭、翻滾、分數、鏡頭、慢動作 | `src/config.js` 的 `TUNE` |
-| 世界色盤、天空、水 | `src/config.js` 的 `WORLDS` |
-| 角色、舌頭、拖尾、價格 | `src/config.js` 的 `SKINS`、`TONGUES`、`TRAILS` |
-| 關卡段落與難度曲線 | `src/level.js` |
-| 成就門檻 | `src/feats.js` 的 `FEAT_T` |
-| 無盡模式解鎖關 | `src/save.js` 的 `ENDLESS_UNLOCK` |
+| 重力、舌頭、翻滾、分數、鏡頭、慢動作 | `src/config.ts` 的 `TUNE` |
+| 世界色盤、天空、水 | `src/config.ts` 的 `WORLDS` |
+| 角色、舌頭、拖尾、價格 | `src/config.ts` 的 `SKINS`、`TONGUES`、`TRAILS` |
+| 關卡段落與難度曲線 | `src/level.ts` |
+| 成就門檻 | `src/feats.ts` 的 `FEAT_T` |
+| 無盡模式解鎖關 | `src/save.ts` 的 `ENDLESS_UNLOCK` |
 
 ## 測試
 
@@ -167,28 +168,27 @@ for f in tests/*-check.mjs; do node "$f" > /dev/null && echo "ok   $f" || echo "
 
 ```bash
 # 開啟（建置版本建議帶 commit）
-VITE_TELEMETRY_URL=https://<你的 worker>.workers.dev/e VITE_BUILD=$(git rev-parse --short HEAD) npm run build
+VITE_TELEMETRY_URL=https://<你的 worker>.workers.dev/e VITE_BUILD=$(git rev-parse --short HEAD) bun run build
 ```
 
-- 事件：`session_start`、`level_start`、`death`、`level_clear`、`level_abandon`、`endless_over`（欄位見 `server/telemetry/src/index.js` 的 `EVENTS`）。
+- 事件：`session_start`、`level_start`、`death`、`level_clear`、`level_abandon`、`endless_over`、`shop_want`、`shop_buy`（欄位見 `server/telemetry/src/index.js` 的 `EVENTS`）。
 - 存：隨機匿名 ID（localStorage）、每次載入的 session ID、版本、關卡、位置、進度、死因、秒數、星數、語言、裝置類別（桌機／手機）、視窗大小、畫質、開機到選單的毫秒、國家（Cloudflare 提供）。
 - 不存：個資、IP、user agent、cookie。
 - 不送：`?notelemetry`、`__game.autoplay` 開著的局、localhost 開發（遙測網址本身也是 localhost 的本機測試除外）。
 - 新玩家第一次看到選單會有一行小字通知，連到 `public/privacy.html`（英文＋繁中）。
-- 收資料端在 `server/telemetry/`（Cloudflare Worker＋D1）。部署：複製 `wrangler.toml` 成 gitignored 的 `wrangler.local.toml` 並填入自己的 D1 `database_id`，`npx wrangler d1 execute sticky-frog-telemetry -c wrangler.local.toml --remote --file schema.sql`，再 `npx wrangler deploy -c wrangler.local.toml`。
+- 收資料端在 `server/telemetry/`（Cloudflare Worker＋D1）。部署：複製 `wrangler.toml` 成 gitignored 的 `wrangler.local.toml` 並填入自己的 D1 `database_id`，`npx wrangler d1 execute sticky-frog-telemetry -c wrangler.local.toml --remote --file schema.sql`，再 `npx wrangler deploy -c wrangler.local.toml`。在加入商店欄位之前就建好的資料庫，另外跑一次 `--file migrate-0001-shop.sql`。
 - 看報告：`node server/telemetry/report.mjs`（查線上 D1，輸出 markdown：每關通關率、死亡／放棄位置、關卡漏斗、開機時間；異常樣本篩除規則寫在報告開頭）。`--local` 查本機 D1、`--out 檔名` 寫檔。
-- 驗證：`node tests/telemetry-check.mjs`（遊戲端）、`node server/telemetry/test-worker.mjs <端點> --local|--remote`（收資料端的合格／不合格批次）。
+- 驗證：`bun tests/telemetry-check.mjs`（遊戲端）；`cd server/telemetry && npm ci && npm test`（收資料端，在 workerd 裡跑、用全新的本機 D1）；部署後用 `node server/telemetry/test-worker.mjs <端點> --remote` 檢查線上端點。
 
 ## 目前狀態
 
-- 第一次送 CrazyGames 審核未通過（整體品質）。正在改善手機效能：開機只載需要的素材、畫質分級、閒置時不重畫。
-- 下一階段：加強爽感、增加關卡內容（第 6 個世界 Sunset Dunes 製作中）。
+- 第一次送 CrazyGames 審核未通過（整體品質）。之後把渲染器從 three.js 換成自寫 WebGL2 偽 3D（素材離線烘焙成圖集）、開機只載需要的素材、一局結束改成無按鈕的固定節拍、障礙物改全年齡、加主題資料包；數字與計畫見 `docs/PLAN.md`、`docs/REVIEW-2026-10-30.md`。
 - 開發筆記（手感清單、每個設計決定的原因、驗證方式）在 [`docs/DEVNOTES.md`](docs/DEVNOTES.md)。
 
 ## 素材與授權
 
-- 3D 模型：自製（Blender），來源在另一個美術 repo。
+- 精靈圖集：自製 3D 模型（Blender，來源在另一個美術 repo）用 `tools/bake/` 離線烘焙；旋轉貓是網路迷因照片與音效（來源見 `tools/cat/`）。
 - 字型：[Baloo 2](https://fonts.google.com/specimen/Baloo+2) ExtraBold，SIL Open Font License 1.1（`public/fonts/OFL-Baloo2.txt`）。
 - 音效與音樂：WebAudio 即時合成，沒有外部音檔。
-- [three.js](https://threejs.org)：MIT License。
+- [three.js](https://threejs.org)（只在 `tools/bake/` 烘焙時用）：MIT License。
 - 本專案程式碼目前不開源，尚未選定授權。
