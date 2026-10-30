@@ -1,4 +1,4 @@
-// DOM 介面（軟膠公仔設計系統）：畫面切換、按鈕壓扁回彈、HUD、跳字、成就膠囊、過關結算、觸控教學、選關、商店、紀錄頁、無盡結算、選單下一步推薦。
+// DOM 介面（軟膠公仔設計系統）：畫面切換、按鈕壓扁回彈、HUD、跳字、成就膠囊、過關／無盡結束浮層、觸控教學、選關、商店、紀錄頁、選單下一步推薦。
 // 每幀呼叫的 hud()／tickFlash() 只在數值改變時才寫 DOM。
 import { SKINS, TRAILS, TONGUES, WORLDS } from './config.ts';
 import type { Skin, TongueSpec, TrailSpec } from './config.ts';
@@ -12,7 +12,7 @@ import type { Save, ShopTab } from './save.ts';
 
 type Item = Skin | TongueSpec | TrailSpec;
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
-const screens = ['menu', 'levels', 'shop', 'records', 'result', 'over', 'pause'] as const;
+const screens = ['menu', 'levels', 'shop', 'records', 'pause'] as const;
 export type Screen = (typeof screens)[number];
 const icon = (id: string, cls = 'i') => `<svg class="${cls}"><use href="#i-${id}" /></svg>`;
 // 千分位自己加：toLocaleString 第一次呼叫要載入 ICU 語系資料（開機時約 20ms）
@@ -45,11 +45,12 @@ addEventListener('animationend', (e) => {
 export function show(name: Screen | null): void {
   for (const s of screens) $(s).classList.toggle('on', s === name);
   document.body.dataset.screen = name ?? 'play';
-  if (name) { dieText(null); clearSticker(false); hideFeat(); }
+  if (name) { dieText(null); hideFeat(); }
+  if (name && name !== 'pause') { clearHide(); overHide(); } // 暫停時結束浮層留著（繼續要接著同一個節拍）
   $('hud').classList.toggle('on', name === null || name === 'pause');
   if (name !== null) tut(null);
   const ins = name ? [...$(name).querySelectorAll<HTMLElement>('[data-in]')] : [];
-  if (name && !ins.length) ins.push(...$(name).querySelectorAll<HTMLElement>('.panel')); // 結算／暫停：面板落下
+  if (name && !ins.length) ins.push(...$(name).querySelectorAll<HTMLElement>('.panel')); // 暫停：面板落下
   for (const [i, el] of ins.slice(0, 8).entries()) { el.classList.remove('drop'); void el.offsetWidth; el.style.animationDelay = `${i * 40}ms`; el.classList.add('drop'); }
   if (name) A.play('panel_in');
   if (name) requestAnimationFrame(() => fit($(name)));
@@ -183,8 +184,9 @@ export function hudCoins(n: number): void {
 
 // ---------- 金幣飛入、軟糖泡泡 ----------
 const center = (el: Element): [number, number] => { const r = el.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
-export function coinFly(from: [number, number], toEl: HTMLElement | null, n: number, onLand?: (i: number) => void): void {
-  if (!toEl || toEl.getBoundingClientRect().width === 0) return;
+// 回 false＝目標不在畫面上，沒有飛（呼叫端自己把金幣直接入帳）
+export function coinFly(from: [number, number], toEl: HTMLElement | null, n: number, onLand?: (i: number) => void): boolean {
+  if (!toEl || toEl.getBoundingClientRect().width === 0) return false;
   n = Math.min(8, n);
   const [x1, y1] = center(toEl);
   for (let i = 0; i < n; i++) {
@@ -195,6 +197,7 @@ export function coinFly(from: [number, number], toEl: HTMLElement | null, n: num
     const anim = c.animate(kf, { duration: 450, delay: i * 50, easing: 'cubic-bezier(.4,0,.6,1)', fill: 'both' });
     anim.onfinish = () => { c.remove(); A.play('coin_land', { n: i }); bump(toEl); onLand?.(i); };
   }
+  return true;
 }
 function goo(at: [number, number], colors: string[]): void {
   for (let i = 0; i < 6; i++) {
@@ -207,10 +210,10 @@ function goo(at: [number, number], colors: string[]): void {
 }
 const GOO = ['#ffd23f', '#ff9cbc', '#7be0ff', '#8af5b0', '#ffffff', '#c9b8ff'];
 
-// ---------- 成就稱讚：扭蛋膠囊落下、名字逐字充氣、金幣飛進 HUD；一次一個，最多排 2 個 ----------
-const featQ: [string, string, number][] = []; let featBusy = false, featTimers: number[] = [];
-export function feat(name: string, line: string, coins: number): void {
-  if (featBusy) { if (featQ.length < 2) featQ.push([name, line, coins]); return; }
+// ---------- 成就稱讚：扭蛋膠囊落下、名字逐字充氣、金幣飛進 HUD（onLand：每枚到達；沒飛成就以 -1 叫一次）；一次一個，最多排 2 個 ----------
+const featQ: [string, string, number, ((i: number) => void) | undefined][] = []; let featBusy = false, featTimers: number[] = [];
+export function feat(name: string, line: string, coins: number, onLand?: (i: number) => void): void {
+  if (featBusy) { if (featQ.length < 2) featQ.push([name, line, coins, onLand]); else onLand?.(-1); return; }
   featBusy = true;
   const f = $('feat');
   const nameEl = f.querySelector<HTMLElement>('.ftName')!;
@@ -219,23 +222,53 @@ export function feat(name: string, line: string, coins: number): void {
   $('clear').hidden = true; for (const o of pool) if (o.busy && o.node.classList.contains('big')) free(o);
   f.hidden = false; fit(f); f.classList.remove('out', 'in'); void f.offsetWidth; f.classList.add('in'); A.play('feat');
   featTimers = [
-    window.setTimeout(() => coinFly(center(f.querySelector('.chip')!), $('hudCoins'), 3), 700),
+    window.setTimeout(() => { if (!coinFly(center(f.querySelector('.chip')!), $('hudCoins'), 3, onLand)) onLand?.(-1); }, 700),
     window.setTimeout(() => f.classList.add('out'), 2100),
     window.setTimeout(() => { f.hidden = true; featBusy = false; const n = featQ.shift(); if (n) feat(...n); }, 2300),
   ];
 }
-function hideFeat(): void { for (const tm of featTimers) clearTimeout(tm); featTimers = []; featQ.length = 0; featBusy = false; $('feat').hidden = true; }
+function hideFeat(): void { for (const tm of featTimers) clearTimeout(tm); featTimers = []; for (const q of featQ) q[3]?.(-1); featQ.length = 0; featBusy = false; $('feat').hidden = true; }
 
-// ---------- 過關貼紙（落荷葉後的短暫慶祝） ----------
-export function clearSticker(on: boolean, text = ''): void {
+// ---------- 過關浮層：貼紙、三顆星（星下是拿星的依據：關卡、蒼蠅數、時間）、金幣、NEW BEST。不擋輸入、沒有按鈕；什麼時候亮由 main.ts 的節拍決定 ----------
+const replay = (el: HTMLElement) => { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; };
+export function clearShow(title: string, sub: { level: string; flies: number; fliesTotal: number; time: number; par: number }): void {
+  hideFeat(); // 大型跳字（正中紅心）留著：它在角色旁邊，浮層在上半部
   const c = $('clear');
-  if (!on) { c.hidden = true; return; }
-  if (!$('feat').hidden) return;
-  for (const o of pool) if (o.busy && o.node.classList.contains('big')) free(o);
-  const s = c.querySelector<HTMLElement>('.sticker')!;
-  s.textContent = text; c.hidden = false; fit(c);
-  s.style.animation = 'none'; void s.offsetWidth; s.style.animation = '';
+  $('clearTitle').textContent = title;
+  for (const el of c.querySelectorAll('.cs')) el.classList.remove('hit');
+  $('csLevel').textContent = sub.level;
+  $('csFlies').innerHTML = `${icon('fly')}${sub.flies}/${sub.fliesTotal}`;
+  $('csTime').textContent = t('result.time', { time: sub.time.toFixed(1), par: sub.par });
+  $('clearCoins').hidden = true; $('clearBest').hidden = true;
+  c.hidden = false; fit(c); replay($('clearTitle'));
 }
+export function clearStar(i: number, silent = false): void {
+  const el = $('clear').querySelectorAll<HTMLElement>('.cs')[i]; if (!el) return;
+  el.classList.add('hit'); if (!silent) A.play('star', { i });
+}
+export function clearCoins(n: number): void { const el = $('clearCoins'); $('clearCoinN').textContent = `+${fmt(n)}`; el.hidden = false; replay(el); }
+export function clearBest(): void { $('clearBest').hidden = false; }
+export function clearHide(): void { $('clear').hidden = true; }
+
+// ---------- 無盡結束浮層：距離、分數與最佳、倒數條（跑完自動新一局） ----------
+export function overShow(best: number): void {
+  hideFeat(); dieText(null); // RUN OVER 貼紙取代死亡大字（兩個都在畫面中上，會疊）
+  $('ovDist').textContent = '0'; $('ovScore').textContent = '0'; $('ovBest').textContent = t('over.bestVal', { dist: best });
+  $('ovDistRow').hidden = true; $('ovScoreRow').hidden = true; $('ovNew').hidden = true; $('ovCdWrap').hidden = true;
+  const o = $('over'); o.hidden = false; fit(o); replay(o.querySelector<HTMLElement>('.sticker')!);
+}
+export function overDist(n: number, newBest: boolean, fast: boolean): void {
+  $('ovDistRow').hidden = false; $('ovNew').hidden = !newBest;
+  if (fast) $('ovDist').textContent = fmt(n); else countTo([$('ovDist')], 0, n, 400);
+}
+export function overScore(n: number): void { $('ovScoreRow').hidden = false; $('ovScore').textContent = fmt(n); }
+// 倒數條：sec 秒內從滿縮到空（0＝直接空）
+export function overCountdown(sec: number): void {
+  const w = $('ovCdWrap'), b = $('ovCd'); w.hidden = false;
+  b.style.transition = 'none'; b.style.transform = 'scaleX(1)'; void b.offsetWidth;
+  b.style.transition = sec > 0 ? `transform ${sec}s linear` : 'none'; b.style.transform = 'scaleX(0)';
+}
+export function overHide(): void { $('over').hidden = true; }
 
 // ---------- 觸控教學：mode＝null｜'hold'｜'let' ----------
 let tutMode: string | null = null;
@@ -380,50 +413,6 @@ export function renderRecords(save: Save, lastScore?: number): void {
     ? save.lb.map((e) => `<li class="${e.score === lastScore ? 'me' : ''}">${fmt(e.score)}<span>${t('hud.dist', { dist: e.dist })}</span></li>`).join('')
     : `<li>${t('records.empty')}</li>`;
   fit($('records'));
-}
-
-// ---------- 過關結算：星星一顆顆砸下、分數與金幣累加、這一關的成就；任何「下一步」輸入先把進場動畫跳到結尾 ----------
-export interface LevelResult { level: number; stars: number; fliesOk: boolean; timeOk: boolean; flies: number; fliesTotal: number; time: number; par: number; score: number; newBest: boolean; title: string; feats: string[]; coins: number }
-let res: { r: LevelResult; timers: number[]; done: boolean } | null = null;
-export function showResult(r: LevelResult): void {
-  if (res) for (const tm of res.timers) clearTimeout(tm);
-  const p = $('resPanel');
-  $('resTitle').textContent = r.title;
-  $('resLevel').textContent = t('result.level', { level: levelLabel(r.level) });
-  const conds: [string, boolean][] = [[t('result.cleared'), true], [t('result.flies', { got: r.flies, total: r.fliesTotal }), r.fliesOk], [t('result.time', { time: r.time.toFixed(1), par: r.par }), r.timeOk]];
-  $('resStars').innerHTML = conds.map(([txt, ok]) => `<div class="rs${ok ? ' got' : ''}"><svg class="rstar"><use href="#i-star" /></svg><span>${txt}</span></div>`).join('');
-  $('resScore').textContent = '0'; $('resCoinsN').textContent = '0';
-  $('resBest').style.display = r.newBest ? '' : 'none';
-  $('resFeats').innerHTML = r.feats.map((id) => `<span class="rf">${featName(id)}</span>`).join('');
-  show('result'); fit($('result'));
-  p.classList.remove('done'); p.querySelectorAll('.rs').forEach((el) => el.classList.remove('hit'));
-  const timers: number[] = [];
-  let i = 0;
-  for (const el of p.querySelectorAll('.rs.got')) {
-    const k = i++;
-    timers.push(window.setTimeout(() => { el.classList.add('hit'); A.play('star', { i: k }); }, 380 + k * 330));
-  }
-  const tCount = 380 + i * 330 + 80;
-  timers.push(window.setTimeout(() => { countTo([$('resScore')], 0, r.score, 600); countTo([$('resCoinsN')], 0, r.coins, 600); }, tCount));
-  timers.push(window.setTimeout(() => finishResult(), tCount + 700));
-  res = { r, timers, done: false };
-}
-// 動畫還沒播完：直接跳到結尾，回 true（這次輸入不算「下一關」）
-export function finishResult(): boolean {
-  if (!res || res.done) return false;
-  res.done = true; for (const tm of res.timers) clearTimeout(tm);
-  const p = $('resPanel'); p.classList.add('done');
-  p.querySelectorAll('.rs.got').forEach((el) => el.classList.add('hit'));
-  $('resScore').textContent = fmt(res.r.score); $('resCoinsN').textContent = fmt(res.r.coins);
-  return true;
-}
-
-// ---------- 無盡結算 ----------
-export function showOver(r: { dist: number; score: number; best: number; flips: number; rank: number; newBest: boolean }): void {
-  $('ovNew').style.display = r.newBest ? '' : 'none';
-  $('ovStats').innerHTML = ([[t('over.score'), fmt(r.score)], [t('over.best'), t('over.bestVal', { dist: r.best })], [t('over.flips'), String(r.flips)], [t('over.rank'), r.rank ? `#${r.rank}` : '-']] as const).map(([a, b]) => `<div><span data-fit>${a}</span><b class="num">${b}</b></div>`).join('');
-  show('over');
-  countTo([$('ovDist')], 0, r.dist, 700);
 }
 
 // ---------- 暫停 ----------
