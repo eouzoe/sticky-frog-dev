@@ -6,7 +6,7 @@ import { movePos, flyPos, burstOn, burstWarn, duneH, duneStart, duneEnd } from '
 import type { Dune, Level, Sim, XY } from '../types.ts';
 import { rgba, NOCLIP } from './gl.ts';
 import type { Frame, Tex } from './gl.ts';
-import { WORLD_PAL, num } from './palette.ts';
+import { WORLD_PAL, num, tintOf } from './palette.ts';
 import { stripCanvas } from './paint.ts';
 import { spring } from './spring.ts';
 import type { View } from './view.ts';
@@ -22,7 +22,7 @@ const TAU = Math.PI * 2, BLADE_PERIOD = TAU / 3;
 
 export function createLevelView(view: View) {
   const F = view.frames, wf = view.wf, spr = view.spr;
-  let lv: Level | null = null, wi = 0, intro = 9, introX = 0, goalBounce = 0, hazard = 0x333333;
+  let lv: Level | null = null, wi = 0, intro = 9, introX = 0, goalBounce = 0, hazard = 0x333333, rock = 0xffffff, bfly = 0xffffff;
   let S: Sim | null = null, T = 0, mouth: XY = { x: 0, y: 0 };
   const st = { target: -1, attached: -1, flyGone: [] as number[], ringGone: [] as number[], boostGone: [] as number[], padOn: [] as number[], padBounce: [] as number[], hookWob: [] as number[], hookWobV: [] as number[], mushK: [] as number[], mushKV: [] as number[] };
 
@@ -38,7 +38,7 @@ export function createLevelView(view: View) {
 
   function setWorld(w: number): void {
     wi = Math.max(0, Math.min(WORLDS.length - 1, w));
-    hazard = num(WORLD_PAL[wi].hazard);
+    hazard = num(WORLD_PAL[wi].hazard); rock = tintOf(WORLD_PAL[wi].rock); bfly = tintOf(WORLD_PAL[wi].bfly); // 小形狀圖集是灰階基底，tintOf 補償
     const sand = WORLDS[5].sand!;
     sandTex ??= view.canvasTexture(stripCanvas(4, 64, (g, w2, h) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, sand[2]); gr.addColorStop(0.07, sand[1]); gr.addColorStop(0.4, sand[0]); gr.addColorStop(1, sand[3]); g.fillStyle = gr; g.fillRect(0, 0, w2, h); }));
   }
@@ -131,21 +131,21 @@ export function createLevelView(view: View) {
         spr(wf(`blade${Math.floor(ph * 4) % 4}`), fn.x, fn.y0, 0, 0, k, k, 0xffffff, 1, false);
       }
     });
-    // 尖刺：插在水裡或從天上垂下的桿子＋慢慢轉的刺球
+    // 石頭（全年齡，原尖刺；碰撞不變）：立在水裡的石柱頂上，或從上面垂下來輕輕晃
     lv.spikes.forEach((sp, i) => {
       if (!vis(sp.x)) return;
       const y = sp.y + (sp.hang ? Math.sin(t * 1.6 + i) * 0.15 : 0), k = pop(sp.x);
-      if (sp.pole) spr(wf('flagPole'), sp.x, (y - 1) / 2, -0.2, 0, 1.3, (y + 1) / 6, hazard);
+      if (sp.pole) spr(wf('flagPole'), sp.x, (y - 1) / 2, -0.2, 0, 2.2, (y + 1) / 6, hazard);
       else spr(wf('flagPole'), sp.x, y + 20, -0.2, 0, 0.8, 40 / 6, hazard, 1, false);
-      spr(wf('spike'), sp.x, y, 0, t * 0.6 + i, k, k, 0xffffff, 1, false);
+      spr(F.rock, sp.x, y, 0, ((i % 3) - 1) * 0.3, k * (i % 2 ? 1 : -1), k, rock, 1, false);
     });
-    // 鋸片：半透明軌道＋高速旋轉的齒盤
+    // 蝴蝶（全年齡，原鋸片）：沿淡淡的軌道飛、拍翅、微微上下
     lv.saws.forEach((sw, i) => {
       if (!vis(sw.x, 5)) return;
-      spr(F.track, sw.x, sw.y, -0.3, 0, sw.move.ax * 2 + 0.3, sw.move.ay * 2 + 0.3, 0xffffff, 0.16, false);
+      spr(F.track, sw.x, sw.y, -0.3, 0, sw.move.ax * 2 + 0.3, sw.move.ay * 2 + 0.3, 0xffffff, 0.1, false);
       movePos(sw, s.t, tmp);
-      const k = (sw.r / 1.25) * pop(sw.x);
-      spr(wf('saw'), tmp.x, tmp.y, 0, -t * 9 - i, k, k, 0xffffff, 1, false);
+      const k = (sw.r / 1.25) * pop(sw.x), flap = Math.sin(t * 20 + i * 1.7) > 0;
+      spr(flap ? F.bfly1 : F.bfly0, tmp.x, tmp.y + Math.sin(t * 5 + i) * 0.12, 0, Math.sin(t * 2.5 + i) * 0.15, k, k, bfly, 1, false);
     });
     // 蘑菇：柄（拉長到水裡）＋傘（踩到時壓扁再彈回）
     lv.mush.forEach((m, i) => {
