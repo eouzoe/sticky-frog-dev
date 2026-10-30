@@ -65,7 +65,6 @@ export default {
   'over.flips': 'FLIPS',
   'over.rank': 'RANK',
   'over.menu': 'MENU',
-  'over.double': 'x2 COINS',
   'over.retry': 'RETRY',
   // pause
   'pause.title': 'PAUSED',
@@ -107,8 +106,6 @@ export default {
   'pop.bullseye': 'BULLSEYE!',
   'pop.landed': 'LANDED!',
   'pop.combo': 'COMBO x{n}!',
-  'pop.coins': '+{n} COINS!',
-  'pop.noVideo': 'NO VIDEO RIGHT NOW',
   'pop.endlessLocked': 'CLEAR LEVEL {level} FIRST',
   // feat values (records page)
   'featVal.spins': '{n} spins',
