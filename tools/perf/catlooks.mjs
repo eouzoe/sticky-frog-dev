@@ -1,7 +1,7 @@
 // 三種貓質感各截：主頁站姿、點一下旋轉中、商店展示台（桌機＋手機）
 // 用法：bun catlooks.mjs <網址>
 import { chromium } from 'playwright-core';
-const url = process.argv[2] ?? 'http://localhost:5173/';
+const url0 = process.argv[2] ?? 'http://localhost:5173/', url = `${url0}${url0.includes('?') ? '&' : '?'}debug=1`; // 正式版要 ?debug=1 才有 __game
 const OUT = new URL('./shots/', import.meta.url).pathname;
 const browser = await chromium.launch({ executablePath: `${process.env.HOME}/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome`,
   args: ['--use-gl=angle', '--use-angle=gles-egl', '--ignore-gpu-blocklist', '--enable-gpu', '--autoplay-policy=no-user-gesture-required'], env: { ...process.env, GALLIUM_DRIVER: 'd3d12', LD_LIBRARY_PATH: '/usr/lib/wsl/lib' } });

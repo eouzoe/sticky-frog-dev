@@ -1,6 +1,6 @@
 // 從世界 0 的選單直接開世界 1、2 的關：進入 playing 的第一幀，那個世界的圖集必須已經在（鉤子的圖要存在）；記錄等了多久
 import { chromium } from 'playwright-core';
-const url = process.argv[2] ?? 'http://localhost:5173/';
+const url0 = process.argv[2] ?? 'http://localhost:5173/', url = `${url0}${url0.includes('?') ? '&' : '?'}debug=1`; // 正式版要 ?debug=1 才有 __game
 const browser = await chromium.launch({ executablePath: `${process.env.HOME}/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome`, args: ['--use-gl=angle', '--use-angle=gles-egl', '--ignore-gpu-blocklist', '--enable-gpu'], env: { ...process.env, GALLIUM_DRIVER: 'd3d12', LD_LIBRARY_PATH: '/usr/lib/wsl/lib' } });
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } }), page = await ctx.newPage(), cdp = await ctx.newCDPSession(page);
 await cdp.send('Network.enable'); await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 150, downloadThroughput: 1.6e6 / 8, uploadThroughput: 1e6 / 8 }); // 慢 4G：圖集要幾百毫秒才到

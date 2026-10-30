@@ -1,7 +1,7 @@
 // 主題資料包（旋轉貓組合包）在真瀏覽器走一遍：商店展示台是組合包（特價、倒數）、買了整套進 owned 並套用、選關頁多主題分頁、
 // 系列關卡用主題道具（起點貓跳台、終點軟墊、蒼蠅小魚乾）、系列最後一關過了回選單。截圖 theme-*.png。用法：bun tools/perf/themecheck.mjs [網址]
 import { chromium } from 'playwright-core';
-const url = process.argv[2] ?? 'http://localhost:5173/';
+const url0 = process.argv[2] ?? 'http://localhost:5173/', url = `${url0}${url0.includes('?') ? '&' : '?'}debug=1`; // 正式版要 ?debug=1 才有 __game
 const OUT = new URL('./shots/', import.meta.url).pathname;
 const browser = await chromium.launch({ executablePath: `${process.env.HOME}/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome`, args: ['--use-gl=angle', '--use-angle=gles-egl', '--ignore-gpu-blocklist', '--enable-gpu'], env: { ...process.env, GALLIUM_DRIVER: 'd3d12', LD_LIBRARY_PATH: '/usr/lib/wsl/lib' } });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
