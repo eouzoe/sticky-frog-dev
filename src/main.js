@@ -310,7 +310,7 @@ function onEvent(e) {
       G.bestProg = Math.max(G.bestProg, prog); if (!G.endless) TM.death(e.x, prog, e.cause);
       A.duckMusic(0.4, 0.4); vibrate([30, 40, 30]);
       G.combo = 0; cg.gameplayStop(); persist();
-      if (G.endless) G.overT = 0.8; else G.restartT = T.RESTART_DELAY;
+      if (G.endless) { recordEndless(); G.overT = 0.8; } else G.restartT = T.RESTART_DELAY; // endless: settle now; the over screen 0.8 s later only shows it
       break;
     }
     case 'win': {
@@ -362,7 +362,9 @@ async function advance() {
 }
 
 // ---------- 無盡結算 ----------
-function endlessOver() {
+// Settles an endless run the moment the frog dies: best distance, run count, local leaderboard, platform score, telemetry, save.
+// Previously this ran only when the over screen opened (0.8 s after death); a restart or a return to the menu inside that window reset the timer and the run was never recorded.
+function recordEndless() {
   const dist = endlessDist(), score = endlessScore();
   const newBest = dist > save.endlessBest && save.endlessBest > 0; TM.endlessOver(dist, score);
   save.endlessBest = Math.max(save.endlessBest, dist); save.endlessRuns++;
@@ -371,9 +373,13 @@ function endlessOver() {
   submitPlatform(score);
   if (newBest) cg.happytime(); // 破紀錄
   persist();
-  G.lastResult = { endless: true, dist, score, rank, coins: G.runCoins };
+  G.lastResult = { endless: true, dist, score, rank, coins: G.runCoins, newBest };
+}
+// Shows the result recorded by recordEndless().
+function endlessOver() {
+  const r = G.lastResult;
   G.state = 'over'; G.resultAt = performance.now(); G.adBreak = false; clearHold(); UI.hint(null); UI.tut(null);
-  UI.showOver({ dist, score, best: save.endlessBest, flips: G.sim.flipsTotal, rank, newBest, offerDouble: FULL_LAUNCH && cg.ready && G.runCoins >= 10 && save.endlessRuns % 3 === 0 });
+  UI.showOver({ dist: r.dist, score: r.score, best: save.endlessBest, flips: G.sim.flipsTotal, rank: r.rank, newBest: r.newBest, offerDouble: FULL_LAUNCH && cg.ready && G.runCoins >= 10 && save.endlessRuns % 3 === 0 });
 }
 async function retryEndless() {
   if (G.state !== 'over') return;
