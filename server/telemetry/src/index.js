@@ -17,8 +17,10 @@ const EVENTS = {
   level_clear: { lv: LV, sec: SEC, st: num(0, 3, true), n: N, fl: N },
   level_abandon: { lv: LV, x: X, p: P, sec: SEC, r: oneOf('menu', 'hidden', 'close') },
   endless_over: { dist: num(0, 1e7, true), score: num(0, 1e9, true) },
+  shop_want: { it: str(24, /^[a-z_]+$/), pr: num(0, 1e6, true), co: num(0, 1e9, true) }, // tapped an item the player cannot afford: the pricing signal
+  shop_buy: { it: str(24, /^[a-z_]+$/), pr: num(0, 1e6, true) },
 };
-const REQ = { death: ['lv', 'x', 'p', 'c'], level_start: ['lv'], level_clear: ['lv', 'sec'], level_abandon: ['lv', 'r'], endless_over: ['dist', 'score'], session_start: [] };
+const REQ = { death: ['lv', 'x', 'p', 'c'], level_start: ['lv'], level_clear: ['lv', 'sec'], level_abandon: ['lv', 'r'], endless_over: ['dist', 'score'], session_start: [], shop_want: ['it', 'pr', 'co'], shop_buy: ['it', 'pr'] };
 const UUID = /^[0-9a-f-]{36}$/;
 const ENV_KEYS = { a: (v) => typeof v === 'string' && UUID.test(v), s: (v) => typeof v === 'string' && UUID.test(v), b: str(24), d: oneOf('d', 'm'), e: Array.isArray };
 
@@ -38,7 +40,7 @@ export function validate(body) {
   return null;
 }
 
-const COLS = ['lv:level', 'x:x', 'p:prog', 'c:cause', 'sec:secs', 'st:stars', 'n:n', 'fl:flies', 'r:reason', 'dist:dist', 'score:score', 'lang:lang', 'vw:vw', 'vh:vh', 'q:quality', 'boot:boot_ms'].map((s) => s.split(':'));
+const COLS = ['lv:level', 'x:x', 'p:prog', 'c:cause', 'sec:secs', 'st:stars', 'n:n', 'fl:flies', 'r:reason', 'dist:dist', 'score:score', 'lang:lang', 'vw:vw', 'vh:vh', 'q:quality', 'boot:boot_ms', 'it:item', 'pr:price', 'co:coins'].map((s) => s.split(':'));
 const SQL = `INSERT INTO events (ts,anon,session,build,dev,country,origin,type,${COLS.map((c) => c[1]).join(',')}) VALUES (?,?,?,?,?,?,?,?,${COLS.map(() => '?').join(',')})`;
 
 // ponytail: 頻率上限放在 isolate 記憶體，只擋單一匿名 ID 的灌水；多 isolate 各算各的，要嚴格再改 DO／D1 計數。
