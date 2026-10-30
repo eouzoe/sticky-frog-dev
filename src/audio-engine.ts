@@ -106,7 +106,7 @@ export function play(name: string, o: PlayOpts = {}): void {
     case 'fan': noise(0.5, 400, 1400, 0.12, 0.6); break;
     case 'wall': tone('sine', 140, 90, 0.15, 0.3); noise(0.1, 700, 300, 0.2, 1); break;
     case 'splash': noise(0.5, 2500, 300, 0.5, 0.7, 'lowpass'); tone('sine', 220, 60, 0.3, 0.4); noise(0.3, 6000, 2000, 0.15, 1, 'highpass', 0.05); break;
-    case 'spike': noise(0.18, 3000, 600, 0.5, 1.5); tone('sawtooth', 300, 70, 0.25, 0.25); tone('square', 90, 40, 0.3, 0.2); break;
+    case 'spike': noise(0.12, 1400, 300, 0.35, 1.2, 'lowpass'); tone('sine', 260, 80, 0.28, 0.3); tone('triangle', 130, 60, 0.22, 0.15); break; // 撞到石頭／蝴蝶：軟軟的「咚」，不刺耳（全年齡）
     case 'win': [0, 4, 7, 12, 16].forEach((s, i) => tone('triangle', 523 * Math.pow(2, s / 12), 523 * Math.pow(2, s / 12), 0.3, 0.2, i * 0.09)); tone('sine', 1046, 1046, 0.6, 0.15, 0.45); break;
     case 'star': { const i = o.i ?? 0; tone('sine', 120, 50, 0.25, 0.5); noise(0.12, 1200, 300, 0.3, 1); tone('triangle', note(784, i * 2), note(784, i * 2), 0.35, 0.22, 0.02); break; }
     case 'coin': tone('square', 1320 * p, 1320 * p, 0.05, 0.05); tone('square', 1760 * p, 1760 * p, 0.08, 0.05, 0.04); break;
