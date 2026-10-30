@@ -1,5 +1,5 @@
 // 存檔：預設值、讀檔正規化（舊存檔相容）、選單「下一步」推薦。純邏輯，Node 可測（tests/save-check.mjs）。
-import { SKINS, TRAILS, TONGUES } from './config.ts';
+import { SKINS, TRAILS, TONGUES, THEMES, THEME_LEVELS, themeKey, ownsTheme } from './config.ts';
 import type { Skin, TongueSpec, TrailSpec } from './config.ts';
 import type { FeatRecord } from './feats.ts';
 
@@ -12,6 +12,7 @@ export interface Save {
   v: number; updatedAt: number; // 存檔格式版本、最後寫入時間（ms）；mergeSave 用來決定「狀態類」欄位聽誰的
   unlocked: number; stars: Record<number, number>; best: Record<number, number>; coins: number;
   skin: string; trail: string; tongue: string; owned: string[];
+  theme: string; saleAt: number; // 套用中的主題（空＝沒有；道具與音效替換跟著它）、組合包特價的起算時間（第一次開商店，0＝還沒）
   music: boolean; sfx: boolean; grabs: number; last: number; worldsDone: number[]; clears: number;
   feats: Record<string, FeatRecord>; lb: LbEntry[]; endlessBest: number; endlessRuns: number;
   seen: { endless: boolean; world: number }; // 玩家在選單上「已經看過」的解鎖（推薦只推新的）
@@ -25,7 +26,7 @@ export const DEFAULT_SAVE: Readonly<Save> = {
   music: true, sfx: true, grabs: 0, last: 1, worldsDone: [], clears: 0,
   feats: {}, lb: [], endlessBest: 0, endlessRuns: 0,
   seen: { endless: false, world: 0 },
-  tutTouch: false, lang: '', privSeen: false,
+  tutTouch: false, lang: '', privSeen: false, theme: '', saleAt: 0,
 };
 
 const int = (v: unknown, lo: number, hi: number, d: number) => (Number.isFinite(Number(v)) ? Math.max(lo, Math.min(hi, Math.floor(Number(v)))) : d);
@@ -42,20 +43,23 @@ export function normalizeSave(raw: unknown, levelCount: number): Save {
   s.endlessBest = int(r.endlessBest, 0, 1e9, 0); s.endlessRuns = int(r.endlessRuns, 0, 1e9, 0);
   s.music = r.music !== false; s.sfx = r.sfx !== false; s.tutTouch = r.tutTouch === true; s.privSeen = r.privSeen === true;
   s.lang = typeof r.lang === 'string' ? r.lang.slice(0, 12) : '';
-  for (const [k, v] of Object.entries(obj(r.stars))) { const n = Number(k), st = int(v, 0, 3, 0); if (Number.isInteger(n) && n >= 1 && n <= levelCount && st >= 1) s.stars[n] = st; }
+  const maxLv = levelCount + THEMES.length * THEME_LEVELS; // 主線之後是各主題的系列關卡
+  for (const [k, v] of Object.entries(obj(r.stars))) { const n = Number(k), st = int(v, 0, 3, 0); if (Number.isInteger(n) && n >= 1 && n <= maxLv && st >= 1) s.stars[n] = st; }
   // 每關最佳分數：只收合法的關卡號與非負有限數
-  for (const [k, v] of Object.entries(obj(r.best))) { const n = Number(k), b = Number(v); if (Number.isInteger(n) && n >= 1 && n <= levelCount && Number.isFinite(b) && b >= 0) s.best[n] = Math.floor(b); }
+  for (const [k, v] of Object.entries(obj(r.best))) { const n = Number(k), b = Number(v); if (Number.isInteger(n) && n >= 1 && n <= maxLv && Number.isFinite(b) && b >= 0) s.best[n] = Math.floor(b); }
   // 成就紀錄：只收認得形狀的（壞掉的紀錄會讓 recordFeat 在主迴圈裡丟例外）
   for (const [k, v] of Object.entries(obj(r.feats))) {
     const f = obj(v), best = Number(f.best), count = int(f.count, 0, 1e9, 0);
     if (Number.isFinite(best) && count >= 1) s.feats[k] = { first: String(f.first ?? ''), best, count };
   }
-  const ids = new Set([...SKINS, ...TRAILS, ...TONGUES].map((i) => i.id));
+  const ids = new Set([...[...SKINS, ...TRAILS, ...TONGUES].map((i) => i.id), ...THEMES.map((th) => themeKey(th.id))]);
   s.owned = [...new Set([...DEFAULT_SAVE.owned, ...(Array.isArray(r.owned) ? r.owned : []).filter((id): id is string => typeof id === 'string' && ids.has(id))])];
   // 擁有角色就擁有它的招牌舌頭（舊存檔買過的角色沒有舌頭欄位）
   for (const k of SKINS) if (k.tongue && s.owned.includes(k.id) && !s.owned.includes(k.tongue)) s.owned.push(k.tongue);
   const pickOwned = (list: readonly { id: string }[], v: unknown, d: string) => (typeof v === 'string' && list.some((k) => k.id === v) && s.owned.includes(v) ? v : d);
   s.skin = pickOwned(SKINS, r.skin, 'tree'); s.trail = pickOwned(TRAILS, r.trail, 'none'); s.tongue = pickOwned(TONGUES, r.tongue, 'tongue');
+  s.theme = THEMES.some((th) => th.id === r.theme && ownsTheme(s.owned, th)) ? String(r.theme) : ''; // 擁有整套才能套用
+  s.saleAt = int(r.saleAt, 0, 4102444800000, 0);
   s.worldsDone = Array.isArray(r.worldsDone) ? r.worldsDone.filter((x): x is number => Number.isFinite(x)) : [];
   s.lb = Array.isArray(r.lb) ? r.lb.filter((e) => e && Number.isFinite(e.score)).slice(0, 10).map((e) => ({ score: e.score, dist: int(e.dist, 0, 1e9, 0), day: String(e.day ?? '') })) : [];
   const seen = obj(r.seen);
@@ -85,6 +89,8 @@ export function mergeSave(a: Save, b: Save, levelCount: number): Save {
     for (const [k, f] of Object.entries(src.feats)) { const cur = s.feats[k]; if (!cur || f.count > cur.count || (f.count === cur.count && src === n)) s.feats[k] = { ...f }; }
   }
   s.owned = [...new Set([...s.owned, ...a.owned, ...b.owned])];
+  s.theme = THEMES.some((th) => th.id === n.theme && ownsTheme(s.owned, th)) ? n.theme : ''; // 聽較新的，但要並集後真的擁有
+  s.saleAt = a.saleAt && b.saleAt ? Math.min(a.saleAt, b.saleAt) : a.saleAt || b.saleAt; // 特價從最早看到的那一刻算
   s.worldsDone = [...new Set([...a.worldsDone, ...b.worldsDone])];
   s.lb = [...a.lb, ...b.lb].filter((e, i, arr) => arr.findIndex((x) => x.score === e.score && x.dist === e.dist && x.day === e.day) === i).sort((x, y) => y.score - x.score).slice(0, 10);
   s.seen = { endless: a.seen.endless || b.seen.endless, world: Math.max(a.seen.world, b.seen.world) };

@@ -71,5 +71,10 @@ const fresh = normalizeSave({}, 90);
 check('新裝置（本機空的）：雲端有進度 → 用雲端的', (() => { const m = mergeSave(fresh, C, 90); return m.unlocked === 9 && m.coins === 400 && m.trail === 'rainbow'; })());
 check('雲端是空的：本機進度不會被丟掉', (() => { const m = mergeSave(L, fresh, 90); return m.unlocked === 12 && m.coins === 90 && m.skin === 'dart'; })());
 check('舊格式存檔（沒時間戳）視為最舊：進度保留、狀態聽新的', (() => { const legacy = normalizeSave({ unlocked: 20, coins: 999 }, 90); const m = mergeSave(L, legacy, 90); return m.unlocked === 20 && m.coins === 90 && m.updatedAt === 2000; })());
+// 主題資料包（旋轉貓組合包）：擁有＝買整套（set:cat）或單品集齊；theme 只在擁有時保留；系列關卡 91–100 的星數收、101 丟
+const th = normalizeSave({ owned: ['tree', 'none', 'tongue', 'cat', 'yarn', 'wool'], theme: 'cat', skin: 'cat', stars: { 91: 2, 100: 3, 101: 1 }, best: { 95: 10 } }, 90);
+check('主題：單品集齊＝擁有整套、theme 保留、系列關卡星數保留、超出的丟掉', th.theme === 'cat' && th.stars[91] === 2 && th.stars[100] === 3 && !(101 in th.stars) && th.best[95] === 10);
+check('主題：沒擁有就不能套用；買整套的 id 也算', normalizeSave({ theme: 'cat' }, 90).theme === '' && normalizeSave({ theme: 'cat', owned: ['set:cat'] }, 90).theme === 'cat');
+check('主題：合併聽較新的、特價起算取最早的非零', (() => { const A = normalizeSave({ updatedAt: 2, theme: 'cat', owned: ['cat', 'yarn', 'wool'] }, 90), B = normalizeSave({ updatedAt: 1, saleAt: 300 }, 90); const M = mergeSave(A, B, 90); return M.theme === 'cat' && M.saleAt === 300 && mergeSave(B, A, 90).theme === 'cat'; })());
 console.log(fails ? `FAILED ${fails}` : 'all ok');
 process.exit(fails ? 1 : 0);
