@@ -127,14 +127,14 @@
   "shot": "m03b-celebrate"
  },
  {
-  "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => (window.__game.state === 'result' || performance.now() - t0 > 6000) ? r(window.__game.state) : setTimeout(f, 30); f(); })"
+  "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => (window.__game.state === 'cleared' || performance.now() - t0 > 8000) ? r(window.__game.state) : setTimeout(f, 30); f(); })"
  },
  {
-  "assert": "window.__game.state === 'result' && document.getElementById('result').classList.contains('on') && window.__game.levelResult.level === 1",
+  "assert": "window.__game.state === 'cleared' && !document.getElementById('clear').hidden && window.__game.levelResult.level === 1",
   "msg": "手機：慶祝完進結算畫面"
  },
  {
-  "eval": "window.__game.ui.showResult(window.__game.levelResult); window.__game.ui.resultAnimating()"
+  "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => ((window.__game.beat && window.__game.beat.t >= 0.75) || window.__game.state !== 'cleared' || performance.now() - t0 > 4000) ? r(window.__game.state) : setTimeout(f, 30); f(); })"
  },
  {
   "tap": [
@@ -146,7 +146,7 @@
   "wait": 150
  },
  {
-  "assert": "window.__game.state === 'result' && window.__game.levelResult.stars >= 1 && document.querySelectorAll('#resStars .rs.got.hit').length === window.__game.levelResult.stars && document.querySelectorAll('#resStars .rs').length === 3",
+  "assert": "window.__game.state === 'cleared' && window.__game.levelResult.stars >= 1 && document.querySelectorAll('#clear .cs.hit').length === window.__game.levelResult.stars && document.querySelectorAll('#clear .cs').length === 3",
   "msg": "手機：進場動畫中點一下＝跳到結尾，不略過結算"
  },
  {
