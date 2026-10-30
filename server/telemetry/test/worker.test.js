@@ -71,6 +71,22 @@ describe('rejected batches write nothing', () => {
   }
 });
 
+describe('shop events', () => {
+  it('stores item, price and coins', async () => {
+    const res = await send(batch({ s: U(4), e: [{ t: 'shop_want', it: 'cat', pr: 120, co: 37 }, { t: 'shop_buy', it: 'dart', pr: 25 }] }));
+    expect(res.status).toBe(204);
+    const { results } = await env.DB.prepare('SELECT type, item, price, coins FROM events WHERE session = ? ORDER BY id').bind(U(4)).all();
+    expect(results).toEqual([{ type: 'shop_want', item: 'cat', price: 120, coins: 37 }, { type: 'shop_buy', item: 'dart', price: 25, coins: null }]);
+  });
+  for (const [name, e] of [['shop_want without co', { t: 'shop_want', it: 'cat', pr: 120 }], ['item id outside [a-z_]', { t: 'shop_buy', it: 'Cat Tower!', pr: 120 }]]) {
+    it(`${name} → 400`, async () => {
+      const before = await count();
+      expect((await send(batch({ e: [e] }))).status).toBe(400);
+      expect(await count()).toBe(before);
+    });
+  }
+});
+
 describe('rate limit', () => {
   it('one anonymous id: 600 events a minute, then 429', async () => {
     const before = await count();
