@@ -180,7 +180,7 @@ VITE_TELEMETRY_URL=https://<你的 worker>.workers.dev/e VITE_BUILD=$(git rev-pa
 - 新玩家第一次看到選單會有一行小字通知，連到 `public/privacy.html`（英文＋繁中）。
 - 收資料端在 `server/telemetry/`（Cloudflare Worker＋D1）。部署：複製 `wrangler.toml` 成 gitignored 的 `wrangler.local.toml` 並填入自己的 D1 `database_id`，`npx wrangler d1 execute sticky-frog-telemetry -c wrangler.local.toml --remote --file schema.sql`，再 `npx wrangler deploy -c wrangler.local.toml`。
 - 看報告：`node server/telemetry/report.mjs`（查線上 D1，輸出 markdown：每關通關率、死亡／放棄位置、關卡漏斗、開機時間；異常樣本篩除規則寫在報告開頭）。`--local` 查本機 D1、`--out 檔名` 寫檔。
-- 驗證：`node tests/telemetry-check.mjs`（遊戲端）、`node server/telemetry/test-worker.mjs <端點> --local|--remote`（收資料端的合格／不合格批次）。
+- 驗證：`node tests/telemetry-check.mjs`（遊戲端）；`cd server/telemetry && npm ci && npm test`（收資料端，在 workerd 裡跑、用全新的本機 D1，CI 也跑這個）；部署後用 `node server/telemetry/test-worker.mjs <端點> --remote` 檢查線上端點。
 
 ## 目前狀態
 
