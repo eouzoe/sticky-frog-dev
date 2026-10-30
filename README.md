@@ -74,10 +74,7 @@ npm run preview    # 在本機跑 dist/
 
 `dist/` 裡全部用相對路徑（`vite.config.js` 的 `base: './'`），放在任何子路徑底下都能跑。
 
-| 建置旗標 | 作用 |
-|---|---|
-| （無） | Basic Launch 版。CrazyGames 在 Basic Launch 期間不放廣告，所以不顯示「看影片 x2」按鈕 |
-| `VITE_FULL_LAUNCH=1` | Full Launch 版，顯示無盡模式結算的「看影片 x2」 |
+目前不接廣告：CrazyGames 在 Basic Launch 期間不放廣告，Full Launch 時再加回。
 
 ## 專案結構
 
@@ -173,14 +170,14 @@ for f in tests/*-check.mjs; do node "$f" > /dev/null && echo "ok   $f" || echo "
 VITE_TELEMETRY_URL=https://<你的 worker>.workers.dev/e VITE_BUILD=$(git rev-parse --short HEAD) npm run build
 ```
 
-- 事件：`session_start`、`level_start`、`death`、`level_clear`、`level_abandon`、`endless_over`、`shop_want`（想買但金幣不夠）、`shop_buy`（欄位見 `server/telemetry/src/index.js` 的 `EVENTS`）。
+- 事件：`session_start`、`level_start`、`death`、`level_clear`、`level_abandon`、`endless_over`（欄位見 `server/telemetry/src/index.js` 的 `EVENTS`）。
 - 存：隨機匿名 ID（localStorage）、每次載入的 session ID、版本、關卡、位置、進度、死因、秒數、星數、語言、裝置類別（桌機／手機）、視窗大小、畫質、開機到選單的毫秒、國家（Cloudflare 提供）。
 - 不存：個資、IP、user agent、cookie。
 - 不送：`?notelemetry`、`__game.autoplay` 開著的局、localhost 開發（遙測網址本身也是 localhost 的本機測試除外）。
 - 新玩家第一次看到選單會有一行小字通知，連到 `public/privacy.html`（英文＋繁中）。
-- 收資料端在 `server/telemetry/`（Cloudflare Worker＋D1）。部署：複製 `wrangler.toml` 成 gitignored 的 `wrangler.local.toml` 並填入自己的 D1 `database_id`，`npx wrangler d1 execute sticky-frog-telemetry -c wrangler.local.toml --remote --file schema.sql`，再 `npx wrangler deploy -c wrangler.local.toml`。在加入商店欄位之前就建好的資料庫，另外跑一次 `--file migrate-0001-shop.sql`。
+- 收資料端在 `server/telemetry/`（Cloudflare Worker＋D1）。部署：複製 `wrangler.toml` 成 gitignored 的 `wrangler.local.toml` 並填入自己的 D1 `database_id`，`npx wrangler d1 execute sticky-frog-telemetry -c wrangler.local.toml --remote --file schema.sql`，再 `npx wrangler deploy -c wrangler.local.toml`。
 - 看報告：`node server/telemetry/report.mjs`（查線上 D1，輸出 markdown：每關通關率、死亡／放棄位置、關卡漏斗、開機時間；異常樣本篩除規則寫在報告開頭）。`--local` 查本機 D1、`--out 檔名` 寫檔。
-- 驗證：`node tests/telemetry-check.mjs`（遊戲端）；`cd server/telemetry && npm ci && npm test`（收資料端，在 workerd 裡跑、用全新的本機 D1，CI 也跑這個）；部署後用 `node server/telemetry/test-worker.mjs <端點> --remote` 檢查線上端點。
+- 驗證：`node tests/telemetry-check.mjs`（遊戲端）、`node server/telemetry/test-worker.mjs <端點> --local|--remote`（收資料端的合格／不合格批次）。
 
 ## 目前狀態
 

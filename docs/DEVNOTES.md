@@ -36,7 +36,7 @@
 - **商店**三個分頁：HEROES（看板角色 Spinny Cat 300 置頂、9 隻青蛙、Vine Ape 650、Silk Frog 900；買角色送招牌舌頭）、TONGUES（Frog Tongue、Yarn 180、Jungle Vine 260、Silk Thread 340：顏色、粗細、材質貼圖、捲曲、舌尖大小、黏上時的粒子都不同）、TRAILS。貓、猿人、蛛絲青蛙現在是青蛙換色佔位，模型等美術線。
 - **選單沒有離開鈕**；退回選單時最顯眼的黃色鈕推「下一步」：新模式 → 新世界 → 買得起的東西（商店裡那件會發光標 CAN BUY）。買完跳「立即試玩」直接帶新造型進遊戲。
 - **排行榜**：CrazyGames SDK v3 有 `user.submitScore`（只開放受邀遊戲、金鑰在 Developer Portal、榜單由平台在遊戲外顯示），接在 `src/leaderboard.js`；`src/config.js` 的 `LB_KEY` 填金鑰就開始送無盡分數，空字串＝只存本機前 10 名。
-- 廣告：每破 3 關在換關空檔插一次 midgame；無盡結算按再一局插 midgame；無盡結算每 3 局一次「看影片 ×2 這局金幣」。
+- 廣告：目前不接（Basic Launch 期間平台不放廣告）。Full Launch 時再依 docs.crazygames.com/sdk/video-ads 加回。
 
 ## 手感清單（18 項，全做）
 
