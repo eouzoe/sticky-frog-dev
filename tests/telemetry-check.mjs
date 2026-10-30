@@ -17,7 +17,7 @@ const events = (r) => r.sent.flatMap((s) => s.b.e);
 // 1. 沒設網址：什麼都不做
 {
   const r = rig({ url: '' });
-  r.tm.bind(() => null); r.tm.notice?.(false, () => {}); r.tm.menuReady(1, { lang: 'en', vw: 1, vh: 1, q: 'high' }); r.tm.levelStart(1); r.tm.death(1, 0.5, 'water'); r.tm.clear(1, 3, 1); r.tm.leave('menu'); r.tm.endlessOver(1, 1); r.tm.flush();
+  r.tm.bind(() => null); r.tm.notice?.(false, () => {}); r.tm.menuReady(1, { lang: 'en', vw: 1, vh: 1, q: 'high' }); r.tm.levelStart(1); r.tm.death(1, 0.5, 'water'); r.tm.clear(1, 3, 1); r.tm.leave('menu'); r.tm.endlessOver(1, 1); r.tm.want('cat', 120, 37); r.tm.buy('dart', 25); r.tm.flush();
   check('沒設網址：關閉、不送、不碰 localStorage、不掛計時器', r.tm.on === false && r.sent.length === 0 && r.touched === 0 && r.timers.length === 0);
 }
 // 2. 事件欄位
@@ -31,6 +31,7 @@ const events = (r) => r.sent.flatMap((s) => s.b.e);
   tm.clear(22.34, 2, 5);
   r.clock += 8000; tm.leave('menu');
   tm.endlessOver(420, 5000);
+  tm.want('cat', 120, 37); tm.buy('dart', 25);
   tm.flush();
   const e = events(r), by = (t) => e.filter((x) => x.t === t);
   check('session_start 欄位', JSON.stringify(by('session_start')[0]) === JSON.stringify({ t: 'session_start', lang: 'zh-Hant', vw: 1280, vh: 720, q: 'high', boot: 1235 }), JSON.stringify(by('session_start')[0]));
@@ -40,10 +41,11 @@ const events = (r) => r.sent.flatMap((s) => s.b.e);
   check('level_clear 欄位（這關死了 2 次）', JSON.stringify(by('level_clear')[0]) === JSON.stringify({ t: 'level_clear', lv: 7, sec: 22.3, st: 2, n: 2, fl: 5 }), JSON.stringify(by('level_clear')[0]));
   check('level_abandon 欄位', JSON.stringify(by('level_abandon')[0]) === JSON.stringify({ t: 'level_abandon', lv: 7, x: 33.3, p: 45.7, sec: 8, r: 'menu' }), JSON.stringify(by('level_abandon')[0]));
   check('endless_over 欄位', JSON.stringify(by('endless_over')[0]) === JSON.stringify({ t: 'endless_over', dist: 420, score: 5000 }));
+  check('shop_want／shop_buy 欄位', JSON.stringify(by('shop_want')[0]) === JSON.stringify({ t: 'shop_want', it: 'cat', pr: 120, co: 37 }) && JSON.stringify(by('shop_buy')[0]) === JSON.stringify({ t: 'shop_buy', it: 'dart', pr: 25 }), JSON.stringify(by('shop_want')[0]) + JSON.stringify(by('shop_buy')[0]));
   const env = r.sent[0].b;
   check('信封：匿名ID、session、build、裝置', env.a.length === 36 && env.s.length === 36 && env.a !== env.s && env.b === 'abc123' && env.d === 'd' && Object.keys(env).sort().join() === 'a,b,d,e,s');
   check('所有批次都通過收資料端的驗證', r.sent.every((s) => validate(s.b) === null), r.sent.map((s) => validate(s.b)).join());
-  check('不送 IP／UA／任何多餘欄位（事件鍵都在白名單）', e.every((x) => Object.keys(x).every((k) => ['t', 'lv', 'x', 'p', 'c', 'sec', 'n', 'st', 'fl', 'r', 'dist', 'score', 'lang', 'vw', 'vh', 'q', 'boot'].includes(k))));
+  check('不送 IP／UA／任何多餘欄位（事件鍵都在白名單）', e.every((x) => Object.keys(x).every((k) => ['t', 'lv', 'x', 'p', 'c', 'sec', 'n', 'st', 'fl', 'r', 'dist', 'score', 'lang', 'vw', 'vh', 'q', 'boot', 'it', 'pr', 'co'].includes(k))));
 }
 // 3. 排隊與分批
 {
