@@ -432,5 +432,5 @@ export function pauseMeta(text: string): void { $('pMeta').textContent = text; }
 // ---------- 成就名稱、稱讚、數值（英文留在 feats.ts 當備援；其他語言 feat.<id>／featLine.<id>） ----------
 export const featName = (id: string) => t(`feat.${id}`, null, featById(id)?.name ?? id);
 export const featLine = (id: string) => t(`featLine.${id}`, null, featById(id)?.line ?? '');
-const FEAT_VAL: Record<string, [string, number]> = { spin: ['featVal.spins', 0], tornado: ['featVal.spins', 0], flow: ['featVal.stalled', 2], speed: ['featVal.speed', 1], skim: ['featVal.above', 2], shave: ['featVal.gap', 2], clutch: ['featVal.high', 2] };
+const FEAT_VAL: Record<string, [string, number]> = { spin: ['featVal.spins', 0], tornado: ['featVal.spins', 0], flow: ['featVal.stalled', 2], speed: ['featVal.speed', 1], skim: ['featVal.above', 2], shave: ['featVal.gap', 2] };
 function featVal(f: FeatDef, v: number): string { const e = FEAT_VAL[f.id]; return e ? t(e[0], { n: v, v: Number(v).toFixed(e[1]) }) : f.fmt(v); }
