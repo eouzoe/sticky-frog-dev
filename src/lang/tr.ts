@@ -35,6 +35,6 @@ export default {
   'feat.flow': 'FRENSİZ!', 'featLine.flow': 'Koca bir bölüm hiç yavaşlamadan.',
   'feat.speed': 'HIZ CANAVARI!', 'featLine.speed': 'Bu çok ama çok hızlıydı.',
   'feat.skim': 'DALGA ÖPÜCÜĞÜ!', 'featLine.skim': 'Suya dokundun ve kurtuldun.',
-  'feat.shave': 'KIL PAYI!', 'featLine.shave': 'Dikenlerden bir tüy farkla.',
-  'new.title': 'YENİ!', 'new.mush': 'Zıplayan Mantar', 'new.swarm': 'Sinek Sürüsü', 'new.ring': 'Altın Halka', 'new.move': 'Hareketli Kanca', 'new.spikeLow': 'Alçak Dikenler', 'new.mushChain': 'Mantar Zinciri', 'new.ringArc': 'Çift Halka', 'new.fan': 'Fan', 'new.saw': 'Testere', 'new.spikeHigh': 'Yüksek Dikenler', 'new.tunnel': 'Alt-Üst Dikenler', 'new.pad': 'Kontrol Noktası Nilüfer', 'new.boost': 'Hız Halkası', 'new.dune': 'Kum Kayma',
+  'feat.shave': 'KIL PAYI!', 'featLine.shave': 'Kayalardan bir tüy farkla.',
+  'new.title': 'YENİ!', 'new.mush': 'Zıplayan Mantar', 'new.swarm': 'Sinek Sürüsü', 'new.ring': 'Altın Halka', 'new.move': 'Hareketli Kanca', 'new.spikeLow': 'Alçak Kayalar', 'new.mushChain': 'Mantar Zinciri', 'new.ringArc': 'Çift Halka', 'new.fan': 'Fan', 'new.saw': 'Kelebek', 'new.spikeHigh': 'Asılı Kayalar', 'new.tunnel': 'Alt-Üst Kayalar', 'new.pad': 'Kontrol Noktası Nilüfer', 'new.boost': 'Hız Halkası', 'new.dune': 'Kum Kayma',
 };

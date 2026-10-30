@@ -35,6 +35,6 @@ export default {
   'feat.flow': 'TANPA REM!', 'featLine.flow': 'Satu level penuh tanpa melambat.',
   'feat.speed': 'SETAN KECEPATAN!', 'featLine.speed': 'Itu cepat banget.',
   'feat.skim': 'CIUM OMBAK!', 'featLine.skim': 'Nyentuh air dan masih selamat.',
-  'feat.shave': 'TIPIS SEKALI!', 'featLine.shave': 'Sehelai rambut dari duri.',
-  'new.title': 'BARU!', 'new.mush': 'Jamur Pantul', 'new.swarm': 'Kawanan Lalat', 'new.ring': 'Cincin Emas', 'new.move': 'Kait Bergerak', 'new.spikeLow': 'Duri Rendah', 'new.mushChain': 'Rantai Jamur', 'new.ringArc': 'Cincin Ganda', 'new.fan': 'Kipas', 'new.saw': 'Gergaji', 'new.spikeHigh': 'Duri Tinggi', 'new.tunnel': 'Duri Atas-Bawah', 'new.pad': 'Teratai Checkpoint', 'new.boost': 'Cincin Pemacu', 'new.dune': 'Seluncur Gurun',
+  'feat.shave': 'TIPIS SEKALI!', 'featLine.shave': 'Sehelai rambut dari batu.',
+  'new.title': 'BARU!', 'new.mush': 'Jamur Pantul', 'new.swarm': 'Kawanan Lalat', 'new.ring': 'Cincin Emas', 'new.move': 'Kait Bergerak', 'new.spikeLow': 'Batu Rendah', 'new.mushChain': 'Rantai Jamur', 'new.ringArc': 'Cincin Ganda', 'new.fan': 'Kipas', 'new.saw': 'Kupu-kupu', 'new.spikeHigh': 'Batu Gantung', 'new.tunnel': 'Batu Atas-Bawah', 'new.pad': 'Teratai Checkpoint', 'new.boost': 'Cincin Pemacu', 'new.dune': 'Seluncur Gurun',
 };

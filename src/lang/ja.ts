@@ -35,6 +35,6 @@ export default {
   'feat.flow': 'ノンストップ！', 'featLine.flow': 'ステージ丸ごと、一度も減速なし。',
   'feat.speed': 'スピード狂！', 'featLine.speed': 'いくらなんでも速すぎ！',
   'feat.skim': '波にキス！', 'featLine.skim': '水に触れたのに生還！',
-  'feat.shave': 'ヒゲそりギリギリ！', 'featLine.shave': 'トゲまであとほんの少し。',
-  'new.title': '新登場！', 'new.mush': 'バウンドキノコ', 'new.swarm': 'ハエの群れ', 'new.ring': '金のリング', 'new.move': '動くフック', 'new.spikeLow': '低いトゲ', 'new.mushChain': '連続キノコ', 'new.ringArc': 'ダブルリング', 'new.fan': 'ファン', 'new.saw': 'ノコギリ', 'new.spikeHigh': '高いトゲ', 'new.tunnel': '上下トゲ', 'new.pad': 'チェックポイントのハス', 'new.boost': 'ブーストリング', 'new.dune': 'サンドサーフ',
+  'feat.shave': 'ヒゲそりギリギリ！', 'featLine.shave': '岩まであとほんの少し。',
+  'new.title': '新登場！', 'new.mush': 'バウンドキノコ', 'new.swarm': 'ハエの群れ', 'new.ring': '金のリング', 'new.move': '動くフック', 'new.spikeLow': '低い岩', 'new.mushChain': '連続キノコ', 'new.ringArc': 'ダブルリング', 'new.fan': 'ファン', 'new.saw': 'チョウ', 'new.spikeHigh': 'つり岩', 'new.tunnel': '上下の岩', 'new.pad': 'チェックポイントのハス', 'new.boost': 'ブーストリング', 'new.dune': 'サンドサーフ',
 };
