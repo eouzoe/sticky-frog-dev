@@ -1,4 +1,4 @@
-// 開機、主迴圈、狀態機、輸入、存檔、事件 → 手感回饋（音效／粒子／震動／慢動作／跳字）。
+// 開機、主迴圈、輸入、存檔、事件 → 手感回饋（音效／粒子／震動／慢動作／跳字）。流程狀態機在 flow.ts，一局結束的節拍在 beat.ts。
 // 主迴圈：物理固定 120 Hz（sim.ts），畫面在前後兩個物理狀態之間插值（90／120 Hz 螢幕不會一頓一頓）；按下的瞬間會鎖存到下一個物理步（快速點擊不會遺失）。
 import { cg } from './cg.ts';
 import { TUNE as T, WORLDS, SKINS, TRAILS, TONGUES } from './config.ts';
@@ -20,6 +20,10 @@ import { TIERS, pickTier, createGovernor } from './quality.ts';
 import type { Governor, TierName } from './quality.ts';
 import type { Juice } from './juice.ts';
 import { TM } from './telemetry.ts';
+import { transition, BOOT_FLOW, RUN } from './flow.ts';
+import type { Action, Phase } from './flow.ts';
+import { clearBeat, overBeat, dyingBeat, fired, COUNTDOWN } from './beat.ts';
+import type { Beat, Cue } from './beat.ts';
 import { createView } from './render/view.ts';
 import { prefetch, dropPrefetch, measure } from './render/atlas.ts';
 import type { View } from './render/view.ts';
@@ -33,9 +37,10 @@ import { loadCatStage, catSinging, setPortraitSource } from './render/portraits.
 import type { Level, PadSnapshot, Sim, SimEvent, XY } from './types.ts';
 
 performance.mark('main-start'); // 主程式開始執行（HTML、CSS、JS 下載與解析都在這之前）
-const CELEBRATE = 1.2; // 落荷葉後的短暫慶祝秒數，然後進結算畫面
-const COIN_PTS = 100; // 每 100 分＝1 金幣（即時入帳）
+const COIN_PTS = 100; // 每 100 分＝1 金幣
 const CLEAR_COINS = 25; // 過關獎勵
+const COIN_HOVER = 0.35; // 金幣噴出後懸空這麼久才飛向 HUD 計數器（到達那一刻數字才跳：入帳要有距離感）
+const FLY_STALE = 1.8; // 飛行中的金幣超過這麼多秒還沒到（動畫被打斷）：直接入帳
 // 跳字的門檻一律偏嚴：常常跳就廉價，還會打斷盪的手感。分數在 HUD 累計就夠了
 const FLIP_POP = 7; // 轉幾圈以上才跳字
 const CLOSE_GAP = 0.3; // 離危險物多近才算千鈞一髮（sim 在 1.1 單位內就會發事件，這裡再篩）
@@ -57,20 +62,25 @@ function perfTick(frameMs: number, jsMs: number, playing: boolean): void {
   perf.n = 0; perf.sum = 0; perf.max = 0; perf.js = 0; perf.jsMax = 0;
 }
 
-type State = 'boot' | 'menu' | 'levels' | 'shop' | 'records' | 'playing' | 'paused' | 'result' | 'over';
 interface Ckpt extends PadSnapshot { score: number }
+interface LevelResult { level: number; stars: number; got: [boolean, boolean, boolean]; score: number; newBest: boolean; coins: number } // got：過關、蒼蠅、時間三顆星各自有沒有拿到
 const G = {
-  state: 'boot' as State, level: 1, lv: null as Level | null, sim: null as Sim | null, world: -1,
-  score: 0, combo: 0, comboT: 0, comboPulse: 0, deaths: 0, restartT: 0, winT: 0, overT: 0, winAnim: 0,
+  flow: BOOT_FLOW, get state(): Phase { return this.flow.phase; }, // 畫面狀態只能經過 dispatch() 改
+  level: 1, lv: null as Level | null, sim: null as Sim | null, world: -1,
+  score: 0, combo: 0, comboT: 0, comboPulse: 0, deaths: 0, winAnim: 0,
+  beat: null as Beat | null, beatT: 0, // 一局結束的節拍與播到哪（真實秒）
+  coinQ: [] as { x: number; y: number; n: number; t: number }[], coinsInFlight: 0, flyAt: 0, // 噴出懸空中的金幣；飛向計數器還沒到的金幣數
   timeScale: 1, slowT: 0, slowAmt: 0, hitStop: 0, fovKick: 0, acc: 0, hold: false, latch: false,
   attachesTotal: 0, flipsTotal: 0, bestProg: 0, wins: 0, tongueWob: 0, tipPop: 1, lick: { x: 0, y: 0, t: 0 },
-  cam: { x: 0, y: 7, d: T.CAM_DIST }, resultAt: 0, quality: 'high' as TierName, fps: 60, bestFlip: 0,
+  cam: { x: 0, y: 7, d: T.CAM_DIST }, quality: 'high' as TierName, fps: 60, bestFlip: 0,
   slideT: 0, slideSfxT: 0, ckpt: null as Ckpt | null, hiScore: 0, endless: false, coinPts: 0, runCoins: 0,
   feats: createFeatTracker(), featLog: [] as { id: string; value: number; t: number }[], runFeats: [] as string[], lastWin: null as unknown,
-  shopHi: null as string | null, bought: null as ShopItem | null, lvBestScore: 0, levelResult: null as UI.LevelResult | null, lastResult: null as { endless: true; dist: number; score: number; rank: number; coins: number; newBest: boolean } | null,
+  shopHi: null as string | null, bought: null as ShopItem | null, lvBestScore: 0, levelResult: null as LevelResult | null, lastResult: null as { endless: true; dist: number; score: number; rank: number; coins: number; newBest: boolean } | null,
   startedAt: 0, ignorePressUntil: 0, touch: false, freeze: false, camOv: null as { p: [number, number, number] } | null, bot: null as Bot | null, botKey: '',
   prev: { x: 0, y: 0, a: 0 },
 };
+// 每個流程動作都經過這裡：這個狀態下不合法（死亡中再撞到東西、開機前開關……）就忽略、回 false
+function dispatch(a: Action): boolean { const f = transition(G.flow, a); if (!f) return false; G.flow = f; return true; }
 let save: Save = normalizeSave(DEFAULT_SAVE, LEVEL_COUNT);
 let view: View, lvView: LevelView, frog: Character, fx: Fx, gov: Governor;
 // 手感回饋（粒子、慢動作、震動的組合，約 6 KB）選單出來後才載；載好之前每個呼叫都是空操作。
@@ -94,7 +104,8 @@ const hooks = {
   start(n: number) { startLevel(n); }, startEndless() { startEndless(); },
   look(skin: string, trail?: string, tongue?: string) { applyLook(SKINS.find((k) => k.id === skin), TRAILS.find((k) => k.id === trail), TONGUES.find((k) => k.id === tongue)); },
   forceDie() { const s = G.sim; if (s && s.mode !== 'dead') { s.mode = 'air'; s.tongue.state = 'idle'; s.y = 0.1; s.vy = -5; } },
-  forceWin() { const s = G.sim, g = G.lv?.goal; if (!s || !g) return; G.restartT = 0; UI.dieText(null); s.tongue.state = 'idle'; s.mode = 'air'; s.x = g.x; s.y = g.y + 4; s.vx = 0; s.vy = -4; },
+  forceWin() { const s = G.sim, g = G.lv?.goal; if (!s || !g) return; UI.dieText(null); s.tongue.state = 'idle'; s.mode = 'air'; s.x = g.x; s.y = g.y + 4; s.vx = 0; s.vy = -4; },
+  skip() { skipBeat(); }, get flow() { return G.flow; }, get beat() { return G.beat ? { t: G.beatT, total: G.beat.total, skipAfter: G.beat.skipAfter } : null; }, get coinsInFlight() { return G.coinsInFlight; },
   set camOverride(v: { p: [number, number, number] } | null) { G.camOv = v; }, set freeze(v: boolean) { G.freeze = !!v; },
   setTier(n: TierName) { setTier(n); }, setLow() { setTier('low'); },
   emit(e: SimEvent) { if (G.sim) onEvent({ x: G.sim.x, y: G.sim.y, ...e } as SimEvent); },
@@ -143,8 +154,6 @@ function updateEndless(): void {
 }
 const endlessDist = () => Math.floor(Math.max(0, (G.sim?.maxX ?? 0) - (G.lv?.start.x ?? 0)));
 const endlessScore = () => G.score + endlessDist() * 10;
-// 唯一的「進入遊玩」入口：開關、重生、續玩、R 重來、下一關都經過這裡呼叫 gameplayStart（cg.ts 會去重）
-function enterPlaying(): void { G.state = 'playing'; cg.gameplayStart(); }
 // fromStart＝true：忘掉荷葉存檔，從起點重來；預設（死掉自動重生、R 鍵）：有存檔就從最後落地的荷葉重生
 function resetRun(fromStart = false): void {
   if (G.endless && G.sim && G.sim.maxX > 60) { G.sim = null; loadEndless(); return; } // 無盡模式死掉或重來＝新路線
@@ -154,11 +163,11 @@ function resetRun(fromStart = false): void {
   // 荷葉重生：蒼蠅、圈圈、加速圈、時間、分數都回到落地那一刻；金幣已入帳，不重複給
   G.sim = createSim(G.lv!, ck); G.score = ck ? ck.score : 0; if (!ck) { G.coinPts = 0; G.runCoins = 0; G.hiScore = 0; }
   G.feats.reset(); if (ck) G.feats.st.padded = true; G.runFeats = [];
-  G.combo = 0; G.comboT = 0; G.restartT = 0; G.winT = 0; G.overT = 0; G.winAnim = 0; G.acc = 0; G.slowT = 0; G.hitStop = 0;
+  G.combo = 0; G.comboT = 0; G.winAnim = 0; G.acc = 0; G.slowT = 0; G.hitStop = 0;
   G.prev.x = G.sim.x; G.prev.y = G.sim.y; G.prev.a = G.sim.angle;
   lvView.reset(); restoreEaten(); fx.clear(); fx.resetTrail(G.sim.x, G.sim.y); UI.dieText(null);
   frog.squash(0.7, 0);
-  if (G.state === 'playing') enterPlaying();
+  if (G.state === 'playing') cg.gameplayStart(); // 重生、R 重來：這一局繼續算（cg.ts 會去重）
 }
 // 荷葉重生後：已經吃掉的蒼蠅、圈圈、加速圈照 sim 狀態隱藏
 function restoreEaten(): void {
@@ -174,34 +183,55 @@ function startLevel(n: number): void {
   // 世界圖集還沒到（第一次進這個世界、或剛切過世界）：先換世界讓它開始載，到了再開；不然鉤子、荷葉會等圖集到了才冒出來
   if (!view.worldReady(wi)) { pendingStart = n; setWorld(wi); void view.ensureWorld(wi).then(() => { if (pendingStart === n) { pendingStart = 0; startLevel(n); } }); return; }
   pendingStart = 0; void ensureJuice();
+  if (!dispatch(n >= LEVEL_COUNT ? 'startLast' : 'start')) return;
   if (n % 15 === 0 && wi + 1 < WORLDS.length) prefetch(`w${wi + 1}`); // 這個世界的最後一關：先把下一個世界的圖集下載解碼好
-  G.ignorePressUntil = performance.now() + 250; G.startedAt = performance.now();
+  beginRun();
   A.initAudio();
   loadLevel(n); TM.levelStart(n);
   save.last = n; persist();
-  enterPlaying(); clearHold(); UI.show(null); UI.hint(null);
+  cg.gameplayStart(); clearHold(); UI.show(null); UI.hint(null);
   G.cam.x = G.sim!.x + 6; G.cam.y = G.lv!.world === 5 ? T.CAM_MIN_Y_DUNE : T.CAM_MIN_Y; juice.levelIn(G.sim!);
   const ne = newElements(n)[0]; UI.newCard(ne ? t(`new.${ne}`) : null);
   UI.popup((n - 1) % 15 === 0 ? t('pop.worldLevel', { world: t(`world.${G.lv!.world}`, null, WORLDS[G.lv!.world].name), level: levelLabel(n) }) : t('pop.level', { level: levelLabel(n) }), innerWidth / 2, bigY(), 'big');
 }
 function startEndless(): void {
-  if (save.unlocked <= ENDLESS_UNLOCK) return;
-  G.ignorePressUntil = performance.now() + 250; G.startedAt = performance.now(); // 直接進無盡也要讓畫質調整開始計時
+  if (save.unlocked <= ENDLESS_UNLOCK || !dispatch('startEndless')) return;
+  beginRun(); // 直接進無盡也要讓畫質調整開始計時
   A.initAudio(); void ensureJuice(); G.sim = null; loadEndless();
-  enterPlaying(); clearHold(); UI.show(null); UI.hint(null);
+  cg.gameplayStart(); clearHold(); UI.show(null); UI.hint(null);
   G.cam.x = G.sim!.x + 6; G.cam.y = T.CAM_MIN_Y;
   UI.popup(t('pop.endlessBest', { dist: save.endlessBest }), innerWidth / 2, bigY(), 'big');
 }
-// 即時金幣：入帳、HUD 彈一下（存檔在死亡／過關／退回選單／切走分頁時寫）
-function addCoins(n: number): void { if (n <= 0) return; save.coins += n; G.runCoins += n; UI.hudCoins(save.coins); if (G.sim && G.state === 'playing') { juice.coins(G.sim.x, G.sim.y, n); sfx('coin'); } }
+// 開一關／開一局之前：上一局的節拍、懸空與飛行中的金幣、結束浮層都清掉
+function beginRun(): void {
+  G.beat = null; G.coinQ.length = 0; G.coinsInFlight = 0; UI.clearHide(); UI.overHide();
+  G.ignorePressUntil = performance.now() + 250; G.startedAt = performance.now();
+}
+// 金幣入帳要有距離感：存檔立刻加（永遠不會少算），HUD 的數字等金幣真的飛到計數器才跳。
+// fly＝true：從角色身上噴出、懸空 COIN_HOVER 秒、飛向計數器；false：呼叫端自己安排飛行（成就膠囊、過關節拍）
+function addCoins(n: number, fly = true): void {
+  if (n <= 0) return; save.coins += n; G.runCoins += n; G.coinsInFlight += n; G.flyAt = performance.now();
+  if (!fly) return;
+  const s = G.sim;
+  if (!s || !RUN.has(G.state)) { G.coinsInFlight -= n; return; }
+  juice.coins(s.x, s.y, n); sfx('coin'); G.coinQ.push({ x: s.x, y: s.y + 2, n, t: COIN_HOVER });
+}
+// 飛行中的金幣到達：k 枚均分 n，最後一枚帶餘數；i<0＝沒飛成（計數器不在畫面上），全部直接入帳
+function lander(n: number, k: number): (i: number) => void { let left = n; return (i) => { const d = i < 0 || i >= k - 1 ? left : Math.floor(n / k); left -= d; G.coinsInFlight = Math.max(0, G.coinsInFlight - d); }; }
+function flyCoins(n: number, from: [number, number]): void { if (n <= 0) return; const k = Math.min(5, n), land = lander(n, k); G.flyAt = performance.now(); if (!UI.coinFly(from, document.getElementById('hudCoins'), k, land)) land(-1); }
+function tickCoins(dt: number): void {
+  for (let i = G.coinQ.length - 1; i >= 0; i--) { const q = G.coinQ[i]; q.t -= dt; if (q.t <= 0) { G.coinQ.splice(i, 1); const p = view.project(q.x, q.y); flyCoins(q.n, [p.x, p.y]); } }
+  if (G.coinsInFlight > 0 && performance.now() - G.flyAt > FLY_STALE * 1000) G.coinsInFlight = 0; // 動畫被打斷（切分頁、換畫面）：別讓數字卡住
+}
 function onFeat(f: FeatHit): void {
   const d = featById(f.id)!;
   if (f.silent) { const r = save.feats[f.id]; if (r && d.better === 'max' && f.value > r.best) r.best = f.value; return; } // 同一跳的後續圈數只刷新最佳值，不重複計次
   const better = recordFeat(save.feats, f.id, f.value);
   G.featLog.push({ id: f.id, value: f.value, t: performance.now() });
   G.runFeats.push(f.id);
-  addCoins(d.coins); persist();
-  if (BIG_FEATS.has(f.id)) { UI.feat(UI.featName(f.id), UI.featLine(f.id), d.coins); sfx('ring'); sfx('buy'); A.duckMusic(0.35, 0.8); vibrate([15, 30, 15]); fxFeat(f.id); }
+  const big = BIG_FEATS.has(f.id);
+  addCoins(d.coins, !big); persist();
+  if (big) { UI.feat(UI.featName(f.id), UI.featLine(f.id), d.coins, lander(d.coins, 3)); sfx('ring'); sfx('buy'); A.duckMusic(0.35, 0.8); vibrate([15, 30, 15]); fxFeat(f.id); } // 金幣從膠囊上的 +N 飛進計數器
   else { const s = G.sim; if (s) pop(UI.featName(f.id), s.x, s.y + 3, 'gold'); sfx('ring'); } // 其他成就：跟一般跳字一樣簡單閃一下，金幣（計數器會動）與紀錄照給
   if (better && save.feats[f.id].count > 1) UI.popup(t('pop.newRecord'), innerWidth / 2, bigY() + 150, 'gold');
 }
@@ -289,6 +319,7 @@ function onEvent(e: SimEvent): void {
     }
     case 'wall': sfx('wall'); juice.wall(s, w); break;
     case 'die': {
+      if (!dispatch('die')) break; // 已經在死亡／過關的節拍裡：忽略
       const water = e.cause === 'water';
       sfx(water ? 'splash' : 'spike'); G.deaths++;
       if (water) juice.dieWater(e, w); else juice.dieHazard(e, skinOf());
@@ -298,14 +329,15 @@ function onEvent(e: SimEvent): void {
       G.bestProg = Math.max(G.bestProg, prog); if (!G.endless) TM.death(e.x, prog, e.cause);
       A.duckMusic(0.4, 0.4); vibrate([30, 40, 30]);
       G.combo = 0; cg.gameplayStop(); persist();
-      if (G.endless) { recordEndless(); G.overT = 0.8; } else G.restartT = T.RESTART_DELAY; // 無盡：死亡當下結算，0.8 秒後的畫面只負責顯示
+      if (G.endless) endlessOver(); else startBeat(dyingBeat(T.RESTART_DELAY));
       break;
     }
     case 'win': {
-      sfx('win'); G.winT = CELEBRATE; G.winAnim = 0;
+      if (!dispatch('win')) break;
+      sfx('win'); G.winAnim = 0;
       const g = G.lv!.goal, bull = Math.abs(s.x - g.x) < 1.6;
       juice.win(s, g); vibrate([20, 30, 60]);
-      if (bull) pop(t('pop.bullseye'), s.x, s.y + 3, 'big'); // 一般落地不跳字，正中紅心才值得
+      if (bull) pop(t('pop.bullseye'), s.x + 4, s.y + 2, 'gold'); // 一般落地不跳字，正中紅心才值得；放角色右邊（頭上是金幣晶片、大字的位置是過關浮層的）
       if (bull) addScore(200);
       levelCleared();
       break;
@@ -313,39 +345,26 @@ function onEvent(e: SimEvent): void {
   }
 }
 
-// ---------- 過關：落荷葉 → 慶祝 CELEBRATE 秒 → 結算畫面（等玩家按 NEXT） ----------
+// ---------- 過關：落荷葉那一刻就記錄、存檔，浮層出來，節拍（beat.ts）播完無條件下一關；沒有按鈕 ----------
 function levelCleared(): void {
   const s = G.sim!, n = G.level, lv = G.lv!;
-  addCoins(CLEAR_COINS);
   const rate = rateStars({ flies: s.fliesGot, fliesTotal: lv.flies.length, time: s.time, par: lv.par });
   recordStars(save, n, rate.stars); TM.clear(s.time, rate.stars, s.fliesGot);
-  UI.clearSticker(true, t(rate.stars === 3 ? 'clear.perfect' : 'clear.clear'));
-  { const p = view.project(s.x, s.y); UI.coinFly([p.x, p.y], document.getElementById('hudCoins'), 3); }
   const prevBest = save.best[n] ?? 0, newBest = G.score > prevBest && prevBest > 0;
   save.best[n] = Math.max(prevBest, G.score);
   save.unlocked = Math.max(save.unlocked, Math.min(LEVEL_COUNT, n + 1));
   save.clears++; G.wins++;
   if (n % 15 === 0 && !save.worldsDone.includes(n)) { save.worldsDone.push(n); cg.happytime(); } // 破世界＝真正的成就
-  persist();
+  addCoins(CLEAR_COINS, false); persist(); // 過關獎勵先記進存檔；噴出與飛入由節拍安排
   G.lastWin = { level: n, score: G.score, time: s.time, coins: G.runCoins, at: performance.now() };
-  G.levelResult = { level: n, stars: rate.stars, fliesOk: rate.fliesOk, timeOk: rate.timeOk, flies: s.fliesGot, fliesTotal: lv.flies.length, time: s.time, par: lv.par, score: G.score, newBest,
-    title: t(n % 15 === 0 ? 'result.world' : rate.stars === 3 ? 'result.perfect' : 'result.clear'), feats: [...new Set(G.runFeats)], coins: 0 };
-  UI.hint(null); UI.tut(null);
-}
-function showLevelResult(): void {
-  G.state = 'result'; G.resultAt = performance.now(); clearHold(); cg.gameplayStop();
-  G.levelResult!.coins = G.runCoins; UI.showResult(G.levelResult!);
-}
-function resultNext(): void { if (G.state !== 'result' || UI.finishResult()) return; sfx('click'); advance(); }
-function resultRetry(): void { if (G.state !== 'result') return; UI.finishResult(); sfx('click'); startLevel(G.level); }
-function advance(): void {
-  if (G.level >= LEVEL_COUNT) { toMenu(); return; }
-  startLevel(G.level + 1);
+  G.levelResult = { level: n, stars: rate.stars, got: [true, rate.fliesOk, rate.timeOk], score: G.score, newBest, coins: G.runCoins };
+  UI.hint(null); UI.tut(null); clearHold(); cg.gameplayStop();
+  UI.clearShow(t(n % 15 === 0 ? 'result.world' : rate.stars === 3 ? 'result.perfect' : 'result.clear'), { level: levelLabel(n), flies: s.fliesGot, fliesTotal: lv.flies.length, time: s.time, par: lv.par });
+  startBeat(clearBeat(rate.stars, newBest));
 }
 
-// ---------- 無盡結算 ----------
-// 死亡那一刻就記錄這一局（最佳距離、場數、本機排行、平台分數、遙測、存檔）。原本要等 0.8 秒後結算畫面打開才記，那段時間內重來或回選單就整局不算。
-function recordEndless(): void {
+// ---------- 無盡死亡：那一刻就結算、存檔，浮層出來，倒數完自動新一局 ----------
+function endlessOver(): void {
   const dist = endlessDist(), score = endlessScore();
   const newBest = dist > save.endlessBest && save.endlessBest > 0; TM.endlessOver(dist, score);
   save.endlessBest = Math.max(save.endlessBest, dist); save.endlessRuns++;
@@ -355,17 +374,48 @@ function recordEndless(): void {
   if (newBest) cg.happytime();
   persist();
   G.lastResult = { endless: true, dist, score, rank, coins: G.runCoins, newBest };
+  clearHold(); UI.hint(null); UI.tut(null);
+  UI.overShow(save.endlessBest);
+  startBeat(overBeat());
 }
-// 顯示 recordEndless() 記下的結果
-function endlessOver(): void {
-  const r = G.lastResult!;
-  G.state = 'over'; G.resultAt = performance.now(); clearHold(); UI.hint(null); UI.tut(null);
-  UI.showOver({ dist: r.dist, score: r.score, best: save.endlessBest, flips: G.sim!.flipsTotal, rank: r.rank, newBest: r.newBest });
+
+// ---------- 節拍：固定時間表（beat.ts），每幀取出跨過的提示點播畫面；任何點擊在 skipAfter 之後可提前；播完去哪由 flow.ts 決定 ----------
+function startBeat(b: Beat): void { G.beat = b; G.beatT = 0; }
+function tickBeat(dt: number): void {
+  const b = G.beat; if (!b) return;
+  const t0 = G.beatT; G.beatT += dt;
+  for (const c of fired(b, t0, G.beatT)) onCue(c, false);
+  if (G.beat === b && G.beatT >= b.total) endBeat();
 }
-function retryEndless(): void {
-  if (G.state !== 'over') return;
-  sfx('click');
-  startEndless();
+function skipBeat(): void {
+  const b = G.beat; if (!b || !RUN.has(G.state) || G.beatT < b.skipAfter) return; // 暫停中不算（節拍留著等繼續）
+  for (const c of fired(b, G.beatT, Infinity)) onCue(c, true);
+  endBeat();
+}
+function endBeat(): void {
+  const was = G.state; G.beat = null;
+  if (!dispatch('beatEnd')) return;
+  if (was === 'dying') resetRun(); // 主線：從最後落地的荷葉重生
+  else if (was === 'over') startEndless(); // 無盡：新一局
+  else if (G.state === 'menu') toMenu(); // 最後一關：回選單
+  else startLevel(G.level + 1);
+}
+// fast＝玩家點擊提前：剩下的提示點一次做完，沒有動畫與聲音
+function onCue(c: Cue, fast: boolean): void {
+  const s = G.sim!, r = G.levelResult, o = G.lastResult;
+  switch (c) {
+    case 'star1': case 'star2': case 'star3': { const i = Number(c[4]) - 1; if (r?.got[i]) UI.clearStar(i, fast); break; } // 沒拿到的那顆留暗
+    case 'coinsOut': if (!fast) { juice.coins(s.x, s.y, 8); sfx('coin'); } break;
+    case 'coinsFly': {
+      UI.clearCoins(G.runCoins); G.coinQ.length = 0;
+      if (fast) G.coinsInFlight = 0; else { const p = view.project(s.x, s.y + 2); flyCoins(G.coinsInFlight, [p.x, p.y]); }
+      break;
+    }
+    case 'best': UI.clearBest(); if (!fast) sfx('buy'); break;
+    case 'dist': UI.overDist(o?.dist ?? 0, !!o?.newBest, fast); break;
+    case 'score': UI.overScore(o?.score ?? 0); break;
+    case 'countdown': UI.overCountdown(fast ? 0 : COUNTDOWN); break;
+  }
 }
 
 // ---------- 選單 ----------
@@ -373,9 +423,10 @@ function retryEndless(): void {
 let menuStep: NextStep | null = null;
 function toMenu(): void {
   TM.leave('menu');
-  if (G.state === 'playing' || G.state === 'paused') cg.gameplayStop();
+  if (RUN.has(G.state) || G.state === 'paused') cg.gameplayStop();
   persist();
-  G.state = 'menu'; clearHold(); UI.tryNow(null); UI.newCard(null);
+  if (!dispatch('menu')) return;
+  G.beat = null; G.coinQ.length = 0; G.coinsInFlight = 0; clearHold(); UI.tryNow(null); UI.newCard(null);
   loadLevel(Math.min(save.last, save.unlocked));
   UI.show('menu'); UI.setCoins(save.coins); UI.hint(null);
   UI.setPlay(t('menu.play', { level: levelLabel(Math.min(save.unlocked, LEVEL_COUNT)) })); UI.setHero(skinOf());
@@ -397,12 +448,13 @@ function goNextUp(): void {
 }
 // 選關背景：切到哪個世界分頁就換成那個世界（換世界只是換色，沒有載入成本）
 function levelsBackdrop(w: number): void { const n = Math.min(w * 15 + 1, save.unlocked); if (worldOf(n) !== G.lv?.world || G.endless) loadLevel(n); }
-function openLevels(): void { sfx('click'); if (G.sim && G.sim.mode !== 'perch') resetRun(true); clearHold(); G.state = 'levels'; UI.setWorldTab(save.unlocked); UI.renderLevels(save, (n) => { sfx('click'); startLevel(n); }, levelsBackdrop); levelsBackdrop(worldOf(save.unlocked)); UI.show('levels'); }
-function openRecords(): void { sfx('click'); clearHold(); G.state = 'records'; UI.renderRecords(save, G.lastResult?.score); UI.show('records'); }
+function openLevels(): void { if (!dispatch('levels')) return; sfx('click'); G.beat = null; if (G.sim && G.sim.mode !== 'perch') resetRun(true); clearHold(); UI.setWorldTab(save.unlocked); UI.renderLevels(save, (n) => { sfx('click'); startLevel(n); }, levelsBackdrop); levelsBackdrop(worldOf(save.unlocked)); UI.show('levels'); }
+function openRecords(): void { if (!dispatch('records')) return; sfx('click'); clearHold(); UI.renderRecords(save, G.lastResult?.score); UI.show('records'); }
 // 商店展示台的旋轉貓：第一次開商店才掛上（圖片到那時才下載）；畫布 2 倍解析度（CSS 最大 230px）
 function openShop(hi: ShopItem | null = null): void {
   void loadCatStage().then((m) => m.catStage(document.getElementById('showSpin') as HTMLCanvasElement, 460, { feet: 0.97, height: 0.9 }));
-  sfx('click'); if (G.sim && G.sim.mode !== 'perch') resetRun(true); clearHold(); G.state = 'shop';
+  if (!dispatch('shop')) return;
+  sfx('click'); if (G.sim && G.sim.mode !== 'perch') resetRun(true); clearHold();
   G.shopHi = hi?.id ?? null; if (hi) UI.setShopTab(hi.tab);
   renderShop(); UI.show('shop'); UI.tryNow(null);
 }
@@ -424,12 +476,12 @@ function shopPick(tab: ShopTab, it: Skin | TongueSpec | TrailSpec): void {
 }
 function tryBought(): void { sfx('click'); UI.tryNow(null); if (G.bought) startLevel(Math.min(save.unlocked, LEVEL_COUNT)); }
 function pause(): void {
-  if (G.state !== 'playing') return;
-  G.state = 'paused'; clearHold(); cg.gameplayStop(); persist();
+  if (!dispatch('pause')) return; // 只在一局之內（遊玩、死亡、過關、無盡結束的節拍中都可以）
+  clearHold(); cg.gameplayStop(); persist();
   pauseMeta(); UI.show('pause'); view.dirty = true;
 }
 function pauseMeta(): void { UI.pauseMeta(G.endless ? t('pause.endless', { dist: endlessDist() }) : t('pause.level', { level: levelLabel(G.level), score: G.score.toLocaleString('en-US') })); }
-function resume(): void { if (G.state !== 'paused') return; sfx('click'); enterPlaying(); clearHold(); UI.show(null); }
+function resume(): void { if (!dispatch('resume')) return; sfx('click'); if (G.state === 'playing') cg.gameplayStart(); clearHold(); UI.show(null); }
 function toggle(key: 'music' | 'sfx'): void { save[key] = !save[key]; persist(); UI.setToggles(save); A.setMusic(save.music); A.setSfx(save.sfx); sfx('click'); }
 
 // ---------- 輸入 ----------
@@ -442,10 +494,11 @@ addEventListener('pointerdown', (e) => {
   A.initAudio(); if (e.pointerType === 'touch') G.touch = true;
   if (isUI(e.target)) return;
   if (G.state === 'playing') { e.preventDefault(); if (canPress()) { held.ptr.add(e.pointerId); syncHold(); } }
+  else if (G.beat) { e.preventDefault(); skipBeat(); } // 一局結束的節拍中點一下：提前
 }, { passive: false });
 const ptrUp = (e: PointerEvent) => { held.ptr.delete(e.pointerId); syncHold(); };
 // 合成 TouchEvent（不會產生 pointer 事件）也要能玩：用 'touch' 當一個指標
-addEventListener('touchstart', (e) => { G.touch = true; A.initAudio(); if (isUI(e.target)) return; if (G.state === 'playing') { e.preventDefault(); if (canPress()) { held.ptr.add('touch'); syncHold(); } } }, { passive: false });
+addEventListener('touchstart', (e) => { G.touch = true; A.initAudio(); if (isUI(e.target)) return; if (G.state === 'playing') { e.preventDefault(); if (canPress()) { held.ptr.add('touch'); syncHold(); } } else if (G.beat) { e.preventDefault(); skipBeat(); } }, { passive: false });
 addEventListener('touchend', (e) => { if (e.touches.length === 0) { held.ptr.clear(); syncHold(); } });
 addEventListener('touchcancel', clearHold);
 addEventListener('pointerup', ptrUp); addEventListener('pointercancel', ptrUp);
@@ -464,11 +517,10 @@ addEventListener('keydown', (e) => {
   if (G.state === 'playing') {
     if (HOLD_KEYS.has(e.code)) { if (canPress()) { held.key = true; syncHold(); } }
     else if (e.code === 'Escape' || e.code === 'KeyP') pause();
-    else if (e.code === 'KeyR' && G.winT <= 0) { clearHold(); resetRun(); } // 慶祝中不能重來（過關已寫進存檔）
+    else if (e.code === 'KeyR') { clearHold(); resetRun(); }
   } else if (G.state === 'paused') { if (act || e.code === 'Escape' || e.code === 'KeyP') resume(); }
+  else if (G.beat) { if (act || e.code === 'KeyR') skipBeat(); else if (e.code === 'Escape' || e.code === 'KeyP') pause(); } // 一局結束的節拍中：提前，或暫停（回選單在暫停選單裡）
   else if (G.state === 'menu') { if (act) startLevel(Math.min(save.unlocked, LEVEL_COUNT)); }
-  else if (G.state === 'result') { if (act) resultNext(); else if (e.code === 'KeyR') resultRetry(); else if (e.code === 'Escape') toMenu(); }
-  else if (G.state === 'over') { if (act && performance.now() - G.resultAt > 700) retryEndless(); else if (e.code === 'Escape') toMenu(); }
   else if ((G.state === 'levels' || G.state === 'shop' || G.state === 'records') && e.code === 'Escape') { sfx('click'); toMenu(); }
 });
 addEventListener('keyup', (e) => { if (HOLD_KEYS.has(e.code)) { held.key = false; syncHold(); } });
@@ -480,20 +532,15 @@ on('playBtn', () => { sfx('click'); startLevel(Math.min(save.unlocked, LEVEL_COU
 on('levelsBtn', openLevels); on('shopBtn', () => openShop(menuStep?.kind === 'shop' ? menuStep.item : null));
 on('endlessBtn', () => { sfx('click'); if (save.unlocked <= ENDLESS_UNLOCK) { UI.popup(t('pop.endlessLocked', { level: levelLabel(ENDLESS_UNLOCK) }), innerWidth / 2, innerHeight * 0.8, 'gold'); return; } save.seen.endless = true; persist(); startEndless(); });
 on('recordsBtn', openRecords); on('nextUp', goNextUp); on('heroTag', () => openShop());
-on('resNext', resultNext); on('resRetry', resultRetry); on('resMenu', () => { sfx('click'); toMenu(); });
-document.getElementById('result')!.addEventListener('pointerdown', (e) => { if (!(e.target instanceof Element && e.target.closest('button'))) resultNext(); });
 on('tryPlay', tryBought); on('tryLater', () => { sfx('click'); UI.tryNow(null); });
 for (const b of document.querySelectorAll('.back')) b.addEventListener('click', () => { sfx('click'); toMenu(); });
 for (const b of document.querySelectorAll('.musicT')) b.addEventListener('click', () => toggle('music'));
 for (const b of document.querySelectorAll('.sfxT')) b.addEventListener('click', () => toggle('sfx'));
 on('pauseBtn', () => { sfx('click'); pause(); });
 on('resumeBtn', resume);
-on('pRestart', () => { resume(); if (G.endless && G.sim) G.sim.maxX = 61; resetRun(true); });
+on('pRestart', () => { sfx('click'); if (G.endless) startEndless(); else startLevel(G.level); }); // 重來＝重開這一關／新的一局（過關或死亡的節拍中也可以）
 on('pLevels', () => { cg.gameplayStop(); openLevels(); });
 on('pMenu', () => { sfx('click'); toMenu(); });
-on('ovRetry', () => retryEndless());
-on('ovMenu', () => { sfx('click'); toMenu(); });
-document.getElementById('over')!.addEventListener('pointerdown', (e) => { if (!isUI(e.target) && performance.now() - G.resultAt > 700) retryEndless(); });
 
 // ---------- 主迴圈 ----------
 const hudData: UI.HudData = { endless: false, dist: 0, level: 1, score: 0, flies: 0, fliesTotal: 0, time: 0, prog: 0, best: 0, combo: 0, comboLeft: 0, comboPulse: 0 };
@@ -501,8 +548,8 @@ const tipV: XY = { x: 0, y: 0 }, tmp: XY = { x: 0, y: 0 };
 let mouth: XY = { x: 0, y: 0 };
 const mood: Mood = { lookX: 0, lookY: 0, mouth: false, tongueWob: 0, tipPop: 1, scared: false };
 let last = performance.now(), fpsTime = 0, fpsN = 0, tReal = 0;
-const MENU_STATES = new Set<State>(['menu', 'levels', 'shop', 'records']);
-const SIM_STATES = new Set<State>(['playing', 'menu', 'over', 'levels', 'shop', 'records']);
+const MENU_STATES = new Set<Phase>(['menu', 'levels', 'shop', 'records']);
+const SIM_STATES = new Set<Phase>([...RUN, ...MENU_STATES]); // 模擬在跑的狀態（暫停不跑）
 
 function frame(now: number): void {
   requestAnimationFrame(frame);
@@ -542,30 +589,33 @@ function frame(now: number): void {
     // 先把事件拿出來再分派：處理到一半丟例外也不會在下一幀重播同一批（例如重複扣命、重複過關）
     const evs = s.events; s.events = [];
     for (const e of evs) onEvent(e);
-    if (G.state === 'playing') updatePlaying(realDt, dt);
+    if (RUN.has(G.state)) updateRun(realDt, dt);
   }
   if (G.sim) render(realDt, dt);
   if (PERF) perfTick(rawDt * 1000, performance.now() - pT0, st === 'playing');
 }
 function autoBot(p: [number, number]): Bot { const k = p.join(','); if (k !== G.botKey) { G.bot = makeBot(p[0], p[1]); G.botKey = k; } return G.bot!; }
 
-function updatePlaying(realDt: number, dt: number): void {
-  const s = G.sim!, lv = G.lv!;
-  if (G.comboT > 0) { G.comboT -= dt; if (G.comboT <= 0) { if (G.combo >= 10) pop(t('pop.combo', { n: G.combo }), s.x, s.y + 3, 'gold'); G.combo = 0; } }
+// 一局之內每幀（遊玩、死亡／過關／無盡結束的節拍中）：連擊、節拍、金幣飛行、落荷葉後的彈跳、HUD、教學
+function updateRun(realDt: number, dt: number): void {
+  const s = G.sim!, lv = G.lv!, playing = G.state === 'playing';
+  if (playing && G.comboT > 0) { G.comboT -= dt; if (G.comboT <= 0) { if (G.combo >= 10) pop(t('pop.combo', { n: G.combo }), s.x, s.y + 3, 'gold'); G.combo = 0; } }
   G.comboPulse = Math.max(0, G.comboPulse - realDt * 5);
-  if (G.restartT > 0) { G.restartT -= realDt; if (G.restartT <= 0) resetRun(); }
-  if (G.overT > 0) { G.overT -= realDt; if (G.overT <= 0) { G.overT = 0; endlessOver(); return; } }
-  if (G.winT > 0) { G.winT -= realDt; if (G.winT <= 0) { showLevelResult(); return; } }
-  if (G.endless) updateEndless();
+  tickBeat(realDt); if (G.sim !== s || !RUN.has(G.state)) return; // 節拍播完可能已經換關、回選單
+  tickCoins(realDt);
+  if (playing && G.endless) updateEndless();
   // 滑沙揚沙＋沙沙聲
-  if (s.onDune >= 0 && s.mode !== 'dead' && s.mode !== 'won') {
+  if (playing && s.onDune >= 0 && s.mode !== 'dead' && s.mode !== 'won') {
     G.slideT -= realDt; G.slideSfxT -= realDt;
     if (G.slideT <= 0) { G.slideT = 0.05; juice.slide(s, WORLDS[lv.world]); }
     if (G.slideSfxT <= 0) { G.slideSfxT = 0.2; sfx('slide'); }
   }
-  UI.hudCoins(save.coins);
+  // 落荷葉後：轉正、停下，在荷葉上彈跳（畫面只讀 G.winAnim；這是 render 之外唯一改模擬的地方）
+  if (s.mode === 'won') { G.winAnim += realDt; let wa = -s.angle; wa -= Math.round(wa / (Math.PI * 2)) * Math.PI * 2; s.angle += wa * Math.min(1, realDt * 8); G.prev.a = s.angle; s.vx = 0; s.vy = 0; s.omega = 0; }
+  UI.hudCoins(save.coins - G.coinsInFlight);
   Object.assign(hudData, { endless: G.endless, dist: G.endless ? endlessDist() : 0, level: G.level, score: G.endless ? endlessScore() : G.score, flies: s.fliesGot, fliesTotal: lv.flies.length, time: s.time, prog: Math.max(0, Math.min(1, s.x / lv.goal.x)), best: G.bestProg, combo: G.combo, comboLeft: Math.max(0, G.comboT / T.COMBO_WINDOW), comboPulse: G.comboPulse });
   UI.hud(hudData);
+  if (!playing) { UI.tut(null); UI.hint(null); return; }
   // 手機：螢幕下方的手指教學 HOLD／LET GO!，前 8 次黏住內或第 1 關
   if (G.touch && (save.grabs < 8 || G.level === 1) && s.mode !== 'dead' && s.mode !== 'won') {
     const tg = s.tongue; UI.hint(null);
@@ -610,14 +660,9 @@ function render(realDt: number, dt: number): void {
     mood.lookX = (dx * c - dy * sn) / d; mood.lookY = (dx * sn + dy * c) / d;
   }
   mood.mouth = tg.state !== 'idle' || G.lick.t > 0; mood.tongueWob = G.tongueWob; mood.tipPop = G.tipPop; mood.scared = s.y < 3 && s.vy < -5;
-  // 勝利後在荷葉上彈跳
+  // 落荷葉後在荷葉上彈跳（只讀：轉正與停下在 updateRun）
   let yOff = 0;
-  if (s.mode === 'won') {
-    G.winAnim += realDt;
-    let wa = -s.angle; wa -= Math.round(wa / (Math.PI * 2)) * Math.PI * 2; s.angle += wa * Math.min(1, realDt * 8); ia = s.angle;
-    s.vx = 0; s.vy = 0; s.omega = 0;
-    yOff = Math.abs(Math.sin(G.winAnim * 7)) * 1.3 * Math.exp(-G.winAnim * 2.2);
-  }
+  if (s.mode === 'won') { ia = s.angle; yOff = Math.abs(Math.sin(G.winAnim * 7)) * 1.3 * Math.exp(-G.winAnim * 2.2); }
   frog.visible = s.mode !== 'dead' && G.state !== 'menu'; // 首頁：角色只在右邊的頭像出現，世界裡起點那隻不畫（兩隻同時在太怪）
   mouth = frog.update(s, ix, iy + yOff, ia, realDt, tReal, tip, mood);
   // 旋轉貓：在空中轉起來就循環唱 oiia，停下來（黏住、落地、死掉、離開遊戲畫面）就淡出——迷因的節奏；選單上點貓讓牠轉也會唱
@@ -745,8 +790,8 @@ async function boot(): Promise<void> {
   applyLook(); UI.hudCoins(save.coins);
   A.setMusic(save.music); A.setSfx(save.sfx); UI.setToggles(save);
   cg.onMute((m) => A.setMuted(m));
-  TM.bind(() => ((G.state === 'playing' || G.state === 'paused') && !G.endless && G.sim && G.lv ? { level: G.level, x: G.sim.maxX, prog: Math.min(1, G.sim.maxX / G.lv.goal.x) } : null));
-  toMenu();
+  TM.bind(() => ((RUN.has(G.state) || G.state === 'paused') && !G.endless && G.sim && G.lv ? { level: G.level, x: G.sim.maxX, prog: Math.min(1, G.sim.maxX / G.lv.goal.x) } : null));
+  dispatch('ready'); toMenu();
   measure('boot:ui', tMenu); const tRender = performance.now();
   // 先在載入畫面底下畫一幀：天空、水面、合批、粒子的著色器都在第一次渲染時編譯，別讓玩家看到的第一幀去付這筆
   if (G.sim) render(0, 0);
