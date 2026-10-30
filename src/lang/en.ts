@@ -19,11 +19,11 @@ export default {
   'levels.open': 'CLEAR {level} TO OPEN',
   // shop
   'shop.title': 'SHOP',
-  'shop.star': 'STAR',
+  'shop.set': 'FULL SET', 'shop.saleEnds': 'SALE ENDS IN {time}', 'levels.set': 'GET THE SET TO PLAY',
   'shop.heroes': 'HEROES',
   'shop.tongues': 'TONGUES',
   'shop.trails': 'TRAILS',
-  'shop.comesWith': 'comes with {tongue}',
+  'shop.setLine': '{skin} + {tongue} + {trail} + {n} levels',
   'shop.bundle': '+ {tongue}',
   'shop.buy': 'BUY',
   'shop.equipped': 'EQUIPPED',
