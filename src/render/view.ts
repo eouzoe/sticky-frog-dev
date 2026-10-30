@@ -109,6 +109,7 @@ export async function createView(canvas: HTMLCanvasElement, dprCap: number) {
   const [shared, fxA] = await Promise.all([loadAtlas(R, 'shared'), loadAtlas(R, 'fx')]);
   shared.bitmap.close(); fxA.bitmap.close();
   const frames: Record<string, Frame> = { ...shared.frames, ...fxA.frames };
+  let themeProps: Record<string, string> = {}; // 主題的道具替換表（wf 的 key → 圖集格名）
   const tStrips = performance.now();
   const rippleTex = R.texture(rippleStrip(), { repeat: 'xy', mip: true }), starTex = R.texture(starStrip(), { repeat: 'xy' }), auroraTex = R.texture(auroraStrip(), { repeat: 'xy' });
   measure('view:strips', tStrips);
@@ -300,8 +301,9 @@ export async function createView(canvas: HTMLCanvasElement, dprCap: number) {
     R, cam, frames, proj, spr, waterline, setWorld, ensureWorld, frame, render,
     /** 遊戲平面的繪製函式（依登記順序畫，在背景之後） */
     layer(fn: () => void) { drawFns.push(fn); },
-    /** 目前世界的烘焙圖 */
-    wf: (key: string): Frame | undefined => frames[`w${world}.${key}`],
+    /** 目前世界的烘焙圖；主題有替換就拿替換的（小形狀圖集的格名，或該世界的另一格） */
+    wf: (key: string): Frame | undefined => { const k = themeProps[key]; return (k ? frames[k] ?? frames[`w${world}.${k}`] : undefined) ?? frames[`w${world}.${key}`]; },
+    setTheme(props: Record<string, string>) { themeProps = props; },
     /** 世界座標（z=0）→ CSS 像素（給 DOM 跳字） */
     project(x: number, y: number) { const p = proj(x, y, 0); out.x = p.x; out.y = p.y; return out; },
     setQuality(cap: number, _d: number) { dprCap = cap; resize(); }, // 背景層已經便宜到不用分級；detail 留給粒子
