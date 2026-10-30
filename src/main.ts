@@ -1,8 +1,8 @@
 // 開機、主迴圈、輸入、存檔、事件 → 手感回饋（音效／粒子／震動／慢動作／跳字）。流程狀態機在 flow.ts，一局結束的節拍在 beat.ts。
 // 主迴圈：物理固定 120 Hz（sim.ts），畫面在前後兩個物理狀態之間插值（90／120 Hz 螢幕不會一頓一頓）；按下的瞬間會鎖存到下一個物理步（快速點擊不會遺失）。
 import { cg } from './cg.ts';
-import { TUNE as T, WORLDS, SKINS, TRAILS, TONGUES } from './config.ts';
-import type { Skin, TongueSpec, TrailSpec } from './config.ts';
+import { TUNE as T, WORLDS, SKINS, TRAILS, TONGUES, THEMES, THEME_LEVELS, themeKey, themeItems, ownsTheme, themePrice } from './config.ts';
+import type { Skin, TongueSpec, TrailSpec, Theme } from './config.ts';
 import { generateLevel, newElements, LEVEL_COUNT, levelLabel, worldOf, createEndless, extendEndless, endlessWorld } from './level.ts';
 import { createSim, step, movePos, flyPos, burstOn, burstWarn, padSnapshot, ringPoints } from './sim.ts';
 import { makeBot } from './bot.ts';
@@ -107,7 +107,7 @@ const hooks = {
   look(skin: string, trail?: string, tongue?: string) { applyLook(SKINS.find((k) => k.id === skin), TRAILS.find((k) => k.id === trail), TONGUES.find((k) => k.id === tongue)); },
   forceDie() { const s = G.sim; if (s && s.mode !== 'dead') { s.mode = 'air'; s.tongue.state = 'idle'; s.y = 0.1; s.vy = -5; } },
   forceWin() { const s = G.sim, g = G.lv?.goal; if (!s || !g) return; UI.dieText(null); s.tongue.state = 'idle'; s.mode = 'air'; s.x = g.x; s.y = g.y + 4; s.vx = 0; s.vy = -4; },
-  skip() { skipBeat(); }, get flow() { return G.flow; }, get beat() { return G.beat ? { t: G.beatT, total: G.beat.total, skipAfter: G.beat.skipAfter } : null; }, get coinsInFlight() { return G.coinsInFlight; },
+  skip() { skipBeat(); }, get flow() { return G.flow; }, get theme() { return save.theme; }, buySet(id: string) { const th = THEMES.find((x) => x.id === id); if (th) shopSet(th); }, get beat() { return G.beat ? { t: G.beatT, total: G.beat.total, skipAfter: G.beat.skipAfter } : null; }, get coinsInFlight() { return G.coinsInFlight; },
   set camOverride(v: { p: [number, number, number] } | null) { G.camOv = v; }, set freeze(v: boolean) { G.freeze = !!v; },
   setTier(n: TierName) { setTier(n); }, setLow() { setTier('low'); },
   emit(e: SimEvent) { if (G.sim) onEvent({ x: G.sim.x, y: G.sim.y, ...e } as SimEvent); },
@@ -124,6 +124,8 @@ const skinOf = (): Skin => SKINS.find((s) => s.id === save.skin) ?? SKINS[1];
 const trailOf = (): TrailSpec => TRAILS.find((x) => x.id === save.trail) ?? TRAILS[0];
 const tongueOf = (): TongueSpec => TONGUES.find((x) => x.id === save.tongue) ?? TONGUES[0];
 function applyLook(sk: Skin = skinOf(), tr: TrailSpec = trailOf(), tk: TongueSpec = tongueOf()): void { frog.setSkin(sk); fx.setTrail(tr); frog.setTongue(tk); if (sk.kind === 'cat') A.wantOiia(); }
+// 主題：道具替換表（起點、終點、蒼蠅……）與音效替換表跟著 save.theme；沒套用主題就全部用世界預設
+function applyTheme(): void { const th = THEMES.find((x) => x.id === save.theme); view.setTheme(th?.props ?? {}); lvView.setTheme(th?.props ?? {}); A.setTheme(th?.sfx ?? {}); }
 const vibrate = (p: number | number[]) => { try { navigator.vibrate?.(p); } catch { /* 不支援就算了 */ } };
 const sfx = (n: string, o?: A.PlayOpts) => A.play(n, o);
 
@@ -185,7 +187,8 @@ function startLevel(n: number): void {
   // 世界圖集還沒到（第一次進這個世界、或剛切過世界）：先換世界讓它開始載，到了再開；不然鉤子、荷葉會等圖集到了才冒出來
   if (!view.worldReady(wi)) { pendingStart = n; setWorld(wi); void view.ensureWorld(wi).then(() => { if (pendingStart === n) { pendingStart = 0; startLevel(n); } }); return; }
   pendingStart = 0; void ensureJuice();
-  if (!dispatch(n >= LEVEL_COUNT ? 'startLast' : 'start')) return;
+  const last = n === LEVEL_COUNT || (n > LEVEL_COUNT && (n - LEVEL_COUNT) % THEME_LEVELS === 0); // 主線最後一關、主題系列最後一關：過了回選單
+  if (!dispatch(last ? 'startLast' : 'start')) return;
   if (n % 15 === 0 && wi + 1 < WORLDS.length) prefetch(`w${wi + 1}`); // 這個世界的最後一關：先把下一個世界的圖集下載解碼好
   beginRun();
   A.initAudio();
@@ -194,7 +197,7 @@ function startLevel(n: number): void {
   cg.gameplayStart(); clearHold(); UI.show(null); UI.hint(null);
   G.cam.x = G.sim!.x + 6; G.cam.y = G.lv!.world === 5 ? T.CAM_MIN_Y_DUNE : T.CAM_MIN_Y; juice.levelIn(G.sim!);
   const ne = newElements(n)[0]; UI.newCard(ne ? t(`new.${ne}`) : null);
-  UI.popup((n - 1) % 15 === 0 ? t('pop.worldLevel', { world: t(`world.${G.lv!.world}`, null, WORLDS[G.lv!.world].name), level: levelLabel(n) }) : t('pop.level', { level: levelLabel(n) }), innerWidth / 2, bigY(), 'big');
+  UI.popup(n <= LEVEL_COUNT && (n - 1) % 15 === 0 ? t('pop.worldLevel', { world: t(`world.${G.lv!.world}`, null, WORLDS[G.lv!.world].name), level: levelLabel(n) }) : t('pop.level', { level: levelLabel(n) }), innerWidth / 2, bigY(), 'big');
 }
 function startEndless(): void {
   if (save.unlocked <= ENDLESS_UNLOCK || !dispatch('startEndless')) return;
@@ -449,7 +452,10 @@ function goNextUp(): void {
   else openShop(st.item);
 }
 // 選關背景：切到哪個世界分頁就換成那個世界（換世界只是換色，沒有載入成本）
-function levelsBackdrop(w: number): void { const n = Math.min(w * 15 + 1, save.unlocked); if (worldOf(n) !== G.lv?.world || G.endless) loadLevel(n); }
+function levelsBackdrop(w: number): void {
+  const n = w >= WORLDS.length ? LEVEL_COUNT + (w - WORLDS.length) * THEME_LEVELS + 1 : Math.min(w * 15 + 1, save.unlocked); // 主題分頁：系列第一關（道具是主題版）
+  if (worldOf(n) !== G.lv?.world || G.endless || (n > LEVEL_COUNT) !== (G.level > LEVEL_COUNT)) loadLevel(n);
+}
 function openLevels(): void { if (!dispatch('levels')) return; sfx('click'); G.beat = null; if (G.sim && G.sim.mode !== 'perch') resetRun(true); clearHold(); UI.setWorldTab(save.unlocked); UI.renderLevels(save, (n) => { sfx('click'); startLevel(n); }, levelsBackdrop); levelsBackdrop(worldOf(save.unlocked)); UI.show('levels'); }
 function openRecords(): void { if (!dispatch('records')) return; sfx('click'); clearHold(); UI.renderRecords(save, G.lastResult?.score); UI.show('records'); }
 // 商店展示台的旋轉貓：第一次開商店才掛上（圖片到那時才下載）；畫布 2 倍解析度（CSS 最大 230px）
@@ -457,10 +463,24 @@ function openShop(hi: ShopItem | null = null): void {
   void loadCatStage().then((m) => m.catStage(document.getElementById('showSpin') as HTMLCanvasElement, 460, { feet: 0.97, height: 0.9 }));
   if (!dispatch('shop')) return;
   sfx('click'); if (G.sim && G.sim.mode !== 'perch') resetRun(true); clearHold();
+  if (!save.saleAt) { save.saleAt = Date.now(); persist(); } // 組合包的限時特價從第一次開商店算起
   G.shopHi = hi?.id ?? null; if (hi) UI.setShopTab(hi.tab);
   renderShop(); UI.show('shop'); UI.tryNow(null);
 }
-function renderShop(): void { UI.renderShop(save, (tab, it) => shopPick(tab, it), G.shopHi); }
+function renderShop(): void { UI.renderShop(save, (tab, it) => shopPick(tab, it), G.shopHi, shopSet); }
+// 組合包：沒擁有→買（全部進 owned，含系列關卡）；擁有→一鍵套用整套（角色、舌頭、拖尾、道具、音效）
+function shopSet(th: Theme): void {
+  const owned = ownsTheme(save.owned, th);
+  if (!owned) {
+    const price = themePrice(th, save.saleAt, Date.now());
+    if (save.coins < price) { sfx('miss'); TM.want(`set_${th.id}`, price, save.coins); return; }
+    save.coins -= price; for (const id of [themeKey(th.id), ...themeItems(th)]) if (!save.owned.includes(id)) save.owned.push(id);
+    sfx('buy'); UI.setCoins(save.coins); TM.buy(`set_${th.id}`, price);
+  } else sfx('click');
+  save.theme = th.id; save.skin = th.skin; save.tongue = th.tongue; save.trail = th.trail;
+  frog.squash(0.6, 0); frog.jiggle(6); applyLook(); applyTheme(); persist(); renderShop();
+  if (!owned) { const sk = SKINS.find((k) => k.id === th.skin)!; G.bought = { ...sk, tab: 'skins' }; UI.tryNow(sk.name, sk); }
+}
 function shopPick(tab: ShopTab, it: Skin | TongueSpec | TrailSpec): void {
   let bought = false;
   if (!save.owned.includes(it.id)) {
@@ -776,7 +796,7 @@ async function boot(): Promise<void> {
   // SDK 就緒：雲端存檔跟目前的合併（成就取並集、狀態聽較新的，永遠不丟進度），合併結果寫回兩邊；沒開局的話選單重畫
   cg.onReady(() => {
     save = mergeSave(save, readSave('cloud'), LEVEL_COUNT); persist();
-    if (G.startedAt === 0 && (G.state === 'menu' || G.state === 'boot')) { applyLook(); UI.hudCoins(save.coins); if (G.state === 'menu') toMenu(); }
+    if (G.startedAt === 0 && (G.state === 'menu' || G.state === 'boot')) { applyLook(); applyTheme(); UI.hudCoins(save.coins); if (G.state === 'menu') toMenu(); }
   });
   // 介面語言：?lang= > 玩家自己選的 > CrazyGames locale > 瀏覽器 > English；?lang=xx 是版面測試用的加長假語言
   if (urlLang() === 'xx') enablePseudo();
@@ -789,7 +809,7 @@ async function boot(): Promise<void> {
   onLang(() => { if (G.state === 'menu') toMenu(); else if (G.state === 'paused') pauseMeta(); });
   G.touch = matchMedia?.('(pointer: coarse)').matches ?? false;
   setTier(gov.tier);
-  applyLook(); UI.hudCoins(save.coins);
+  applyLook(); applyTheme(); UI.hudCoins(save.coins);
   A.setMusic(save.music); A.setSfx(save.sfx); UI.setToggles(save);
   cg.onMute((m) => A.setMuted(m));
   TM.bind(() => ((RUN.has(G.state) || G.state === 'paused') && !G.endless && G.sim && G.lv ? { level: G.level, x: G.sim.maxX, prog: Math.min(1, G.sim.maxX / G.lv.goal.x) } : null));
