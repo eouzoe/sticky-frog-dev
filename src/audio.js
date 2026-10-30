@@ -1,6 +1,6 @@
 // WebAudio 程序合成：多層音效（音高隨機 ±7%）＋短循環音樂（大時刻壓低 ducking）。
 let ctx = null, master, sfx, music, duck, noiseBuf;
-let musicOn = true, sfxOn = true, muted = false, musicTimer = null, step16 = 0, nextT = 0, worldI = 0;
+let musicOn = true, sfxOn = true, muted = false, step16 = 0, nextT = 0, worldI = 0;
 const VOL = 0.8;
 
 const rnd = (a = 0.07) => 1 + (Math.random() * 2 - 1) * a;
@@ -120,7 +120,7 @@ export function beatPos() {
 }
 function startMusic() {
   nextT = ctx.currentTime + 0.1;
-  musicTimer = setInterval(() => {
+  setInterval(() => {
     if (!ctx || ctx.state !== 'running') return;
     const m = WORLD_MUSIC[worldI], sp = 60 / m.bpm / 4;
     while (nextT < ctx.currentTime + 0.15) {
