@@ -23,6 +23,7 @@ const TAU = Math.PI * 2, BLADE_PERIOD = TAU / 3;
 export function createLevelView(view: View) {
   const F = view.frames, wf = view.wf, spr = view.spr;
   let lv: Level | null = null, wi = 0, intro = 9, introX = 0, goalBounce = 0, hazard = 0x333333, rock = 0xffffff, bfly = 0xffffff;
+  let flyFrame: Frame | undefined; // 主題把蒼蠅換成別的東西時的那一格
   let S: Sim | null = null, T = 0, mouth: XY = { x: 0, y: 0 };
   const st = { target: -1, attached: -1, flyGone: [] as number[], ringGone: [] as number[], boostGone: [] as number[], padOn: [] as number[], padBounce: [] as number[], hookWob: [] as number[], hookWobV: [] as number[], mushK: [] as number[], mushKV: [] as number[] };
 
@@ -186,6 +187,7 @@ export function createLevelView(view: View) {
       if (k <= 0.01 || !vis(x)) return;
       k *= pop(x);
       const rot = Math.sin(t * 10 + i) * 0.2, flap = 0.55 + 0.45 * Math.abs(Math.sin(t * 46 + i));
+      if (flyFrame) { spr(flyFrame, x, y + Math.sin(t * 6 + i) * 0.12, 0, rot * 0.6, k * 1.3, k * 1.3, 0xffffff, 1, false); return; } // 主題替換（例如小魚乾）：單張、輕輕浮
       spr(F['fly.wingL'], x, y, 0, rot, k, k * flap, 0xffffff, 0.85, false);
       spr(F['fly.body'], x, y, 0, rot, k, k, 0xffffff, 1, false);
       spr(F['fly.wingR'], x, y, 0, rot, k, k * flap, 0xffffff, 0.85, false);
@@ -216,6 +218,7 @@ export function createLevelView(view: View) {
     landPad(i: number) { st.padOn[i] = 1; st.padBounce[i] = 1; },
     takeBoost(i: number) { st.boostGone[i] = 0.001; },
     intro(x: number) { intro = 0; introX = x; },
+    setTheme(props: Record<string, string>) { flyFrame = props.fly ? F[props.fly] : undefined; }, // 其他道具（起點、終點）走 view.wf 的替換表
   };
 }
 export type LevelView = ReturnType<typeof createLevelView>;
