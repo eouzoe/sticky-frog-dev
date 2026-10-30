@@ -2,8 +2,10 @@
 import { SKINS, TRAILS, TONGUES } from './config.js';
 
 export const SAVE_KEY = 'sticky-frog-v1';
+export const SAVE_VERSION = 2; // 2: adds v and updatedAt (local/cloud merge)
 export const ENDLESS_UNLOCK = 5; // 破第 5 關解鎖無盡模式
 export const DEFAULT_SAVE = {
+  v: SAVE_VERSION, updatedAt: 0, // save format version; last write time (ms) — mergeSave uses it to decide which copy state-type fields come from
   unlocked: 1, stars: {}, best: {}, coins: 0, skin: 'tree', trail: 'none', tongue: 'tongue', owned: ['tree', 'none', 'tongue'],
   music: true, sfx: true, grabs: 0, last: 1, worldsDone: [], clears: 0,
   feats: {}, lb: [], endlessBest: 0, endlessRuns: 0,
@@ -19,6 +21,7 @@ const obj = (v) => (typeof v === 'object' && v && !Array.isArray(v) ? { ...v } :
 // 任何來源（舊版有 results 欄位、壞掉的 JSON 片段）都整理成合法存檔；不認得的欄位丟掉。stars（每關最佳星數 1–3）沿用舊存檔
 export function normalizeSave(raw, levelCount) {
   const r = obj(raw), s = { ...DEFAULT_SAVE };
+  s.v = SAVE_VERSION; s.updatedAt = int(r.updatedAt, 0, 4102444800000, 0); // legacy saves have no timestamp: 0 = oldest
   s.unlocked = int(r.unlocked, 1, levelCount, 1); s.last = int(r.last, 1, levelCount, 1);
   const unlocked0 = s.unlocked;
   s.coins = int(r.coins, 0, 1e9, 0); s.grabs = int(r.grabs, 0, 1e9, 0); s.clears = int(r.clears ?? r.results, 0, 1e9, 0);
@@ -43,6 +46,31 @@ export function normalizeSave(raw, levelCount) {
   // 75 關時代的存檔（第 75 關破了但 unlocked 被舊上限壓在 75）→ 補成 76（第 6 世界夕陽沙丘開放，同樣被推薦成新世界）
   if (levelCount > 75 && s.unlocked === 75 && s.stars[75]) s.unlocked = 76;
   s.seen = { endless: seen.endless ?? s.unlocked > ENDLESS_UNLOCK, world: int(seen.world, 0, Math.floor((levelCount - 1) / 15), Math.floor((unlocked0 - 1) / 15)) };
+  return s;
+}
+
+// Merge two saves (local vs cloud, or two devices). Never loses progress: achievement-type fields take the union or maximum
+// (unlocked, stars, best scores, feats, leaderboard, owned items, endless records, seen flags); state-type fields (coins,
+// current level, equipment, settings, language) follow the copy with the newer updatedAt. Coins cannot take the maximum:
+// that would resurrect spent coins. A legacy save without updatedAt is treated as the oldest copy.
+export function mergeSave(a, b, levelCount) {
+  const n = a.updatedAt >= b.updatedAt ? a : b;
+  const s = normalizeSave({ ...n }, levelCount);
+  s.updatedAt = Math.max(a.updatedAt, b.updatedAt);
+  s.unlocked = Math.max(a.unlocked, b.unlocked); s.last = Math.min(n.last, s.unlocked);
+  s.grabs = Math.max(a.grabs, b.grabs); s.clears = Math.max(a.clears, b.clears);
+  s.endlessBest = Math.max(a.endlessBest, b.endlessBest); s.endlessRuns = Math.max(a.endlessRuns, b.endlessRuns);
+  for (const src of [a, b]) {
+    for (const [k, v] of Object.entries(src.stars)) if (v > (s.stars[k] ?? 0)) s.stars[k] = v;
+    for (const [k, v] of Object.entries(src.best)) if (v > (s.best[k] ?? 0)) s.best[k] = v;
+    // feats record both "higher is better" and "lower is better" bests; without the direction, keep the copy with more completions, newer wins ties
+    for (const [k, f] of Object.entries(src.feats)) { const cur = s.feats[k]; if (!cur || f.count > cur.count || (f.count === cur.count && src === n)) s.feats[k] = { ...f }; }
+  }
+  s.owned = [...new Set([...s.owned, ...a.owned, ...b.owned])];
+  s.worldsDone = [...new Set([...a.worldsDone, ...b.worldsDone])];
+  s.lb = [...a.lb, ...b.lb].filter((e, i, arr) => arr.findIndex((x) => x.score === e.score && x.dist === e.dist && x.day === e.day) === i).sort((x, y) => y.score - x.score).slice(0, 10);
+  s.seen = { endless: a.seen.endless || b.seen.endless, world: Math.max(a.seen.world, b.seen.world) };
+  s.tutTouch = a.tutTouch || b.tutTouch; s.privSeen = a.privSeen || b.privSeen;
   return s;
 }
 
