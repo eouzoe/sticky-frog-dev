@@ -11,7 +11,7 @@ import { createFx, SH } from './fx.js';
 import * as A from './audio.js';
 import * as UI from './ui.js';
 import { createFeatTracker, featById, recordFeat } from './feats.js';
-import { SAVE_KEY, DEFAULT_SAVE, ENDLESS_UNLOCK, normalizeSave, nextStep, rateStars, recordStars } from './save.js';
+import { SAVE_KEY, DEFAULT_SAVE, ENDLESS_UNLOCK, normalizeSave, mergeSave, nextStep, rateStars, recordStars } from './save.js';
 import { addLocal, submitPlatform } from './leaderboard.js';
 import { tongueTexture } from './tongues.js';
 import { t, itemName, setLang, onLang, detect, urlLang, navLangs, sdkInfo, mountPicker, enablePseudo, audit } from './i18n.js';
@@ -76,7 +76,7 @@ window.__game = {
 };
 
 // ---------- 存檔 ----------
-const persist = () => cg.saveJSON(SAVE_KEY, save);
+const persist = () => { save.updatedAt = Date.now(); cg.saveJSON(SAVE_KEY, save); }; // stamps the write time: mergeSave decides by it
 const skinOf = () => SKINS.find((s) => s.id === save.skin) ?? SKINS[1];
 const trailOf = () => TRAILS.find((t) => t.id === save.trail) ?? TRAILS[0];
 const tongueOf = () => TONGUES.find((t) => t.id === save.tongue) ?? TONGUES[0];
@@ -735,15 +735,17 @@ async function startSdk() {
 }
 // 存檔還沒讀之前（SDK 雲端存檔要 init 完才讀得到）先偷看 localStorage，猜該先載哪個世界與造型；猜錯只是讀完存檔後多等一個小包
 function peekSave() { try { const r = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null') ?? {}; return { last: Math.min(r.last || 1, r.unlocked || 1), skin: r.skin || DEFAULT_SAVE.skin }; } catch { return { last: 1, skin: DEFAULT_SAVE.skin }; } }
+function readSave(from) { let raw = null; try { raw = JSON.parse(cg.getItem(SAVE_KEY, from) || 'null'); } catch { raw = null; } return normalizeSave(raw, LEVEL_COUNT); }
 async function boot() {
   cg.loadingStart();
   const hint = peekSave(), frac = {};
   const prog = (k) => (f) => { frac[k] = f; setBoot(0.08 + 0.8 * (Object.values(frac).reduce((a, b) => a + b, 0) / 4)); };
   const art = Promise.all([loadPack('core', prog('core')), ...levelPacks(hint.last).map((k) => loadPack(k, prog(k))), ensureSkin(hint.skin, prog('skin'))]);
-  await Promise.all([startSdk(), art]); // SDK 與素材同時進行
+  void startSdk(); // the SDK no longer gates boot: the menu opens from the local save; when the SDK reports ready (possibly after the menu, even mid-level) the cloud copy is merged in
+  await art;
   setBoot(0.92);
-  let raw = null; try { raw = JSON.parse(cg.getItem(SAVE_KEY) || 'null'); } catch { raw = null; }
-  save = normalizeSave(raw, LEVEL_COUNT); // 舊存檔（有 stars 欄位）也走這裡
+  save = readSave('local'); // legacy saves (stars field) normalise here too
+  cg.onReady(() => { save = mergeSave(save, readSave('cloud'), LEVEL_COUNT); persist(); if (G.state === 'menu') toMenu(); });
   await Promise.all([...levelPacks(Math.min(save.last, save.unlocked)).map((k) => loadPack(k)), ensureSkin(save.skin)]); // 偷看猜錯時補載
   // 介面語言：?lang= > 玩家自己選的 > CrazyGames locale > 瀏覽器 > English（src/i18n.js detect）；?lang=xx 是版面測試用的加長假語言
   if (urlLang() === 'xx') enablePseudo();

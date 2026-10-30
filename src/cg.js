@@ -10,6 +10,7 @@ const sdk = () => window.CrazyGames?.SDK;
 const GAP_MS = 1100;
 const HAPPY_GAP_MS = 10000;
 let ready = false;
+const readyFns = new Set(); // callbacks waiting for the SDK (the game merges the cloud save here)
 let playing = false; // what the game asked for
 let sdkPlaying = false; // what the SDK was last told
 let lastGameplayCall = -Infinity;
@@ -49,9 +50,12 @@ export const cg = {
       syncGameplay(true);
       sdk().game.addSettingsChangeListener?.(emitMute);
       emitMute();
+      readyFns.forEach((fn) => fn());
     } catch (e) { console.warn('[cg] init failed, running without SDK', e); }
   },
   get ready() { return ready; },
+  // Runs fn once the SDK is initialised (immediately if it already is). Used to merge the cloud save after a late SDK.
+  onReady(fn) { readyFns.add(fn); if (ready) fn(); },
   loadingStart() { loading = true; call((s) => s.game.loadingStart()); },
   loadingStop() { loading = false; call((s) => s.game.loadingStop()); },
   // Call when play begins/resumes (round start, revive, next level). Deduped and rate-limited.
@@ -69,9 +73,20 @@ export const cg = {
   midgame() { return rewardedThisBreak ? Promise.resolve() : requestAd('midgame').then(() => {}); },
   // Rewarded: resolves true only on adFinished. Block the UI until it resolves; never reward on false.
   rewarded() { return requestAd('rewarded'); },
-  // Same API as localStorage. Uses the SDK data module (cloud save) when ready, else localStorage.
-  getItem(key) { try { return ready && sdk().data ? sdk().data.getItem(key) : localStorage.getItem(key); } catch { return null; } },
-  setItem(key, value) { try { ready && sdk().data ? sdk().data.setItem(key, String(value)) : localStorage.setItem(key, String(value)); } catch {} },
+  // Same API as localStorage. from: 'auto' reads the cloud save when the SDK is ready, else localStorage; 'local' and 'cloud' read one source ('cloud' is null until ready).
+  getItem(key, from = 'auto') {
+    try {
+      const hasCloud = ready && !!sdk().data;
+      if (from === 'cloud' && !hasCloud) return null;
+      return from === 'cloud' || (from === 'auto' && hasCloud) ? sdk().data.getItem(key) : localStorage.getItem(key);
+    } catch { return null; }
+  },
+  // Always mirrors to localStorage (so a late SDK can never replace local progress) and also writes to the cloud when ready.
+  setItem(key, value) {
+    const v = String(value);
+    try { localStorage.setItem(key, v); } catch {}
+    if (ready && sdk().data) { try { sdk().data.setItem(key, v); } catch (e) { console.warn('[cg] setItem', e); } }
+  },
   loadJSON(key, fallback) { try { const v = cg.getItem(key); return v ? { ...fallback, ...JSON.parse(v) } : { ...fallback }; } catch { return { ...fallback }; } },
   saveJSON(key, obj) { cg.setItem(key, JSON.stringify(obj)); },
 };
