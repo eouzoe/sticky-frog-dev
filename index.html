@@ -20,14 +20,14 @@
   --berry: #ff4f86; --berry-hi: #ff9cbc; --berry-lo: #f2306f; --berry-deep: #b5174e;
   --lock: #d4cee0; --lock-deep: #a198b6; --ink-soft: #2a2340;
   --spring: cubic-bezier(.34, 1.8, .5, 1); --settle: cubic-bezier(.2, .8, .2, 1); --deflate: cubic-bezier(.5, 0, .9, .4);
-  --w-deep: #0f6b55; --w-tint: #e9fff1; --w-glass: rgba(220, 255, 240, .38); --w-accent: #ff5fa8;
+  --w-deep: #0f6b55; --w-tint: #e9fff1; --w-glass: rgba(220, 255, 240, .58); --w-accent: #ff5fa8;
   --safe-t: max(12px, env(safe-area-inset-top)); --safe-l: max(14px, env(safe-area-inset-left)); --safe-r: max(14px, env(safe-area-inset-right)); --safe-b: max(12px, env(safe-area-inset-bottom));
 }
-body[data-world="1"] { --w-deep: #b02a74; --w-tint: #fff0f8; --w-glass: rgba(255, 230, 245, .42); --w-accent: #7be0ff; }
-body[data-world="2"] { --w-deep: #2a1458; --w-tint: #f1ecff; --w-glass: rgba(150, 130, 230, .34); --w-accent: #00f0ff; }
-body[data-world="3"] { --w-deep: #5a1a1a; --w-tint: #fff3e6; --w-glass: rgba(90, 30, 20, .30); --w-accent: #ffb020; }
-body[data-world="4"] { --w-deep: #1d5f94; --w-tint: #eef9ff; --w-glass: rgba(190, 228, 255, .40); --w-accent: #ff4f7a; }
-body[data-world="5"] { --w-deep: #8e2f6b; --w-tint: #fff1e6; --w-glass: rgba(255, 196, 150, .38); --w-accent: #27d9c8; }
+body[data-world="1"] { --w-deep: #b02a74; --w-tint: #fff0f8; --w-glass: rgba(255, 230, 245, .58); --w-accent: #7be0ff; }
+body[data-world="2"] { --w-deep: #2a1458; --w-tint: #f1ecff; --w-glass: rgba(150, 130, 230, .58); --w-accent: #00f0ff; }
+body[data-world="3"] { --w-deep: #5a1a1a; --w-tint: #fff3e6; --w-glass: rgba(90, 30, 20, .58); --w-accent: #ffb020; }
+body[data-world="4"] { --w-deep: #1d5f94; --w-tint: #eef9ff; --w-glass: rgba(190, 228, 255, .58); --w-accent: #ff4f7a; }
+body[data-world="5"] { --w-deep: #8e2f6b; --w-tint: #fff1e6; --w-glass: rgba(255, 196, 150, .58); --w-accent: #27d9c8; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { width: 100%; height: 100%; overflow: hidden; background: #a8e6ff; font-family: var(--font); font-weight: 800; color: #fff;
   user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
@@ -35,10 +35,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 svg.i { width: 1em; height: 1em; display: inline-block; vertical-align: -.14em; flex: none; }
 canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; display: block; }
 .ov { position: fixed; inset: 0; pointer-events: none; }
-#vignette { background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 20, 30, .32) 100%); }
 #flash { background: #fff; opacity: 0; z-index: 60; }
-#frost { display: none; background: rgba(255, 255, 255, .06); -webkit-backdrop-filter: blur(4px) saturate(1.1); backdrop-filter: blur(4px) saturate(1.1); }
-body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-screen="shop"] #frost, body[data-screen="records"] #frost { display: block; }
 .tx { color: #fff; paint-order: stroke fill; -webkit-text-stroke: 7px var(--w-deep); text-shadow: 0 4px 0 var(--w-deep); letter-spacing: .5px; }
 .num { font-variant-numeric: tabular-nums; }
 
@@ -73,7 +70,7 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
 /* bubble (glass, tier 3) */
 .bub { position: relative; width: 52px; height: 52px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 24px; color: #fff; flex: none;
   background: radial-gradient(circle at 50% 120%, rgba(255,255,255,.35), transparent 60%), var(--w-glass);
-  -webkit-backdrop-filter: blur(8px) saturate(1.4); backdrop-filter: blur(8px) saturate(1.4);
+
   box-shadow: inset 0 0 0 2px rgba(255,255,255,.75), inset 0 -6px 10px rgba(255,255,255,.2), 0 6px 16px rgba(10, 30, 50, .2); transition: transform .12s var(--settle); }
 .bub::before { content: ''; position: absolute; left: 10px; top: 8px; width: 18px; height: 14px; background: radial-gradient(circle at 5px 5px, #fff 0 4px, transparent 5px), radial-gradient(circle at 13px 10px, #fff 0 2px, transparent 3px); }
 .bub::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; }
@@ -88,7 +85,7 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
 @keyframes relB { 0% { transform: scale(1.1, .86); } 45% { transform: scale(.94, 1.08); } 100% { transform: none; } }
 
 .cap { display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 16px 0 8px; border-radius: 999px; font-size: 26px;
-  background: var(--w-glass); -webkit-backdrop-filter: blur(8px) saturate(1.4); backdrop-filter: blur(8px) saturate(1.4);
+  background: var(--w-glass);
   box-shadow: inset 0 0 0 2px rgba(255,255,255,.75), 0 6px 16px rgba(10, 30, 50, .18); }
 .cap .i { font-size: 34px; }
 .bump { animation: bump .22s var(--settle); }
@@ -122,16 +119,11 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
 #boot.out { opacity: 0; transform: scale(1.06); pointer-events: none; }
 #bootLogo { display: flex; flex-direction: column; align-items: center; line-height: .86; font-size: clamp(56px, 11vw, 112px); animation: inflate .6s var(--spring) both; transform-origin: 50% 90%; }
 #bootLogo .w { display: flex; } #bootLogo .w2 { margin-top: -.06em; margin-left: .7em; }
-/* 載入畫面用較小的貓咪轉圈圖（8 格 192px，約 1/4 大小）；steps(8, jump-none) 剛好停在每一格正中 */
-#boot .spin, #wload .spin { background: url('./ui/cat-turn-boot.webp') 0 0 / 800% 100% no-repeat; animation: turn 1.6s steps(8, jump-none) infinite; }
-#boot .spin { width: 180px; height: 180px; margin: 0; }
 #bootBar { width: min(260px, 60vw); height: 22px; border-radius: 999px; background: rgba(255,255,255,.65); box-shadow: inset 0 0 0 2px rgba(255,255,255,.9), inset 0 4px 0 rgba(0,0,0,.08), 0 5px 0 rgba(40,120,150,.35); overflow: hidden; }
 #bootBar i { display: block; height: 100%; width: 8%; border-radius: 999px; background: linear-gradient(var(--go-hi), var(--go) 55%, var(--go-lo)); box-shadow: inset 0 -4px 0 rgba(0,0,0,.08); transition: width .3s var(--settle); animation: bootFill 20s linear forwards; }
 #boot.done #bootBar i { animation: none; width: 100%; transition: width .2s; }
 @keyframes bootFill { to { width: 40%; } } /* JS 還沒起來時慢慢爬，讓人知道沒當掉；起來後 window.__bootP 接手 */
-#wload { position: fixed; inset: 0; z-index: 80; display: none; place-items: center; background: rgba(168, 230, 255, .55); } #wload.on { display: grid; }
-#wload .spin { width: 150px; height: 150px; margin: 0; }
-@media (orientation: portrait) and (max-width: 600px) { #bootLogo { font-size: 74px; } #boot .spin { width: 150px; height: 150px; } }
+@media (orientation: portrait) and (max-width: 600px) { #bootLogo { font-size: 74px; } }
 #logo { display: flex; flex-direction: column; align-items: center; line-height: .86; font-size: clamp(56px, 8.4vw, 112px); animation: breathe 4s ease-in-out infinite; transform-origin: 50% 90%; margin-bottom: 6px; }
 #logo .w { display: flex; }
 #logo .w2 { margin-top: -.06em; margin-left: .7em; }
@@ -156,7 +148,8 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
 .hero { position: relative; display: grid; justify-items: center; align-self: end; margin-bottom: 4vh; }
 .hero .pad { position: absolute; bottom: 34px; width: 92%; height: 70px; border-radius: 50%;
   background: radial-gradient(ellipse at 50% 30%, #8af5b0, #2fcf6c 55%, #1a9c50); box-shadow: 0 10px 0 #12804a, 0 22px 30px rgba(10, 40, 30, .3), inset 0 4px 0 rgba(255,255,255,.5); }
-.hero img { position: relative; width: min(34vw, 380px); aspect-ratio: 1; margin-bottom: 30px; animation: idle 2.6s ease-in-out infinite; transform-origin: 50% 88%; filter: drop-shadow(0 8px 6px rgba(0, 40, 20, .25)); pointer-events: none; }
+.hero canvas { position: relative; width: min(34vw, 380px); aspect-ratio: 1; margin-bottom: 30px; animation: idle 2.6s ease-in-out infinite; transform-origin: 50% 88%; filter: drop-shadow(0 8px 6px rgba(0, 40, 20, .25)); pointer-events: none; }
+.hero canvas.tap { pointer-events: auto; cursor: pointer; } /* 旋轉貓：點一下就轉（src/render/portraits.ts 的 catStage） */
 @keyframes idle { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.025, .975); } }
 .hero .tag { position: relative; min-height: 46px; font-size: 18px; padding: 0 18px; margin-top: -8px; }
 .hero .tag small { font-size: 13px; opacity: .65; margin-left: 4px; }
@@ -197,8 +190,7 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
 .show > * { position: relative; }
 .ribbon { align-self: flex-start; display: inline-flex; gap: 6px; align-items: center; height: 32px; padding: 0 14px; border-radius: 999px; font-size: 16px; color: #fff;
   background: linear-gradient(var(--berry-hi), var(--berry) 55%); box-shadow: 0 3px 0 var(--berry-deep), inset 0 0 0 2px rgba(255,255,255,.4); }
-.spin { width: 230px; height: 230px; margin: 2px 0 -8px; background: url('./ui/cat-turn.webp') 0 0 / 1600% 100% no-repeat; animation: turn 2.4s steps(16) infinite; }
-@keyframes turn { to { background-position: 100% 0; } }
+.spin { width: 230px; height: 230px; margin: 2px 0 -8px; } /* 旋轉貓舞台（畫布，迷因的節奏由 src/render/portraits.ts 的 catStage 畫） */
 .pedestal { width: 210px; height: 36px; border-radius: 50%; background: radial-gradient(ellipse at 50% 30%, #fff, #ffd9a0 70%); box-shadow: 0 6px 0 #e8a24a, 0 14px 18px rgba(80, 40, 0, .25); margin-top: -14px; }
 .show h2 { font-size: 34px; margin-top: 12px; color: var(--ink-soft); white-space: nowrap; }
 .show .sub { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; margin-top: 2px; padding: 4px 12px; border-radius: 999px; background: rgba(255,255,255,.7); white-space: nowrap; }
@@ -280,11 +272,8 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
 .stats span { display: block; font-size: 12px; opacity: .6; }
 .stats b { font-size: 22px; }
 #ovRetry { width: 100%; margin-top: 14px; }
-#ovDouble .vid { font-size: 20px; }
 #pMeta { font-size: 17px; opacity: .7; margin-bottom: 18px; }
 #pause .tg { display: flex; justify-content: center; gap: 14px; margin-top: 4px; }
-#block .center { background: rgba(15, 30, 40, .45); }
-.spinner { width: 64px; height: 64px; border-radius: 50%; background: conic-gradient(var(--sun) 0 25%, var(--berry) 0 50%, var(--go) 0 75%, #7be0ff 0); animation: rays .9s linear infinite; box-shadow: inset 0 0 0 12px rgba(255,255,255,.85); }
 
 /* LEVEL RESULT */
 #resPanel { width: min(480px, calc(100vw - 32px)); padding: 44px 26px 24px; }
@@ -320,7 +309,7 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
 #hud { display: none; }
 #hud.on { display: block; }
 .plate { position: fixed; left: var(--safe-l); top: var(--safe-t); padding: 8px 18px 10px 14px; border-radius: 22px; background: var(--w-glass); pointer-events: none;
-  -webkit-backdrop-filter: blur(8px) saturate(1.4); backdrop-filter: blur(8px) saturate(1.4); box-shadow: inset 0 0 0 2px rgba(255,255,255,.7), 0 6px 16px rgba(10, 30, 50, .15); }
+ box-shadow: inset 0 0 0 2px rgba(255,255,255,.7), 0 6px 16px rgba(10, 30, 50, .15); }
 .plate .meta { display: flex; gap: 12px; align-items: center; font-size: 17px; white-space: nowrap; }
 #hudLevel { height: 24px; padding: 0 10px; border-radius: 999px; background: var(--w-deep); font-size: 15px; display: inline-flex; align-items: center; -webkit-text-stroke: 0; text-shadow: none; }
 #hudC { display: inline-flex; gap: 10px; align-items: center; }
@@ -328,7 +317,7 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
 #combo { position: fixed; left: var(--safe-l); top: calc(var(--safe-t) + 104px); min-height: 42px; padding: 0 16px; font-size: 22px; overflow: hidden; transform-origin: 0 50%; opacity: 0; transition: opacity .2s; pointer-events: none; }
 #comboBar { position: absolute; left: 0; bottom: 0; height: 5px; width: 100%; background: rgba(255,255,255,.75); transform-origin: left; }
 #prog { position: fixed; left: 50%; top: calc(var(--safe-t) + 14px); width: min(340px, 34vw); height: 22px; transform: translateX(-50%); border-radius: 999px;
-  background: var(--w-glass); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); box-shadow: inset 0 0 0 2px rgba(255,255,255,.75); pointer-events: none; }
+  background: var(--w-glass); box-shadow: inset 0 0 0 2px rgba(255,255,255,.75); pointer-events: none; }
 #progFill { position: absolute; left: 3px; top: 3px; bottom: 3px; right: 3px; border-radius: 999px; background: linear-gradient(#8af5b0, #3fe07c 55%, #22c463); box-shadow: inset 0 -3px 0 rgba(0,0,0,.08); transform-origin: left; transform: scaleX(0); }
 #progKnob { position: absolute; top: 50%; left: 0; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #b8ffd0 30%, #3fe07c 70%); box-shadow: 0 2px 0 var(--go-deep), inset 0 0 0 2px #fff; }
 #progBest { position: absolute; top: -9px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: radial-gradient(circle, #ffd23f 0 28%, #ff9cbc 32% 100%); box-shadow: 0 2px 0 var(--berry-deep); display: none; }
@@ -383,7 +372,7 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
 #tut { position: fixed; left: 50%; bottom: calc(var(--safe-b) + 22px); transform: translateX(-50%); text-align: center; pointer-events: none; display: none; }
 #tut.on { display: block; }
 .tutHand { position: relative; width: 84px; height: 84px; margin: 0 auto; border-radius: 50%; display: grid; place-items: center;
-  background: radial-gradient(circle at 50% 120%, rgba(255,255,255,.35), transparent 60%), var(--w-glass); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  background: radial-gradient(circle at 50% 120%, rgba(255,255,255,.35), transparent 60%), var(--w-glass);
   box-shadow: inset 0 0 0 3px rgba(255,255,255,.85), 0 8px 18px rgba(10, 30, 50, .25); }
 .tutHand svg { width: 46px; height: 46px; color: #fff; filter: drop-shadow(0 3px 0 var(--w-deep)); }
 #tut.hold .tutHand { animation: press 1s ease-in-out infinite; }
@@ -408,7 +397,7 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
   #logo { font-size: 56px; margin-bottom: 0; }
   #nextUp { min-height: 52px; font-size: 17px; } #nextUp .nuPic { width: 40px; height: 40px; } #nextUp small { font-size: 12px; }
   #playBtn { min-width: 230px; }
-  .hero img { width: min(30vw, 230px); margin-bottom: 18px; } .hero .pad { height: 44px; bottom: 26px; } .hero .tag { min-height: 44px; font-size: 15px; }
+  .hero canvas { width: min(30vw, 230px); margin-bottom: 18px; } .hero .pad { height: 44px; bottom: 26px; } .hero .tag { min-height: 44px; font-size: 15px; }
   #menu .toggles { bottom: auto; top: var(--safe-t); left: calc(var(--safe-l) + 58px); }
   .lvBody { top: 68px; gap: 10px; } .wcard { height: 64px; border-radius: 18px; padding: 6px 10px; } .wcard .wn { font-size: 16px; } .wcard .wp { font-size: 11px; } .wcard .blob { width: 46px; height: 46px; }
   #levelGrid { grid-template-columns: repeat(8, 52px); gap: 10px 14px; } .lvb { width: 52px; height: 52px; font-size: 21px; } .lvb::before { left: 10px; top: 6px; transform: scale(.7); }
@@ -447,7 +436,7 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
   #privNote { max-width: calc(100vw - 32px); bottom: calc(var(--safe-b) + 58px); }
   #menu .col { display: contents; }
   #logo { order: 1; font-size: 74px; margin-bottom: 0; }
-  .hero { order: 2; align-self: center; margin: 0 0 4px; } .hero img { width: min(230px, 28vh); margin-bottom: 16px; } .hero .pad { height: 46px; bottom: 30px; } .hero .tag { min-height: 44px; font-size: 15px; }
+  .hero { order: 2; align-self: center; margin: 0 0 4px; } .hero canvas { width: min(230px, 28vh); margin-bottom: 16px; } .hero .pad { height: 46px; bottom: 30px; } .hero .tag { min-height: 44px; font-size: 15px; }
   #nextUp { order: 3; width: 100%; justify-content: flex-start; margin-top: 4px; } #nextUp .arr { margin-left: auto; }
   #playBtn { order: 4; width: 100%; margin-top: 10px; min-width: 0; }
   #menu .row { order: 5; width: 100%; gap: 10px; margin-top: 10px; } #menu .row .b { flex: 1; padding: 0 8px; }
@@ -478,16 +467,24 @@ body[data-screen="menu"] #frost, body[data-screen="levels"] #frost, body[data-sc
 <div id="boot" aria-hidden="true">
   <div id="bootLogo"><div class="w w1"><span class="lt" data-l="S">S</span><span class="lt" data-l="T">T</span><span class="lt" data-l="I">I</span><span class="lt" data-l="C">C</span><span class="lt" data-l="K">K</span><span class="lt" data-l="Y">Y</span></div>
     <div class="w w2"><span class="lt" data-l="F">F</span><span class="lt" data-l="R">R</span><span class="lt" data-l="O">O</span><span class="lt" data-l="G">G</span></div></div>
-  <div class="spin"></div><div id="bootBar"><i></i></div>
+  <div id="bootBar"><i></i></div>
 </div>
-<div id="wload" aria-hidden="true"><div class="spin"></div></div>
 <script>
 window.__bootP = function (p) { var i = document.querySelector('#bootBar i'); if (i) { i.style.animation = 'none'; i.style.width = Math.round(8 + 92 * Math.max(0, Math.min(1, p))) + '%'; } };
 window.__bootFail = function () { var b = document.getElementById('boot'); if (!b || b.querySelector('button')) return; var x = document.createElement('button'); x.className = 'b'; x.textContent = 'Tap to retry'; x.onclick = function () { location.reload(); }; b.appendChild(x); };
 </script>
 <canvas id="c"></canvas>
-<div id="vignette" class="ov"></div>
-<div id="frost" class="ov"></div>
+<script>
+// 趁主程式還在下載，先建 WebGL、配好畫面緩衝：這兩步要等 GPU，常常是開機最慢的一段。
+// 屬性跟 src/render/gl.ts 的 createGL 一樣（之後 getContext 拿到的就是這一個）；解析度上限照 src/quality.ts 的 pickTier 猜，猜錯只是多重配一次
+(function () { try {
+  var c = document.getElementById('c'), n = navigator, q = (/[?&]q=(high|mid|low)(&|$)/.exec(location.search) || [])[1];
+  var weak = (n.hardwareConcurrency || 4) <= 4 || (n.deviceMemory > 0 && n.deviceMemory <= 4), coarse = matchMedia('(pointer: coarse)').matches;
+  var d = Math.min(devicePixelRatio || 1, q ? { high: 2, mid: 1.5, low: 1 }[q] : coarse ? (weak ? 1 : 1.5) : (weak ? 1.5 : 2));
+  c.width = Math.max(1, Math.round(innerWidth * d)); c.height = Math.max(1, Math.round(innerHeight * d));
+  c.getContext('webgl2', { alpha: false, antialias: false, depth: false, stencil: false, premultipliedAlpha: true, preserveDrawingBuffer: false, powerPreference: 'high-performance' });
+} catch (e) {} })();
+</script>
 <div id="popups"></div>
 <div id="dieText" class="tx"></div>
 <div id="newCard" class="tx" hidden><small data-i18n="new.title"></small><b id="newName"></b></div>
@@ -513,7 +510,6 @@ window.__bootFail = function () { var b = document.getElementById('boot'); if (!
   <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z" fill="currentColor" /><path d="M7 6H4.5a2.5 2.5 0 0 0 2.6 4M17 6h2.5a2.5 2.5 0 0 1-2.6 4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" /><rect x="10.5" y="13" width="3" height="4" rx="1" fill="currentColor" /><rect x="7.5" y="17" width="9" height="3.4" rx="1.7" fill="currentColor" /></symbol>
   <symbol id="i-fly" viewBox="0 0 24 24"><ellipse cx="7.5" cy="8" rx="4" ry="3" fill="#fff" opacity=".85" transform="rotate(-25 7.5 8)" /><ellipse cx="16.5" cy="8" rx="4" ry="3" fill="#fff" opacity=".85" transform="rotate(25 16.5 8)" /><circle cx="12" cy="14" r="6.2" fill="#2a2340" /><circle cx="14" cy="13" r="2.3" fill="#fff" /><circle cx="14.5" cy="13.3" r="1.2" fill="#2a2340" /><circle cx="9.6" cy="11.6" r="1.2" fill="#fff" opacity=".8" /></symbol>
   <symbol id="i-pad" viewBox="0 0 40 40"><path d="M20 4a16 13 0 1 0 15.5 9.5L20 20z" fill="url(#gPad)" stroke="#139a4c" stroke-width="2" /><circle cx="27" cy="27" r="4" fill="#ff9cbc" /><circle cx="27" cy="27" r="1.6" fill="#ffd23f" /></symbol>
-  <symbol id="i-video" viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="13" height="13" rx="3.5" fill="currentColor" /><path d="M16.5 10.2 21 7.6v8.8l-4.5-2.6z" fill="currentColor" /></symbol>
   <symbol id="i-loop" viewBox="0 0 24 24"><path d="M6.5 15.5a5 5 0 0 1 0-7c2-2 4-1 5.5 1l1 1.5c1.5 2 3.5 3 5.5 1a5 5 0 0 0 0-7c-2-2-4-1-5.5 1l-1 1.5c-1.5 2-3.5 3-5.5 1" stroke="currentColor" stroke-width="2.8" fill="none" stroke-linecap="round" transform="translate(0 2)" /></symbol>
   <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="currentColor" /><path d="M5 9c3 1 4 4 7 3s3-5 6-4M7 17c2-2 5-1 6 1" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" opacity=".8" /></symbol>
   <symbol id="i-star" viewBox="0 0 48 48"><path d="M24 5.5l5.6 11.8 12.9 1.7-9.5 8.9 2.4 12.8L24 34.4l-11.4 6.3 2.4-12.8-9.5-8.9 12.9-1.7z" fill="url(#gStar)" stroke="#d68a00" stroke-width="3.2" stroke-linejoin="round" /><ellipse cx="19" cy="17.5" rx="2.6" ry="2" fill="#fff" /><circle cx="22.6" cy="15.6" r="1.1" fill="#fff" /></symbol>
@@ -548,7 +544,7 @@ window.__bootFail = function () { var b = document.getElementById('boot'); if (!
       <button id="playBtn" data-fit class="b go" data-in><svg class="i"><use href="#i-play" /></svg><span id="playLbl"></span></button>
       <div class="row" data-in><button id="levelsBtn" data-fit class="b" data-i18n="menu.levels"></button><button id="endlessBtn" data-fit class="b"></button><button id="shopBtn" data-fit class="b" data-i18n="menu.shop"></button></div>
     </div>
-    <div class="hero" data-in><div class="pad"></div><img id="heroImg" alt="" data-i18n-aria="aria.hero" /><button id="heroTag" data-fit class="b tag"><span id="heroName"></span><small data-i18n="menu.change"></small></button></div>
+    <div class="hero" data-in><div class="pad"></div><canvas id="heroImg" role="img" data-i18n-aria="aria.hero"></canvas><button id="heroTag" data-fit class="b tag"><span id="heroName"></span><small data-i18n="menu.change"></small></button></div>
   </div>
   <div class="toggles" data-in><button class="bub musicT" data-i18n-aria="aria.music"><svg class="i"><use href="#i-music" /></svg><i class="slash"></i></button><button class="bub sfxT" data-i18n-aria="aria.sound"><svg class="i"><use href="#i-sound" /></svg><i class="slash"></i></button><button class="bub langT" data-i18n-aria="set.language" aria-haspopup="true"><svg class="i"><use href="#i-globe" /></svg><b class="langCode"></b></button></div>
   <div id="privNote" style="display:none"><span data-i18n="priv.note"></span> <a href="privacy.html" target="_blank" rel="noopener" data-i18n="priv.link"></a></div>
@@ -564,7 +560,7 @@ window.__bootFail = function () { var b = document.getElementById('boot'); if (!
   <div class="body">
     <div class="show" id="showcase" data-id="cat" data-in>
       <span class="ribbon">&#9733; <span data-i18n="shop.star"></span></span>
-      <div class="spin" role="img" id="showSpin"></div>
+      <canvas class="spin" role="img" id="showSpin"></canvas>
       <div class="pedestal"></div>
       <h2 id="showName" data-fit></h2>
       <span class="sub"><i></i><span id="showSub"></span></span>
@@ -615,7 +611,7 @@ window.__bootFail = function () { var b = document.getElementById('boot'); if (!
       <div class="ovDist"><span id="ovDist" class="num">0</span><small data-i18n="over.unit"></small></div>
       <div id="ovNew" class="newbest" style="display:none" data-i18n="over.newBest"></div>
       <div class="stats" id="ovStats"></div>
-      <div class="row"><button id="ovMenu" data-fit class="b" data-i18n="over.menu"></button><button id="ovDouble" data-fit class="b sun" style="display:none"><svg class="i vid"><use href="#i-video" /></svg><span data-i18n="over.double"></span></button></div>
+      <div class="row"><button id="ovMenu" data-fit class="b" data-i18n="over.menu"></button></div>
       <button id="ovRetry" data-fit class="b go"><svg class="i"><use href="#i-loop" /></svg><span data-i18n="over.retry"></span></button>
     </div>
   </div>
@@ -635,7 +631,6 @@ window.__bootFail = function () { var b = document.getElementById('boot'); if (!
   </div>
 </div>
 
-<div id="block" class="screen"><div class="center"><div class="spinner"></div></div></div>
 <div id="flash" class="ov"></div>
 <script type="module" src="./src/main.js"></script>
 </body>
