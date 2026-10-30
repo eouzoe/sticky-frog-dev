@@ -12,7 +12,7 @@ const CANDY = ['#ff6fb5', '#ffd23f', '#7be0ff', '#7ee08a', '#b58cff', '#ffffff']
 const GOLD = ['#ffd23f', '#fff3a0', '#ffffff'];
 const FEAT_COL: Record<string, string[]> = {
   spin: ['#ffd23f', '#ff6fb5', '#ffffff'], tornado: ['#ffd23f', '#ff6fb5', '#7be0ff', '#b58cff'], flow: ['#7ee08a', '#ffffff', '#ffd23f'],
-  speed: ['#7be0ff', '#ffffff', '#ffd23f'], skim: ['#7be0ff', '#bff4ff', '#ffffff'], shave: ['#ff6fb5', '#ffffff', '#ffd23f'], clutch: ['#ffd23f', '#7ee08a', '#ffffff'],
+  speed: ['#7be0ff', '#ffffff', '#ffd23f'], skim: ['#7be0ff', '#bff4ff', '#ffffff'], shave: ['#ff6fb5', '#ffffff', '#ffd23f'],
 };
 interface Pos { x: number; y: number }
 export interface JuiceDeps {
@@ -54,23 +54,17 @@ export function createJuice(c: JuiceDeps) {
     },
     // 翻滾：圈數越高越隆重，7 圈＝全場最大（之後的第 8、9 圈回到 4 圈等級）
     flip(s: Sim, n: number) {
-      const t = n >= 8 ? 4 : n;
+      const t = n >= 10 ? 7 : n >= 7 ? 5 : n >= 2 ? 2 : 1; // 門檻偏嚴：7 圈以下只有小特效，7–9 圈中等，10 圈才是大場面
       frog.jelly(2 + Math.min(t, 7));
       if (t === 1) { stars(s.x, s.y, 5, { size: 0.26, speed: 6 }); small(0.05); c.sfx('sparkle', { n: 1 }); return; }
       if (t === 2) { stars(s.x, s.y, 10); confetti(s.x, s.y, 14); fx.shock(s.x, s.y, 4, '#ffd23f', 0.4); small(0.12); c.sfx('sparkle', { n: 2 }); return; }
-      if (t <= 4) {
-        stars(s.x, s.y, 16 + (t - 3) * 6); confetti(s.x, s.y, 24 + (t - 3) * 6); candy(s.x, s.y, 10, CANDY, { grav: 10 });
-        fx.shock(s.x, s.y, 5, '#ffd23f', 0.45); fx.shock(s.x, s.y, 3.5, '#ffffff', 0.4, false, 0.08);
-        if (t === 3) { stop(0.04); c.slowmo(); c.flash(0.22); G.fovKick -= 6; c.vibrate(25); } else G.fovKick -= 4;
-        big(0.2); c.sfx('sparkle', { n: t }); return;
-      }
-      if (t <= 6) {
+      if (t === 5) {
         stars(s.x, s.y, 26); confetti(s.x, s.y, 38); bubbles(s.x, s.y, 10, { speed: 6 });
         ['#ffd23f', '#ff6fb5', '#ffffff'].forEach((cl, i) => fx.shock(s.x, s.y, 5 + i * 1.2, cl, 0.5, false, i * 0.07));
-        stop(t === 5 ? 0.06 : 0.03); c.slowmo(t === 5 ? 1 : 0.7); c.flash(0.3); G.fovKick -= 8; big(0.28); c.vibrate(30);
-        c.sfx('sparkle', { n: t }); if (t === 5) c.sfx('fanfare', { n: 1 }); return;
+        stop(0.06); c.slowmo(1); c.flash(0.3); G.fovKick -= 8; big(0.28); c.vibrate(30);
+        c.sfx('sparkle', { n: 5 }); c.sfx('fanfare', { n: 1 }); return;
       }
-      // 7 圈：停格 → 1.6 秒慢動作、閃光、四圈彩色果凍環、閃星＋彩紙＋泡泡＋糖果、天上下彩紙雨、音樂壓低、大號角
+      // 10 圈：停格 → 1.6 秒慢動作、閃光、四圈彩色果凍環、閃星＋彩紙＋泡泡＋糖果、天上下彩紙雨、音樂壓低、大號角
       stop(0.1); c.slowmo(1.6); c.flash(0.5); G.fovKick -= 10; big(0.45); c.vibrate([30, 40, 80]);
       stars(s.x, s.y, 46, { speed: 13, size: 0.42 }); confetti(s.x, s.y, 60, { speed: 15 }); bubbles(s.x, s.y, 18, { speed: 8 }); candy(s.x, s.y, 20, CANDY, { speed: 12, grav: 8 });
       ['#ffd23f', '#ff6fb5', '#7be0ff', '#ffffff'].forEach((cl, i) => fx.shock(s.x, s.y, 6 + i * 1.6, cl, 0.6, false, i * 0.09));
@@ -148,12 +142,12 @@ export function createJuice(c: JuiceDeps) {
       bubbles(e.x, 0.3, 14, { speed: 3, jitter: 1.4 });
       fx.shock(e.x, 0.15, 4, '#ffffff', 0.5, true); fx.shock(e.x, 0.15, 2.5, w.water, 0.45, true, 0.1);
     },
+    // 撞到障礙物：溫和的「噗」——一團柔軟的雲（白與肚皮色）慢慢散開、幾顆小星、淡淡一閃。不噴碎片、沒有紅色（全年齡）
     dieHazard(e: Pos, sk: Skin) {
-      stop(0.11); big(0.7); c.flash(0.55);
-      candy(e.x, e.y, 22, [sk.body, sk.belly, '#ff3b3b'], { speed: 12, size: 0.34, grav: 20 });
-      fx.burst(e.x, e.y, 10, { colors: ['#ffffff', '#ffd23f'], speed: 16, size: 0.3, grav: 0, shape: SH.SPARK, life: 0.35 });
-      stars(e.x, e.y, 8, { colors: ['#ffffff', '#ff6fb5'], speed: 10 });
-      fx.shock(e.x, e.y, 3.5, '#ff5a5a', 0.35);
+      stop(0.08); big(0.4); c.flash(0.22);
+      fx.burst(e.x, e.y, 14, { colors: ['#ffffff', sk.belly, '#ffeef5'], speed: 3.5, size: 0.55, grav: -1.5, drag: 3, life: 0.9, jitter: 0.6, shape: SH.STEAM });
+      stars(e.x, e.y + 0.5, 6, { colors: ['#ffffff', '#ffe08a'], speed: 5, size: 0.26, life: 0.7 });
+      fx.shock(e.x, e.y, 2.8, '#ffffff', 0.3);
     },
     // 換關過場：物件由左到右彈出來、主角果凍出場、腳下冒一圈泡泡
     levelIn(s: Sim) { frog.popIn(); lvView.intro(s.x); bubbles(s.x, s.y - 0.6, 12, { speed: 4, jitter: 1.2 }); c.sfx('pop'); },
