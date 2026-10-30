@@ -9,25 +9,24 @@ const webBuild = (): Plugin => ({
   transformIndexHtml: { order: 'pre', handler: (html) => (process.env.VITE_WEB ? html.replace(/<!-- SDK[\s\S]*?crazygames-sdk-v3\.js"[^>]*><\/script>\n?/, '') : html) },
 });
 
-// 正式建置：第一次來的玩家（本機還沒有存檔）選單一定要的三張圖集（共用、第一個世界、預設造型），
-// 在解析 HTML 時就開始下載＋解碼，跟主程式下載、WebGL 初始化同時進行；src/render/atlas.ts 的 take() 接手。
-// 有存檔的玩家只先抓共用圖集，其餘由 main.ts 依存檔 prefetch。存檔鍵與 src/save.ts 的 SAVE_KEY 相同。
+// 正式建置：選單第一幀一定要的三張圖集（共用、存檔目前的世界、身上的造型）在解析 HTML 時就開始下載＋解碼，
+// 跟主程式下載、WebGL 初始化同時進行；src/render/atlas.ts 的 take() 接手。
+// 世界與造型照本機存檔算（規則與 main.ts 的 bootAtlases 相同：worldOf(min(last, unlocked, 90))、貓沒有造型圖集），沒存檔就是 w0＋c_tree；
+// 猜錯只是多抓一張，main.ts 會再補。存檔鍵與 src/save.ts 的 SAVE_KEY 相同。
 const prefetchAtlases = (): Plugin => ({
   name: 'prefetch-atlases',
   apply: 'build',
   transformIndexHtml: {
     order: 'post',
     handler(html, ctx) {
-      const files = Object.keys(ctx.bundle ?? {});
-      const url = (name: string) => {
-        const f = files.find((x) => new RegExp(`^assets/atlas-${name}-[\\w-]+\\.webp$`).test(x));
-        if (!f) throw new Error(`prefetch-atlases：找不到 atlas-${name}`);
-        return `./${f}`;
-      };
-      const u = { shared: url('shared'), w0: url('w0'), c_tree: url('c_tree') };
-      const js = `(function(){var u=${JSON.stringify(u)},n=["shared"];try{if(!localStorage.getItem("sticky-frog-v1"))n.push("w0","c_tree")}catch(e){n.push("w0","c_tree")}`
-        + 'var p=window.__pre={};n.forEach(function(k){p[k]=fetch(u[k]).then(function(r){if(!r.ok)throw Error(r.status);return r.blob()})'
-        + '.then(function(b){return createImageBitmap(b,{premultiplyAlpha:"premultiply",colorSpaceConversion:"none"})});p[k].catch(function(){})})})();';
+      const u: Record<string, string> = {}, j: Record<string, string> = {};
+      for (const f of Object.keys(ctx.bundle ?? {})) { const m = /^assets\/atlas-(\w+)-[\w-]+\.(webp|json)$/.exec(f); if (m) (m[2] === 'webp' ? u : j)[m[1]] = `./${f}`; }
+      for (const k of ['shared', 'fx', 'w0', 'c_tree']) if (!u[k] || !j[k]) throw new Error(`prefetch-atlases：找不到 atlas-${k} 的 webp 或 json`);
+      const js = `(function(){var u=${JSON.stringify(u)},j=${JSON.stringify(j)},w="w0",c="c_tree";`
+        + 'try{var s=JSON.parse(localStorage.getItem("sticky-frog-v1")||"null");if(s){var n=Math.min(s.last||1,s.unlocked||1,90);w="w"+Math.min(5,Math.floor((n-1)/15));c=s.skin==="cat"?"":"c_"+s.skin}}catch(e){}'
+        + 'var p=window.__pre={},q=window.__preMeta={};["shared","fx",w,c].forEach(function(k){if(!u[k])return;p[k]=fetch(u[k]).then(function(r){if(!r.ok)throw Error(r.status);return r.blob()})'
+        + '.then(function(b){return createImageBitmap(b,{premultiplyAlpha:"premultiply",colorSpaceConversion:"none"})});p[k].catch(function(){});'
+        + 'q[k]=fetch(j[k]).then(function(r){if(!r.ok)throw Error(r.status);return r.json()});q[k].catch(function(){})})})();';
       // 插在 <meta charset> 後面：字元編碼宣告要留在檔案前 1024 位元組內
       const meta = '<meta charset="utf-8" />';
       if (!html.includes(meta)) throw new Error('prefetch-atlases：找不到 <meta charset>');
