@@ -1,0 +1,29 @@
+# Continuous integration: the Node checks and a production build. Manual only: run it once at the end of each batch
+# (gh workflow run check.yml --ref <branch>), not on every push.
+# The checks are the same ones listed in README (tests/*-check.mjs); any failing script fails the job.
+name: check
+on:
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: tests/*-check.mjs
+        run: |
+          fails=0
+          for f in tests/*-check.mjs; do
+            if node "$f" > /dev/null; then echo "ok   $f"; else echo "FAIL $f"; fails=$((fails + 1)); fi
+          done
+          exit $fails
+      - name: telemetry server (Vitest in workerd)
+        working-directory: server/telemetry
+        run: npm ci && npm test
+      - name: build
+        run: npm run build
