@@ -44,6 +44,7 @@ const ALLOW_CALL = /(?:\bt|itemName|A\.play|querySelector(?:All)?|getElementById
 const ui = read('src/ui.js');
 for (const { s, at, before } of literals(ui)) {
   if (ALLOW_CALL.test(before)) continue;
+  // oxlint-disable-next-line no-control-regex -- \u0000/\u0001 are the separators this line inserts in place of tags
   const text = s.replace(/<[^>]*>/g, '\u0001').split(/[\u0000\u0001]/).map((x) => x.replace(/&[a-z#0-9]+;/gi, ' ').trim()).filter(Boolean);
   const isMarkup = s.includes('<');
   for (const tx of text) {
