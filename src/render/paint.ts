@@ -53,6 +53,28 @@ export const PARTICLE: Record<string, Def> = {
   speedLine: { b: [-0.5, 0.5, -0.06, 0.06], px: 64, tint: false, paint: (g) => { g.fillStyle = 'rgba(255,255,255,0.6)'; rrect(g, 0, 0, 1, 0.08, 0.04); g.fill(); } },
 };
 
+/** 把一組形狀排進一張圖集並畫出來（離線烘焙：tools/bake/paint.js 呼叫，輸出成 src/art/atlas-fx.webp＋json；執行時不再畫）
+ *  回傳畫布與每格的位置、錨點（像素）、每像素幾個單位。def.b＝邊界（區域單位）、px＝每單位像素 */
+export interface PaintedItem { key: string; x: number; y: number; w: number; h: number; ax: number; ay: number; u: number }
+export function paintAtlas(defs: Record<string, Def>, maxW = 512): { cv: HTMLCanvasElement; w: number; h: number; items: PaintedItem[] } {
+  const PAD = 3;
+  const items = Object.entries(defs).map(([key, d]) => { const [x0, x1, y0, y1] = d.b; return { key, d, w: Math.ceil((x1 - x0) * d.px), h: Math.ceil((y1 - y0) * d.px), x: 0, y: 0 }; }).sort((a, b) => b.h - a.h);
+  let x = PAD, y = PAD, rowH = 0;
+  for (const it of items) { if (x + it.w + PAD > maxW) { x = PAD; y += rowH + PAD; rowH = 0; } it.x = x; it.y = y; x += it.w + PAD; rowH = Math.max(rowH, it.h); }
+  const H = Math.ceil((y + rowH + PAD) / 4) * 4;
+  const cv = document.createElement('canvas'); cv.width = maxW; cv.height = H;
+  const g = cv.getContext('2d')!;
+  for (const it of items) {
+    const [x0, , , y1] = it.d.b;
+    g.save(); g.beginPath(); g.rect(it.x, it.y, it.w, it.h); g.clip();
+    g.translate(it.x - x0 * it.d.px, it.y + y1 * it.d.px); g.scale(it.d.px, -it.d.px);
+    g.lineJoin = 'round'; g.lineCap = 'round';
+    it.d.paint(g, GRAY);
+    g.restore();
+  }
+  return { cv, w: maxW, h: H, items: items.map((it) => { const [x0, x1, y0, y1] = it.d.b; return { key: it.key, x: it.x, y: it.y, w: it.w, h: it.h, ax: (-x0 / (x1 - x0)) * it.w, ay: (y1 / (y1 - y0)) * it.h, u: 1 / it.d.px }; }) };
+}
+
 // 舌頭與拖尾的長條（各自一張小貼圖：繩索網格要沿長度重複或拉伸，不能放在圖集裡）
 export function stripCanvas(w: number, h: number, paint: (g: Ctx, w: number, h: number) => void): HTMLCanvasElement {
   const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
