@@ -1,8 +1,8 @@
 // 掃 BURST_SHIFT：每個有噴泉的關卡找一個讓 burst-check 指標為 0 的相位偏移（0–15）。輸出可貼進 level.js。
-import { TUNE as T } from '../src/config.js';
-import { generateLevel, BURST_SHIFT } from '../src/level.js';
-import { createSim, step, burstOn } from '../src/sim.js';
-import { makeBot } from '../src/bot.js';
+import { TUNE as T } from '../src/config.ts';
+import { generateLevel, BURST_SHIFT } from '../src/level.ts';
+import { createSim, step, burstOn } from '../src/sim.ts';
+import { makeBot } from '../src/bot.ts';
 import { PARAMS } from './sim-check.mjs';
 function bad(n) {
   const lv = generateLevel(n); let d = 0;

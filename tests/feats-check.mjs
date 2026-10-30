@@ -1,6 +1,6 @@
 // 成就偵測模組：每種成就各餵一段「達成」與「差一點沒達成」的事件序列。用法：node tests/feats-check.mjs
-import { FEAT_T as K, FEATS, createFeatTracker, recordFeat } from '../src/feats.js';
-import { TUNE as T } from '../src/config.js';
+import { FEAT_T as K, FEATS, createFeatTracker, recordFeat } from '../src/feats.ts';
+import { TUNE as T } from '../src/config.ts';
 
 const W = T.WATER_Y + 0.15;
 const lv = (len = 100) => ({ endless: false, start: { x: 0 }, goal: { x: len } });

@@ -1,10 +1,10 @@
 // 成就門檻校正：自動玩家（12 組參數 × 60 關）量每種成就原始量的分布，印出「每局觸發比例」給訂門檻用。
 // 用法：node tests/feat-dist.mjs
-import { TUNE as T } from '../src/config.js';
-import { generateLevel, LEVEL_COUNT } from '../src/level.js';
-import { createSim, step } from '../src/sim.js';
-import { makeBot } from '../src/bot.js';
-import { FEAT_T, createFeatTracker } from '../src/feats.js';
+import { TUNE as T } from '../src/config.ts';
+import { generateLevel, LEVEL_COUNT } from '../src/level.ts';
+import { createSim, step } from '../src/sim.ts';
+import { makeBot } from '../src/bot.ts';
+import { FEAT_T, createFeatTracker } from '../src/feats.ts';
 
 const PARAMS = [];
 for (const rel of [0.25, 0.4, 0.55, 0.7]) for (const gv of [-2, 2, 6]) PARAMS.push([rel, gv]);

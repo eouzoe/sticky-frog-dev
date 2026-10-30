@@ -1,10 +1,10 @@
 // 噴泉安全量尺：12 組 bot 參數 × 46–60 關，統計「被噴發中的噴泉推過之後 1.5 秒內死亡」的次數，必須 0。
 // 用法：node tests/burst-check.mjs            正式（exit 1＝有）
 //       node tests/burst-check.mjs --plant    自我驗證：在每座噴泉正上方故意放尖刺，量尺必須報 >0（exit 0＝抓得到）
-import { TUNE as T } from '../src/config.js';
-import { generateLevel } from '../src/level.js';
-import { createSim, step, burstOn } from '../src/sim.js';
-import { makeBot } from '../src/bot.js';
+import { TUNE as T } from '../src/config.ts';
+import { generateLevel } from '../src/level.ts';
+import { createSim, step, burstOn } from '../src/sim.ts';
+import { makeBot } from '../src/bot.ts';
 import { PARAMS } from './sim-check.mjs';
 
 const plant = process.argv.includes('--plant');

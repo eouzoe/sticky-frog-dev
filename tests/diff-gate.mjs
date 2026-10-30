@@ -2,8 +2,8 @@
 // 基準＝tests/baseline-sim.log（P0 動工前 5b0ba3d 的 sim-check 輸出）。
 // 用法：node tests/diff-gate.mjs [--base 檔] [關卡號…]
 import { readFileSync } from 'node:fs';
-import { generateLevel, LEVEL_COUNT } from '../src/level.js';
-import { makeBot } from '../src/bot.js';
+import { generateLevel, LEVEL_COUNT } from '../src/level.ts';
+import { makeBot } from '../src/bot.ts';
 import { run, PARAMS } from './sim-check.mjs';
 
 const argv = process.argv.slice(2), bi = argv.indexOf('--base');

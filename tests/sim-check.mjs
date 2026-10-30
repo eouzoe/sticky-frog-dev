@@ -1,9 +1,9 @@
 // 自動玩家：驗證 60 關都破得了（只要有一組參數能破就算可破），順便量完成時間校正 3 星門檻。
 // 用法：node tests/sim-check.mjs [關卡號…]
-import { TUNE as T } from '../src/config.js';
-import { generateLevel, LEVEL_COUNT } from '../src/level.js';
-import { createSim, step } from '../src/sim.js';
-import { makeBot } from '../src/bot.js';
+import { TUNE as T } from '../src/config.ts';
+import { generateLevel, LEVEL_COUNT } from '../src/level.ts';
+import { createSim, step } from '../src/sim.ts';
+import { makeBot } from '../src/bot.ts';
 
 export { makeBot };
 

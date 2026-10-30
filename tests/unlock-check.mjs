@@ -1,5 +1,5 @@
 // 掃 generateLevel：每個基本元素第一次出現的關卡必須等於 UNLOCK 表（NEW 字卡的依據）。exit 1＝對不上。
-import { generateLevel, LEVEL_COUNT, NEW_AT } from '../src/level.js';
+import { generateLevel, LEVEL_COUNT, NEW_AT } from '../src/level.ts';
 // 只有用幾何能辨識的元素才掃；mushChain／ringArc／tunnel 用特徵：連續蘑菇＝同 y=2 的相鄰蘑菇、雙圈＝同段兩圈 x 差 <4、夾擊＝同 x 的 pole＋hang
 function seen(L) {
   const o = {};
