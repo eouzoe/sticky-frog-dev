@@ -55,7 +55,7 @@ function limited(anon, n, now) {
 
 const cors = (origin) => ({ 'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Credentials': 'true', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Max-Age': '86400', Vary: 'Origin' });
 const reply = (status, origin, text = '') => new Response(status === 204 ? null : text, { status, headers: origin ? cors(origin) : {} });
-const originClass = (o) => (/^http:\/\/(localhost|127\.0\.0\.1)/.test(o) ? 'local' : /crazygames\.com$/.test(o) ? 'cg' : 'other');
+const originClass = (o) => (/^http:\/\/(localhost|127\.0\.0\.1)/.test(o) ? 'local' : o.endsWith('crazygames.com') ? 'cg' : 'other');
 
 export default {
   async fetch(req, env) {

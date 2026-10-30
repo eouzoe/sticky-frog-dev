@@ -160,7 +160,7 @@ export function createView(canvas) {
     const A = new PartSet(bg, splitProp(nameA, wi).main, nA, { shadow: false, receive: false });
     const B = new PartSet(bg, splitProp(nameB, wi).main, nB, { shadow: false, receive: false });
     bgSets.push(A, B);
-    winMats = wi === 2 ? A.meshes.map((m) => m.material).filter((m) => /^window/.test(m.name)) : [];
+    winMats = wi === 2 ? A.meshes.map((m) => m.material).filter((m) => m.name.startsWith('window')) : [];
     for (const m of winMats) m.userData.eBase ??= m.emissive.clone();
     bubMesh.visible = bubHi.visible = wi === 3 || wi === 5;
     bubMesh.count = bubHi.count = wi === 5 ? 14 : BUB_N;
