@@ -18,20 +18,20 @@
   "eval": "window.__game.forceWin()"
  },
  {
-  "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => (window.__game.state === 'result' || performance.now() - t0 > 8000) ? r(window.__game.state) : setTimeout(f, 30); f(); })"
+  "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => (window.__game.state === 'cleared' || performance.now() - t0 > 8000) ? r(window.__game.state) : setTimeout(f, 30); f(); })"
  },
  {
-  "eval": "window.__game.ui.finishResult?.()"
+  "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => ((window.__game.beat && window.__game.beat.t >= 0.75) || window.__game.state !== 'cleared' || performance.now() - t0 > 4000) ? r(window.__game.state) : setTimeout(f, 30); f(); })"
  },
  {
   "wait": 400
  },
  {
-  "assert": "window.__game.state === 'result' && window.__game.levelResult.stars === 1",
+  "assert": "window.__game.state === 'cleared' && window.__game.levelResult.stars === 1",
   "msg": "超時且沒吃蒼蠅：判定為 1 星"
  },
  {
-  "assert": "document.querySelectorAll('#resStars .rs.got').length === 1 && document.querySelectorAll('#resStars .rs.got.hit').length === 1 && document.querySelectorAll('#resStars .rs').length === 3",
+  "assert": "document.querySelectorAll('#clear .cs.hit').length === 1 && document.querySelectorAll('#clear .cs').length === 3",
   "msg": "超時且沒吃蒼蠅：結算畫面亮 1 顆星"
  },
  {
@@ -56,20 +56,20 @@
   "eval": "window.__game.forceWin()"
  },
  {
-  "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => (window.__game.state === 'result' || performance.now() - t0 > 8000) ? r(window.__game.state) : setTimeout(f, 30); f(); })"
+  "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => (window.__game.state === 'cleared' || performance.now() - t0 > 8000) ? r(window.__game.state) : setTimeout(f, 30); f(); })"
  },
  {
-  "eval": "window.__game.ui.finishResult?.()"
+  "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => ((window.__game.beat && window.__game.beat.t >= 0.75) || window.__game.state !== 'cleared' || performance.now() - t0 > 4000) ? r(window.__game.state) : setTimeout(f, 30); f(); })"
  },
  {
   "wait": 400
  },
  {
-  "assert": "window.__game.state === 'result' && window.__game.levelResult.stars === 2",
+  "assert": "window.__game.state === 'cleared' && window.__game.levelResult.stars === 2",
   "msg": "在時間內但沒吃蒼蠅：判定為 2 星"
  },
  {
-  "assert": "document.querySelectorAll('#resStars .rs.got').length === 2 && document.querySelectorAll('#resStars .rs.got.hit').length === 2 && document.querySelectorAll('#resStars .rs').length === 3",
+  "assert": "document.querySelectorAll('#clear .cs.hit').length === 2 && document.querySelectorAll('#clear .cs').length === 3",
   "msg": "在時間內但沒吃蒼蠅：結算畫面亮 2 顆星"
  },
  {

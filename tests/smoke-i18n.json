@@ -185,14 +185,14 @@
   "wait": 2400
  },
  {
-  "assert": "__game.state === 'result' || document.getElementById('result').classList.contains('on')",
+  "assert": "__game.state === 'cleared' || !document.getElementById('clear').hidden",
   "msg": "de: 進結算"
  },
  {
   "wait": 1500
  },
  {
-  "assert": "window.__chk('de', 'result')",
+  "assert": "window.__chk('de', 'clear')",
   "msg": "de result: 結算: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
  },
  {
@@ -370,14 +370,14 @@
   "wait": 2400
  },
  {
-  "assert": "__game.state === 'result' || document.getElementById('result').classList.contains('on')",
+  "assert": "__game.state === 'cleared' || !document.getElementById('clear').hidden",
   "msg": "ru: 進結算"
  },
  {
   "wait": 1500
  },
  {
-  "assert": "window.__chk('ru', 'result')",
+  "assert": "window.__chk('ru', 'clear')",
   "msg": "ru result: 結算: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
  },
  {
@@ -555,14 +555,14 @@
   "wait": 2400
  },
  {
-  "assert": "__game.state === 'result' || document.getElementById('result').classList.contains('on')",
+  "assert": "__game.state === 'cleared' || !document.getElementById('clear').hidden",
   "msg": "ja: 進結算"
  },
  {
   "wait": 1500
  },
  {
-  "assert": "window.__chk('ja', 'result')",
+  "assert": "window.__chk('ja', 'clear')",
   "msg": "ja result: 結算: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
  },
  {
@@ -740,14 +740,14 @@
   "wait": 2400
  },
  {
-  "assert": "__game.state === 'result' || document.getElementById('result').classList.contains('on')",
+  "assert": "__game.state === 'cleared' || !document.getElementById('clear').hidden",
   "msg": "zh-Hant: 進結算"
  },
  {
   "wait": 1500
  },
  {
-  "assert": "window.__chk('zh-Hant', 'result')",
+  "assert": "window.__chk('zh-Hant', 'clear')",
   "msg": "zh-Hant result: 結算: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
  },
  {

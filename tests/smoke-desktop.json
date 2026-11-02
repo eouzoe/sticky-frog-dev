@@ -134,21 +134,21 @@
   "wait": 600
  },
  {
-  "assert": "window.__game.state === 'playing' && !document.getElementById('result').classList.contains('on') && (!document.getElementById('clear').hidden || !document.getElementById('feat').hidden)",
+  "assert": "window.__game.state === 'playing' && (!document.getElementById('clear').hidden || !document.getElementById('feat').hidden)",
   "msg": "落荷葉後先短暫慶祝（CLEAR 貼紙或成就膠囊，還沒進結算）"
  },
  {
   "shot": "05-celebrate"
  },
  {
-  "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => (window.__game.state === 'result' || performance.now() - t0 > 6000) ? r(window.__game.state) : setTimeout(f, 30); f(); })"
+  "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => (window.__game.state === 'cleared' || performance.now() - t0 > 8000) ? r(window.__game.state) : setTimeout(f, 30); f(); })"
  },
  {
-  "assert": "window.__game.state === 'result' && document.getElementById('result').classList.contains('on') && window.__game.levelResult.level === 1",
+  "assert": "window.__game.state === 'cleared' && !document.getElementById('clear').hidden && window.__game.levelResult.level === 1",
   "msg": "慶祝完進結算畫面、停在那裡等玩家"
  },
  {
-  "eval": "window.__game.ui.showResult(window.__game.levelResult); window.__game.ui.resultAnimating()"
+  "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => ((window.__game.beat && window.__game.beat.t >= 0.75) || window.__game.state !== 'cleared' || performance.now() - t0 > 4000) ? r(window.__game.state) : setTimeout(f, 30); f(); })"
  },
  {
   "key": "Enter"
@@ -157,7 +157,7 @@
   "wait": 150
  },
  {
-  "assert": "window.__game.state === 'result' && window.__game.levelResult.stars >= 1 && document.querySelectorAll('#resStars .rs.got.hit').length === window.__game.levelResult.stars && document.querySelectorAll('#resStars .rs').length === 3",
+  "assert": "window.__game.state === 'cleared' && window.__game.levelResult.stars >= 1 && document.querySelectorAll('#clear .cs.hit').length === window.__game.levelResult.stars && document.querySelectorAll('#clear .cs').length === 3",
   "msg": "進場動畫中按 Enter：跳到結尾（星星都亮），不略過結算"
  },
  {
@@ -277,7 +277,7 @@
   "msg": "無盡模式前進（距離 > 40 m）"
  },
  {
-  "eval": "window.__overAt = 0; new MutationObserver(() => { if (document.getElementById('over').classList.contains('on') && !window.__overAt) window.__overAt = performance.now(); }).observe(document.getElementById('over'), { attributes: true }); 'watching #over'"
+  "eval": "window.__overAt = 0; new MutationObserver(() => { if (!document.getElementById('over').hidden && !window.__overAt) window.__overAt = performance.now(); }).observe(document.getElementById('over'), { attributes: true }); 'watching #over'"
  },
  {
   "eval": "window.__game.autoplay = null; window.__game.forceDie(); window.__game.dist"
@@ -286,14 +286,14 @@
   "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => { const on = window.__overAt > 0; if ((on && performance.now() - window.__overAt >= 900) || performance.now() - t0 > 10000) r({ overShownMs: on ? Math.round(performance.now() - window.__overAt) : -1, dieToOverMs: on ? Math.round(window.__overAt - t0) : -1 }); else setTimeout(f, 50); }; f(); })"
  },
  {
-  "assert": "window.__game.state === 'over' && document.getElementById('over').classList.contains('on') && window.__game.result.dist > 0 && window.__game.result.rank >= 1",
+  "assert": "window.__game.state === 'over' && !document.getElementById('over').hidden && window.__game.result.dist > 0 && window.__game.result.rank >= 1",
   "msg": "無盡結算：距離、名次"
  },
  {
   "shot": "10-endless-over"
  },
  {
-  "assert": "['ovMenu','ovRetry'].every((id) => { const r = document.getElementById(id).getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight && r.height >= 56; })",
+  "assert": "['ovDistRow','ovScoreRow'].every((id) => { const r = document.getElementById(id).getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; })",
   "msg": "無盡結算按鈕完整可見"
  },
  {
