@@ -179,30 +179,33 @@
   "eval": "__game.forceWin()"
  },
  {
-  "wait": 600
- },
- {
-  "wait": 2400
+  "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => ((window.__game.beat && window.__game.beat.t >= 0.75) || performance.now() - t0 > 6000) ? r(window.__game.state) : setTimeout(f, 30); f(); })"
  },
  {
   "assert": "__game.state === 'cleared' || !document.getElementById('clear').hidden",
   "msg": "de: 進結算"
  },
  {
-  "wait": 1500
+  "wait": 100
  },
  {
   "assert": "window.__chk('de', 'clear')",
   "msg": "de result: 結算: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
  },
  {
-  "eval": "(() => { const a = window.__aud['de result']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+  "eval": "(() => { const a = window.__aud['de clear']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
  },
  {
   "shot": "de-6-result"
  },
  {
-  "click": "#resMenu"
+  "click": "#pauseBtn"
+ },
+ {
+  "wait": 400
+ },
+ {
+  "click": "#pMenu"
  },
  {
   "wait": 800
@@ -364,30 +367,33 @@
   "eval": "__game.forceWin()"
  },
  {
-  "wait": 600
- },
- {
-  "wait": 2400
+  "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => ((window.__game.beat && window.__game.beat.t >= 0.75) || performance.now() - t0 > 6000) ? r(window.__game.state) : setTimeout(f, 30); f(); })"
  },
  {
   "assert": "__game.state === 'cleared' || !document.getElementById('clear').hidden",
   "msg": "ru: 進結算"
  },
  {
-  "wait": 1500
+  "wait": 100
  },
  {
   "assert": "window.__chk('ru', 'clear')",
   "msg": "ru result: 結算: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
  },
  {
-  "eval": "(() => { const a = window.__aud['ru result']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+  "eval": "(() => { const a = window.__aud['ru clear']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
  },
  {
   "shot": "ru-6-result"
  },
  {
-  "click": "#resMenu"
+  "click": "#pauseBtn"
+ },
+ {
+  "wait": 400
+ },
+ {
+  "click": "#pMenu"
  },
  {
   "wait": 800
@@ -549,30 +555,33 @@
   "eval": "__game.forceWin()"
  },
  {
-  "wait": 600
- },
- {
-  "wait": 2400
+  "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => ((window.__game.beat && window.__game.beat.t >= 0.75) || performance.now() - t0 > 6000) ? r(window.__game.state) : setTimeout(f, 30); f(); })"
  },
  {
   "assert": "__game.state === 'cleared' || !document.getElementById('clear').hidden",
   "msg": "ja: 進結算"
  },
  {
-  "wait": 1500
+  "wait": 100
  },
  {
   "assert": "window.__chk('ja', 'clear')",
   "msg": "ja result: 結算: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
  },
  {
-  "eval": "(() => { const a = window.__aud['ja result']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+  "eval": "(() => { const a = window.__aud['ja clear']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
  },
  {
   "shot": "ja-6-result"
  },
  {
-  "click": "#resMenu"
+  "click": "#pauseBtn"
+ },
+ {
+  "wait": 400
+ },
+ {
+  "click": "#pMenu"
  },
  {
   "wait": 800
@@ -734,30 +743,33 @@
   "eval": "__game.forceWin()"
  },
  {
-  "wait": 600
- },
- {
-  "wait": 2400
+  "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => ((window.__game.beat && window.__game.beat.t >= 0.75) || performance.now() - t0 > 6000) ? r(window.__game.state) : setTimeout(f, 30); f(); })"
  },
  {
   "assert": "__game.state === 'cleared' || !document.getElementById('clear').hidden",
   "msg": "zh-Hant: 進結算"
  },
  {
-  "wait": 1500
+  "wait": 100
  },
  {
   "assert": "window.__chk('zh-Hant', 'clear')",
   "msg": "zh-Hant result: 結算: 語言對、沒溢出／裁切、沒有 key 外露、沒有殘留英文、有翻譯文字"
  },
  {
-  "eval": "(() => { const a = window.__aud['zh-Hant result']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
+  "eval": "(() => { const a = window.__aud['zh-Hant clear']; return JSON.stringify({ lang: a.lang, texts: a.texts, translated: a.translated, overflow: a.overflow.slice(0, 6), keys: a.keys, missing: a.missing, eng: a.eng.slice(0, 8) }); })()"
  },
  {
   "shot": "zh-Hant-6-result"
  },
  {
-  "click": "#resMenu"
+  "click": "#pauseBtn"
+ },
+ {
+  "wait": 400
+ },
+ {
+  "click": "#pMenu"
  },
  {
   "wait": 800

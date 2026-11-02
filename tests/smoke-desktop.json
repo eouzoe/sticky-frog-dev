@@ -134,8 +134,8 @@
   "wait": 600
  },
  {
-  "assert": "window.__game.state === 'playing' && (!document.getElementById('clear').hidden || !document.getElementById('feat').hidden)",
-  "msg": "落荷葉後先短暫慶祝（CLEAR 貼紙或成就膠囊，還沒進結算）"
+  "assert": "window.__game.state === 'cleared' && !document.getElementById('clear').hidden",
+  "msg": "落荷葉：立刻進過關節拍，浮層出現（沒有按鈕）"
  },
  {
   "shot": "05-celebrate"
@@ -145,7 +145,7 @@
  },
  {
   "assert": "window.__game.state === 'cleared' && !document.getElementById('clear').hidden && window.__game.levelResult.level === 1",
-  "msg": "慶祝完進結算畫面、停在那裡等玩家"
+  "msg": "過關節拍中：浮層顯示第 1 關的結果"
  },
  {
   "eval": "new Promise((r) => { const t0 = performance.now(); const f = () => ((window.__game.beat && window.__game.beat.t >= 0.75) || window.__game.state !== 'cleared' || performance.now() - t0 > 4000) ? r(window.__game.state) : setTimeout(f, 30); f(); })"
@@ -157,21 +157,18 @@
   "wait": 150
  },
  {
-  "assert": "window.__game.state === 'cleared' && window.__game.levelResult.stars >= 1 && document.querySelectorAll('#clear .cs.hit').length === window.__game.levelResult.stars && document.querySelectorAll('#clear .cs').length === 3",
-  "msg": "進場動畫中按 Enter：跳到結尾（星星都亮），不略過結算"
+  "assert": "window.__game.state === 'playing' && window.__game.level === 2 && document.getElementById('clear').hidden",
+  "msg": "節拍中按 Enter：提前結束、直接進第 2 關"
  },
  {
   "shot": "05b-result"
- },
- {
-  "key": "Enter"
  },
  {
   "wait": 700
  },
  {
   "assert": "window.__game.state === 'playing' && window.__game.level === 2 && window.__game.lastWin.level === 1",
-  "msg": "按下一關（Enter）後 level 加 1、開始遊玩"
+  "msg": "提前結束後 level 加 1、開始遊玩"
  },
  {
   "assert": "window.__game.lastWin && window.__game.lastWin.level === 1 && window.__game.coins > 0 && Number(document.getElementById('hudCoinN').textContent) === window.__game.coins",
@@ -234,7 +231,7 @@
   "shot": "07-menu-after"
  },
  {
-  "eval": "localStorage.setItem('sticky-frog-v1', JSON.stringify({ unlocked: 9, stars: { 1: 3, 2: 2, 3: 1 }, best: { 1: 1200 }, coins: 340, skin: 'dart', trail: 'rainbow', owned: ['tree', 'none', 'dart', 'rainbow'], music: true, sfx: true, results: 8, grabs: 77, last: 8, worldsDone: [] })); setTimeout(() => location.reload(), 50); 'reload'"
+  "eval": "localStorage.setItem('sticky-frog-v1', JSON.stringify({ unlocked: 9, stars: { 1: 3, 2: 2, 3: 1 }, best: { 1: 1200 }, coins: 340, skin: 'dart', trail: 'rainbow', owned: ['tree', 'none', 'dart', 'rainbow'], music: true, sfx: true, results: 8, grabs: 77, last: 8, worldsDone: [] })); setTimeout(() => (addEventListener('visibilitychange', (e) => e.stopImmediatePropagation(), true), location.reload()), 50); 'reload'"
  },
  {
   "wait": 3000
@@ -331,8 +328,8 @@
   "wait": 500
  },
  {
-  "assert": "window.__game.state === 'records' && document.querySelectorAll('#featCards .fcard').length === 7 && document.querySelectorAll('#lbList li').length >= 1",
-  "msg": "紀錄頁：7 種成就＋無盡前 10 名"
+  "assert": "window.__game.state === 'records' && document.querySelectorAll('#featCards .fcard').length === 6 && document.querySelectorAll('#lbList li').length >= 1",
+  "msg": "紀錄頁：6 種成就＋無盡前 10 名"
  },
  {
   "shot": "11-records"
