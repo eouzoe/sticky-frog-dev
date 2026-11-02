@@ -1,6 +1,6 @@
 // 畫質分級的純邏輯檢查：開局訊號 → 級別、自動調整的降／升／禁止反覆。用法：node tests/quality-check.mjs
 import assert from 'node:assert/strict';
-import { pickTier, createGovernor, TIERS, ORDER } from '../src/quality.js';
+import { pickTier, createGovernor, TIERS, ORDER } from '../src/quality.ts';
 
 const pick = (o) => pickTier({ search: '', ...o }).tier;
 assert.equal(pick({ coarse: false, cores: 12, mem: 8 }), 'high', '強桌機 → high');

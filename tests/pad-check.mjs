@@ -3,10 +3,10 @@
 //   2. 沒接住鉤點的 bot 真的會落在荷葉上（事件 'pad'）；落地當下存檔，再從那份存檔重生，同樣要破得了（死了從荷葉重來）。
 //   3. 荷葉範圍內沒有尖刺／鋸片／蘑菇（落上去不會立刻被刺）。
 // 用法：node tests/pad-check.mjs   exit 1＝有任何一項不成立
-import { TUNE as T } from '../src/config.js';
-import { generateLevel } from '../src/level.js';
-import { createSim, step, padSnapshot } from '../src/sim.js';
-import { makeBot } from '../src/bot.js';
+import { TUNE as T } from '../src/config.ts';
+import { generateLevel } from '../src/level.ts';
+import { createSim, step, padSnapshot } from '../src/sim.ts';
+import { makeBot } from '../src/bot.ts';
 import { PARAMS } from './sim-check.mjs';
 
 const fresh = (lv, i) => ({ pad: i, flies: lv.flies.map(() => false), rings: lv.rings.map(() => false), boostUsed: lv.boosts.map(() => false), fliesGot: 0, time: 0 });

@@ -5,10 +5,10 @@
 // --levels 省略＝全部關卡。只看軌跡（bot 實際走到的世界），不看沒被走到的幾何。
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
-import { TUNE as T } from '../src/config.js';
-import { generateLevel, LEVEL_COUNT } from '../src/level.js';
-import { createSim, step } from '../src/sim.js';
-import { makeBot } from '../src/bot.js';
+import { TUNE as T } from '../src/config.ts';
+import { generateLevel, LEVEL_COUNT } from '../src/level.ts';
+import { createSim, step } from '../src/sim.ts';
+import { makeBot } from '../src/bot.ts';
 import { PARAMS } from './sim-check.mjs';
 
 const arg = (k) => { const i = process.argv.indexOf(k); return i < 0 ? null : process.argv[i + 1]; };

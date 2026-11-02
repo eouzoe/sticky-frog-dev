@@ -1,0 +1,6 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 200,
+  "singleQuote": true,
+  "ignorePatterns": ["dist/**", "node_modules/**", "src/art/**", "tools/bake/artkit.js", "public/**"]
+}

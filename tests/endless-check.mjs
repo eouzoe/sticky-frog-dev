@@ -2,10 +2,10 @@
 // 證明產生器隨距離升難度時不會吐出不可能的段落（至少到 TARGET；難度上限＝第 60 關，sim-check 已驗過同一個段落產生器）。
 // 方法見下面「接力」註解。
 // 用法：node tests/endless-check.mjs [種子數]
-import { TUNE as T } from '../src/config.js';
-import { createEndless, extendEndless, endlessDiff, endlessWorld, ENDLESS_WORLD_LEN } from '../src/level.js';
-import { createSim, step } from '../src/sim.js';
-import { makeBot } from '../src/bot.js';
+import { TUNE as T } from '../src/config.ts';
+import { createEndless, extendEndless, endlessDiff, endlessWorld, ENDLESS_WORLD_LEN } from '../src/level.ts';
+import { createSim, step } from '../src/sim.ts';
+import { makeBot } from '../src/bot.ts';
 
 export const TARGET = Number(process.env.ENDLESS_TARGET ?? 4 * ENDLESS_WORLD_LEN); // 預設跑完四個世界（1800 單位，難度 0.12 → 0.81）；ENDLESS_TARGET=2800 ENDLESS_CAP=90 會一路接力穿過沙丘世界那一段（2250–2700）
 const CAP = Number(process.env.ENDLESS_CAP ?? 75);

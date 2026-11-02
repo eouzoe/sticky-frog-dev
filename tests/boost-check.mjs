@@ -2,10 +2,10 @@
 // 用法：node tests/boost-check.mjs             正式（exit 1＝有死亡、或沒有任何 bot 穿過）
 //       node tests/boost-check.mjs --plant     自我驗證：在每顆加速圈的出口路徑上故意放尖刺，量尺必須報 >0（exit 0＝抓得到）
 //       node tests/boost-check.mjs --noboost   拿掉所有加速圈，61–75 每關仍然要破得了（unsolved=0）
-import { TUNE as T } from '../src/config.js';
-import { generateLevel } from '../src/level.js';
-import { createSim, step } from '../src/sim.js';
-import { makeBot } from '../src/bot.js';
+import { TUNE as T } from '../src/config.ts';
+import { generateLevel } from '../src/level.ts';
+import { createSim, step } from '../src/sim.ts';
+import { makeBot } from '../src/bot.ts';
 import { PARAMS } from './sim-check.mjs';
 
 const plant = process.argv.includes('--plant'), noboost = process.argv.includes('--noboost');

@@ -2,12 +2,12 @@
 // (and no raw literals handed to the pop-up / hint / banner calls in src/main.js), every key used exists in src/lang/en.js,
 // every en.js key is used, every language in DICTS has the same keys / {vars}, plus detection + lookup cases. Exit 1 on any problem.
 import { readFileSync } from 'node:fs';
-import { SKINS, TONGUES, TRAILS, WORLDS } from '../src/config.js';
-import { FEATS } from '../src/feats.js';
+import { SKINS, TONGUES, TRAILS, WORLDS } from '../src/config.ts';
+import { FEATS } from '../src/feats.ts';
 
 const root = new URL('../', import.meta.url);
 const read = (p) => readFileSync(new URL(p, root), 'utf8');
-const en = (await import(new URL('src/lang/en.js', root))).default;
+const en = (await import(new URL('src/lang/en.ts', root))).default;
 const errs = [];
 const words = (s) => /[A-Za-z]{2,}/.test(s);
 
@@ -41,10 +41,10 @@ function literals(src) {
   return out;
 }
 const ALLOW_CALL = /(?:\bt|itemName|A\.play|querySelector(?:All)?|getElementById|\$|classList\.(?:add|remove|toggle|contains)|closest|setAttribute|getAttribute|animate|addEventListener|removeEventListener|matchMedia)\(\s*$/;
-const ui = read('src/ui.js');
+const ui = read('src/ui.ts');
 for (const { s, at, before } of literals(ui)) {
   if (ALLOW_CALL.test(before)) continue;
-  // oxlint-disable-next-line no-control-regex -- \u0000/\u0001 are the separators this line inserts in place of tags
+  // oxlint-disable-next-line no-control-regex -- 刻意用控制字元當分隔符
   const text = s.replace(/<[^>]*>/g, '\u0001').split(/[\u0000\u0001]/).map((x) => x.replace(/&[a-z#0-9]+;/gi, ' ').trim()).filter(Boolean);
   const isMarkup = s.includes('<');
   for (const tx of text) {
@@ -60,25 +60,26 @@ for (const { s, at, before } of literals(ui)) {
 }
 
 // ---- 3. src/main.js: nothing raw handed to the text-showing calls
-const main = read('src/main.js');
+const main = read('src/main.ts');
 for (const m of main.matchAll(/\b(?:pop|UI\.(?:popup|hint|dieText|nextUp|setPlay|pauseMeta|clearSticker|feat|tryNow))\(\s*(['"`])([^'"`]*)\1?/g)) {
   if (m[2] && words(m[2]) && !m[0].includes('${')) errs.push(`src/main.js raw text to ${m[0].slice(0, 30)}…`);
 }
 for (const m of main.matchAll(/\b(?:pop|UI\.(?:popup|hint|dieText|clearSticker))\(\s*`/g)) errs.push(`src/main.js template literal to ${m[0]} (use t())`);
 
 // ---- 4. keys: used ⊆ en.js (or data keys), en.js ⊆ used
-const srcAll = ['src/ui.js', 'src/main.js', 'index.html'].map(read).join('\n'); // i18n.js only has examples in comments + the picker's set.language
+const srcAll = ['src/ui.ts', 'src/main.ts', 'index.html'].map(read).join('\n'); // i18n.js only has examples in comments + the picker's set.language
 const used = new Set();
 for (const m of srcAll.matchAll(/\bt\(\s*'([\w.]+)'/g)) used.add(m[1]);
 for (const m of srcAll.matchAll(/data-i18n(?:-aria|-html)?="([\w.]+)"/g)) used.add(m[1]);
 for (const m of srcAll.matchAll(/'((?:pop|new|featVal|hint|tut|clear|result|shop|menu|next|over|pause|hud|records|levels|aria|set)\.[\w.]+)'/g)) used.add(m[1]);
-{ const { NEW_AT } = await import(new URL('src/level.js', root)); for (const k of Object.keys(NEW_AT)) used.add(`new.${k}`); } // NEW 字卡的 key 在 main.js 用 t(`new.${id}`) 動態組
+{ const { NEW_AT } = await import(new URL('src/level.ts', root)); for (const k of Object.keys(NEW_AT)) used.add(`new.${k}`); } // NEW 字卡的 key 在 main.js 用 t(`new.${id}`) 動態組
 const DATA = /^(it\.|world\.|die\.|feat\.|featLine\.)/;
 for (const k of used) if (!(k in en) && !DATA.test(k)) errs.push(`key used but missing in en.js: ${k}`);
 for (const k of Object.keys(en)) if (!used.has(k)) errs.push(`en.js key never used: ${k}`);
 
 // ---- 5. other languages: same keys (no missing, no extra), same {vars} as English, no empty strings
-const { DICTS, detect, matchLang, t, setLang, itemName, pseudo, enablePseudo } = await import(new URL('src/i18n.js', root));
+const { DICTS, detect, matchLang, t, setLang, itemName, pseudo, enablePseudo, loadAllLangs } = await import(new URL('src/i18n.ts', root));
+await loadAllLangs(); // 語系延遲載入：檢查前全部載進來
 const vars = (s) => [...String(s).matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort().join(',');
 // English that lives next to the data (fallbacks): it.<tab>.<id>, world.<i>, die.<i>, feat.<id>, featLine.<id>
 const extra = {};
@@ -103,7 +104,7 @@ const cases = [
 ];
 const nLang = Object.keys(DICTS).length;
 if (nLang !== 12) errs.push(`expected 12 languages, found ${nLang}`);
-const { LANGS } = await import(new URL('src/i18n.js', root));
+const { LANGS } = await import(new URL('src/i18n.ts', root));
 if (LANGS.map((l) => l[0]).join() !== Object.keys(DICTS).join()) errs.push('LANGS order / codes differ from DICTS');
 enablePseudo();
 cases.push([matchLang('xx'), 'xx'], [setLang('xx') && t('menu.levels'), pseudo('LEVELS')], [pseudo('LEVELS').length, 'LEVELS'.length + 3]);

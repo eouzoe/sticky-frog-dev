@@ -1,9 +1,9 @@
 // 金圈分數：沙丘軌跡圈（ring.trail）＝SCORE_RING_TRAIL（30），一般金圈＝SCORE_RING（150）；另量 76–90 兩種 bot 的整局分數與金幣對照第 5 世界。
 // 用法：node tests/ring-score-check.mjs（exit 1＝單元級失敗或滑沙 bot 金幣 > 第 5 世界平均的 1.5 倍）
-import { TUNE as T } from '../src/config.js';
-import { generateLevel } from '../src/level.js';
-import { createSim, step, ringPoints } from '../src/sim.js';
-import { makeBot, makeSurfBot } from '../src/bot.js';
+import { TUNE as T } from '../src/config.ts';
+import { generateLevel } from '../src/level.ts';
+import { createSim, step, ringPoints } from '../src/sim.ts';
+import { makeBot, makeSurfBot } from '../src/bot.ts';
 import { PARAMS } from './sim-check.mjs';
 let fail = 0;
 const ck = (n, ok) => { if (!ok) fail++; console.log(`${ok ? 'OK  ' : 'FAIL'} ${n}`); };

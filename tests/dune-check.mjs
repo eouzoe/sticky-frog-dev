@@ -10,10 +10,10 @@
 //       node tests/dune-check.mjs --back      背面量尺：讓青蛙（12 組 bot 控制）從 lip 後面的背坡上方落下，1.5 秒內死亡必須 0（exit 1＝有死亡）
 //       node tests/dune-check.mjs --times     每關最快的 bot 時間 vs 3 星門檻（par），必須每關都拿得到
 // 突變驗證（_out/hook-hero/round2/w6/mutate-*.py）：拿掉速度下限 → 卡住 > 0；出口淨空守衛拿掉＋放尖刺 → 死亡 > 0；拿掉背坡拋起 → --back 死亡 > 0
-import { TUNE as T } from '../src/config.js';
-import { generateLevel } from '../src/level.js';
-import { createSim, step, duneH } from '../src/sim.js';
-import { makeBot, makeSurfBot } from '../src/bot.js';
+import { TUNE as T } from '../src/config.ts';
+import { generateLevel } from '../src/level.ts';
+import { createSim, step, duneH } from '../src/sim.ts';
+import { makeBot, makeSurfBot } from '../src/bot.ts';
 import { PARAMS } from './sim-check.mjs';
 
 const has = (f) => process.argv.includes(f), plant = has('--plant'), nodune = has('--nodune'), back = has('--back'), times = has('--times');
