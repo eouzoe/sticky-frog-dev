@@ -28,7 +28,7 @@ const bad = [
   ['範圍外（關卡 0）', 400, batch({ e: [ev({ lv: 0 })] })],
   ['字串太長／格式錯（死因）', 400, batch({ e: [ev({ c: "water'; DROP TABLE events;--" })] })],
   ['匿名 ID 格式錯', 400, batch({ a: 'hello' })],
-  ['缺必填（death 沒有 x）', 400, batch({ e: [(({ x, ...r }) => r)(ev())] })],
+  ['缺必填（death 沒有 x）', 400, batch({ e: [(({ x: _x, ...r }) => r)(ev())] })],
   ['空批次', 400, batch({ e: [] })],
   ['不是 JSON', 400, null, 0, { raw: 'not json' }],
   ['NaN／Infinity 變 null', 400, batch({ e: [ev({ x: null })] })],

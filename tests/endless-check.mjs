@@ -55,12 +55,11 @@ for (let seed = 1; seed <= SEEDS; seed++) {
 }
 // 元素上限：cap=60 不出現荷葉／加速圈（沒在主線學過），cap=75 兩個都要出現（否則就是沒接上）
 {
-  let lo = 0, hi = 0, p75 = 0, b75 = 0;
+  let lo = 0, p75 = 0, b75 = 0;
   for (let seed = 1; seed <= 12; seed++) {
     const A = createEndless(seed, 60); extendEndless(A, TARGET); lo += A.pads.length + A.boosts.length;
     const B = createEndless(seed, 75); extendEndless(B, TARGET); p75 += B.pads.length; b75 += B.boosts.filter((b) => !b.off).length;
   }
-  hi = p75 + b75;
   const ok = lo === 0 && p75 > 0 && b75 > 0;
   if (!ok) { fails++; console.log(`FAIL 無盡元素上限 cap60 荷葉＋加速圈=${lo}（要 0）cap75 荷葉=${p75} 加速圈=${b75}（都要 >0）`); } else console.log(`OK 無盡元素上限：cap60 荷葉＋加速圈=0、cap75 荷葉=${p75} 加速圈=${b75}（12 個種子、到 ${TARGET}）`);
 }

@@ -89,6 +89,7 @@ export function createLevelView(scene) {
     lv = level; wi = Math.max(0, Math.min(5, level.world ?? 0));
     const P = WORLD_PAL[wi], q = ART.q;
     for (const s of sets) s.dispose(group);
+    // oxlint-disable-next-line unicorn/no-useless-spread -- the copy is required: remove() mutates children during the loop
     for (const o of [...group.children]) group.remove(o);
     sets = [];
     const H = level.hooks.length;

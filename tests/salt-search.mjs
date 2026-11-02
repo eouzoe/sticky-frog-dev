@@ -3,7 +3,7 @@
 // 第 4 世界的 WIN 數取自目前 generateLevel(n−15)，不是讀舊 log，所以第 1–60 關變動時門檻會跟著動。
 import { generateLevel } from '../src/level.js';
 import { makeBot } from '../src/bot.js';
-import { run, PARAMS } from './sim-check.mjs';
+import { PARAMS } from './sim-check.mjs';
 
 const argv = process.argv.slice(2), mi = argv.indexOf('--max');
 const MAX = mi >= 0 ? +argv.splice(mi, 2)[1] : 60;

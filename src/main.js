@@ -1,7 +1,7 @@
 // 開機、主迴圈、狀態機、輸入、存檔、事件 → 手感回饋（音效／粒子／震動／慢動作／跳字）。
 import { cg } from './cg.js';
 import { TUNE as T, WORLDS, SKINS, TRAILS, TONGUES, FULL_LAUNCH } from './config.js';
-import { generateLevel, newElements, LEVEL_COUNT, levelLabel, worldOf, createEndless, extendEndless, endlessWorld, ENDLESS_WORLD_LEN } from './level.js';
+import { generateLevel, newElements, LEVEL_COUNT, levelLabel, worldOf, createEndless, extendEndless, endlessWorld } from './level.js';
 import { createSim, step, movePos, flyPos, burstOn, burstWarn, padSnapshot, ringPoints } from './sim.js';
 import { makeBot } from './bot.js';
 import { createView } from './scene.js';
@@ -197,7 +197,7 @@ function startEndlessNow() {
 }
 // 即時金幣：入帳、HUD 彈一下（存檔在死亡／過關／退回選單時寫）
 function addCoins(n) { if (n <= 0) return; save.coins += n; G.runCoins += n; UI.hudCoins(save.coins); if (G.sim && G.state === 'playing') { juice.coins(G.sim.x, G.sim.y, n); sfx('coin'); } }
-function onFeat(f, s) {
+function onFeat(f) {
   const d = featById(f.id), better = recordFeat(save.feats, f.id, f.value);
   G.featLog.push({ id: f.id, value: f.value, t: performance.now() });
   if (f.silent) return;
@@ -228,7 +228,7 @@ function slowmo(t = T.SLOWMO_TIME) { G.slowT = Math.max(G.slowT, t); A.duckMusic
 
 function onEvent(e) {
   const s = G.sim, w = WORLDS[G.lv.world];
-  for (const f of G.feats.event(e, s)) onFeat(f, s);
+  for (const f of G.feats.event(e, s)) onFeat(f);
   switch (e.type) {
     case 'crouch': sfx('tick'); break;
     case 'jump':
@@ -574,7 +574,7 @@ function frame(now) {
     const ap = window.__game.autoplay && G.state === 'playing' ? (G.bot ??= makeBot(...window.__game.autoplay)) : null;
     while (G.acc >= T.DT && n < 14) {
       step(s, T.DT, ap ? ap(s) : G.hold && G.state === 'playing'); G.acc -= T.DT; n++;
-      if (G.state === 'playing') for (const f of G.feats.tick(s, T.DT)) onFeat(f, s);
+      if (G.state === 'playing') for (const f of G.feats.tick(s, T.DT)) onFeat(f);
     }
     if (n >= 14) G.acc = 0;
     for (const e of s.events) onEvent(e);

@@ -282,9 +282,7 @@ function trailSvg(it) {
     <circle cx="104" cy="40" r="11" fill="#fff" stroke="rgba(40,30,70,.15)" stroke-width="2"/><circle cx="100" cy="36" r="3" fill="#fff"/></svg>`;
 }
 const picOf = (tab, it) => (tab === 'skins' ? `<img src="${portrait(it.id)}" alt="" loading="lazy" />` : tab === 'tongues' ? tongueSvg(it.id) : trailSvg(it));
-let lastAct = null;
 export function renderShop(save, onAct, hi = null) {
-  lastAct = { save, onAct, hi };
   for (const t of document.querySelectorAll('#shop .tab')) {
     t.classList.toggle('on', t.dataset.t === shopTab);
     t.onclick = () => { shopTab = t.dataset.t; A.play('tab'); renderShop(save, onAct, hi); };
@@ -365,7 +363,7 @@ export function showResult(r) {
   $('resTitle').textContent = r.title;
   $('resLevel').textContent = t('result.level', { level: levelLabel(r.level) });
   const conds = [[t('result.cleared'), true], [t('result.flies', { got: r.flies, total: r.fliesTotal }), r.fliesOk], [t('result.time', { time: r.time.toFixed(1), par: r.par }), r.timeOk]];
-  $('resStars').innerHTML = conds.map(([txt, ok], i) => `<div class="rs${ok ? ' got' : ''}"><svg class="rstar"><use href="#i-star" /></svg><span>${txt}</span></div>`).join('');
+  $('resStars').innerHTML = conds.map(([txt, ok]) => `<div class="rs${ok ? ' got' : ''}"><svg class="rstar"><use href="#i-star" /></svg><span>${txt}</span></div>`).join('');
   $('resScore').textContent = '0'; $('resCoinsN').textContent = '0';
   $('resBest').style.display = r.newBest ? '' : 'none';
   $('resFeats').innerHTML = r.feats.map((id) => `<span class="rf">${featName(id)}</span>`).join('');

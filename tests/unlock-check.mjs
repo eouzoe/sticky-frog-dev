@@ -1,11 +1,5 @@
 // 掃 generateLevel：每個基本元素第一次出現的關卡必須等於 UNLOCK 表（NEW 字卡的依據）。exit 1＝對不上。
 import { generateLevel, LEVEL_COUNT, NEW_AT } from '../src/level.js';
-const has = {
-  mush: (L) => L.mush.length > 0 && L.mush.length > L._chainMush, ring: (L) => L.rings.length > 0,
-  move: (L) => L.hooks.some((h) => h.move), spikeLow: (L) => L.spikes.some((s) => s.pole && !L._tun.has(s)),
-  fan: (L) => L.fans.length > 0, saw: (L) => L.saws.length > 0, spikeHigh: (L) => L.spikes.some((s) => s.hang && !L._tun.has(s)),
-  swarm: (L) => L.flies.length > 0, mushChain: null, ringArc: null, tunnel: null,
-};
 // 只有用幾何能辨識的元素才掃；mushChain／ringArc／tunnel 用特徵：連續蘑菇＝同 y=2 的相鄰蘑菇、雙圈＝同段兩圈 x 差 <4、夾擊＝同 x 的 pole＋hang
 function seen(L) {
   const o = {};

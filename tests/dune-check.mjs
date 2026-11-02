@@ -29,11 +29,11 @@ if (back) {
       for (const dx of [0.4, 1.4, 2.6, 3.8, 5.0]) for (const vx of [2, 7, 12]) for (const [rel, gv] of PARAMS) {
         const s = createSim(lv), bot = makeBot(rel, gv);
         s.mode = 'air'; s.started = true; s.tongue.state = 'idle'; s.x = d.x1 + dx; s.vx = vx; s.vy = 0; s.y = duneH(d, s.x) + 3;
-        runs++; let died = false;
+        runs++;
         while (s.t < 12 && s.mode !== 'dead' && s.mode !== 'won' && !(s.duneT > -90 && s.t - s.duneT > 2.2)) {
           step(s, T.DT, bot(s)); for (const e of s.events) if (e.type === 'launch' && e.back) kicks++; s.events.length = 0;
         }
-        if (s.mode === 'dead' && s.duneT > -90 && s.t - s.duneT <= WINDOW) { died = true; deaths++; if (rows.length < 20) rows.push(`L${n} dx=${dx} vx=${vx} rel=${rel} gv=${gv} cause=${s.cause} dt=${(s.t - s.duneT).toFixed(2)}`); }
+        if (s.mode === 'dead' && s.duneT > -90 && s.t - s.duneT <= WINDOW) { deaths++; if (rows.length < 20) rows.push(`L${n} dx=${dx} vx=${vx} rel=${rel} gv=${gv} cause=${s.cause} dt=${(s.t - s.duneT).toFixed(2)}`); }
       }
     }
   }
