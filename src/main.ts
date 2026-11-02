@@ -37,8 +37,10 @@ import { loadCatStage, catSinging, setPortraitSource } from './render/portraits.
 import type { Level, PadSnapshot, Sim, SimEvent, XY } from './types.ts';
 
 performance.mark('main-start'); // 主程式開始執行（HTML、CSS、JS 下載與解析都在這之前）
-const COIN_PTS = 100; // 每 100 分＝1 金幣
-const CLEAR_COINS = 25; // 過關獎勵
+// 金幣要珍貴（使用者：太多、太頻繁）：每 500 分 1 枚、過關 3 枚、三星再 3 枚、成就 5–15 枚；物價（config.ts）跟著降到約 2/5
+const COIN_PTS = 500; // 每 500 分＝1 金幣
+const CLEAR_COINS = 3; // 過關獎勵
+const PERFECT_COINS = 3; // 三星加碼
 const COIN_HOVER = 0.35; // 金幣噴出後懸空這麼久才飛向 HUD 計數器（到達那一刻數字才跳：入帳要有距離感）
 const FLY_STALE = 1.8; // 飛行中的金幣超過這麼多秒還沒到（動畫被打斷）：直接入帳
 // 跳字的門檻一律偏嚴：常常跳就廉價，還會打斷盪的手感。分數在 HUD 累計就夠了
@@ -355,7 +357,7 @@ function levelCleared(): void {
   save.unlocked = Math.max(save.unlocked, Math.min(LEVEL_COUNT, n + 1));
   save.clears++; G.wins++;
   if (n % 15 === 0 && !save.worldsDone.includes(n)) { save.worldsDone.push(n); cg.happytime(); } // 破世界＝真正的成就
-  addCoins(CLEAR_COINS, false); persist(); // 過關獎勵先記進存檔；噴出與飛入由節拍安排
+  addCoins(CLEAR_COINS + (rate.stars === 3 ? PERFECT_COINS : 0), false); persist(); // 過關獎勵先記進存檔；噴出與飛入由節拍安排
   G.lastWin = { level: n, score: G.score, time: s.time, coins: G.runCoins, at: performance.now() };
   G.levelResult = { level: n, stars: rate.stars, got: [true, rate.fliesOk, rate.timeOk], score: G.score, newBest, coins: G.runCoins };
   UI.hint(null); UI.tut(null); clearHold(); cg.gameplayStop();
