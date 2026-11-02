@@ -1,11 +1,12 @@
 // 正式版健康檢查：載入 → 選單閒置 3 秒 → 自動玩家 8 秒；記錄錯誤、長任務（>50ms）、rAF 間隔的分布、WebGL 渲染器名稱
 // 用法：bun prodcheck.mjs <網址> <gpu|swift|nogl>
 import { chromium } from 'playwright-core';
+import { BASE, GPU } from './browser.mjs';
 const [url = 'http://localhost:4180/', mode = 'gpu'] = process.argv.slice(2);
-const LAUNCH = mode === 'gpu' ? { args: ['--use-gl=angle', '--use-angle=gles-egl', '--ignore-gpu-blocklist', '--enable-gpu'], env: { ...process.env, GALLIUM_DRIVER: 'd3d12', LD_LIBRARY_PATH: '/usr/lib/wsl/lib' } }
+const LAUNCH = mode === 'gpu' ? GPU
   : mode === 'swift' ? { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] }
   : { args: ['--disable-webgl', '--disable-webgl2'] };
-const browser = await chromium.launch({ executablePath: `${process.env.HOME}/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome`, ...LAUNCH });
+const browser = await chromium.launch({ ...BASE, ...LAUNCH });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 2 });
 const errors = []; page.on('pageerror', (e) => errors.push(String(e).slice(0, 200))); page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') errors.push(`${m.type()}: ${m.text().slice(0, 200)}`); });
 await page.addInitScript(() => {

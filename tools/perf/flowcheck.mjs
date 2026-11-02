@@ -1,9 +1,10 @@
 // 一局結束的流程（flow.ts／beat.ts）在真的瀏覽器裡走一遍：過關節拍自動下一關、金幣飛到才入帳、主線死亡重生、點擊提前、
 // 無盡死亡倒數自動新一局、過關節拍中暫停／繼續。每一步截圖到 shots/flow-*.png。用法：bun tools/perf/flowcheck.mjs [網址]
 import { chromium } from 'playwright-core';
+import { BASE, GPU } from './browser.mjs';
 const url0 = process.argv[2] ?? 'http://localhost:5173/', url = `${url0}${url0.includes('?') ? '&' : '?'}debug=1`; // 正式版要 ?debug=1 才有 __game
 const OUT = new URL('./shots/', import.meta.url).pathname;
-const browser = await chromium.launch({ executablePath: `${process.env.HOME}/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome`, args: ['--use-gl=angle', '--use-angle=gles-egl', '--ignore-gpu-blocklist', '--enable-gpu'], env: { ...process.env, GALLIUM_DRIVER: 'd3d12', LD_LIBRARY_PATH: '/usr/lib/wsl/lib' } });
+const browser = await chromium.launch({ ...BASE, ...GPU });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 const logs = []; page.on('pageerror', (e) => logs.push(String(e))); page.on('console', (m) => { if (m.type() === 'error') logs.push(m.text()); });
 const fails = [];

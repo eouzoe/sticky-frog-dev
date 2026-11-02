@@ -6,6 +6,7 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 import { brotliCompressSync, constants } from 'node:zlib';
 import { extname, join, resolve, basename } from 'node:path';
 import { chromium } from 'playwright-core';
+import { BASE, GPU } from './browser.mjs';
 
 const [scen, roundsArg, ...distArgs] = process.argv.slice(2);
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.webp': 'image/webp', '.woff2': 'font/woff2', '.mp3': 'audio/mpeg' };
@@ -35,8 +36,7 @@ const SCEN = {
 const INIT = `(() => { const T = window.__lt = { p: {} }; let inner = null;
   Object.defineProperty(window, '__bootP', { configurable: true, set(f) { inner = f; }, get() { return (p) => { T.p[p] = performance.now(); inner && inner(p); }; } }); })();`;
 
-const browser = await chromium.launch({ executablePath: `${process.env.HOME}/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome`,
-  args: ['--use-gl=angle', '--use-angle=gles-egl', '--ignore-gpu-blocklist', '--enable-gpu'], env: { ...process.env, GALLIUM_DRIVER: 'd3d12', LD_LIBRARY_PATH: '/usr/lib/wsl/lib' } });
+const browser = await chromium.launch({ ...BASE, ...GPU });
 { const c = await browser.newContext(), p = await c.newPage(); await p.evaluate(() => { const gl = document.createElement('canvas').getContext('webgl2'); gl.clear(gl.COLOR_BUFFER_BIT); gl.finish(); }); await c.close(); }
 
 async function once(d) {

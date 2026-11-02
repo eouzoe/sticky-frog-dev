@@ -1,7 +1,8 @@
 // 選單裡 rAF 有沒有在跑：每秒的 rAF 次數、遊戲自己的 fps、visibilityState；滑鼠動一下之後再量
 import { chromium } from 'playwright-core';
+import { BASE, GPU } from './browser.mjs';
 const url = process.argv[2] ?? 'http://localhost:4180/';
-const browser = await chromium.launch({ executablePath: `${process.env.HOME}/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome`, args: ['--use-gl=angle', '--use-angle=gles-egl', '--ignore-gpu-blocklist', '--enable-gpu'], env: { ...process.env, GALLIUM_DRIVER: 'd3d12', LD_LIBRARY_PATH: '/usr/lib/wsl/lib' } });
+const browser = await chromium.launch({ ...BASE, ...GPU });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 await page.addInitScript(() => { window.__n = 0; const loop = () => { window.__n++; requestAnimationFrame(loop); }; requestAnimationFrame(loop); });
 await page.goto(url);

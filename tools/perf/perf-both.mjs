@@ -17,8 +17,7 @@ const argv = process.argv.slice(2);
 const opt = (n, d) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : d; };
 const DIST = resolve(opt('dist', 'dist')), PORT = +opt('port', 5779), OUT = opt('out', null), LABEL = opt('label', 'run');
 const ONLY = (opt('only', 'A,B,C')).split(',');
-const CHROME = `${process.env.HOME}/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome`;
-if (argv.includes('--build')) { const r = spawnSync('npm', ['run', 'build'], { stdio: 'inherit' }); if (r.status) process.exit(r.status); }
+if (argv.includes('--build')) { const r = spawnSync('bun', ['run', 'build'], { stdio: 'inherit' }); if (r.status) process.exit(r.status); }
 
 // ---- 靜態伺服器：文字類資源開 br/gzip（模擬 CDN），其他原樣 ----
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.woff2': 'font/woff2', '.glb': 'model/gltf-binary', '.bin': 'application/octet-stream', '.png': 'image/png' };
@@ -144,7 +143,7 @@ async function runScenario(browser, key) {
   return r;
 }
 
-const browser = await chromium.launch({ executablePath: CHROME, headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required', ...(argv.includes('--uncap') ? ['--disable-frame-rate-limit', '--disable-gpu-vsync'] : [])] });
+const browser = await chromium.launch({ ...BASE, headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required', ...(argv.includes('--uncap') ? ['--disable-frame-rate-limit', '--disable-gpu-vsync'] : [])] });
 const result = { label: LABEL, at: new Date().toISOString(), dist: DIST, note: 'WSL2 無 GPU：SwiftShader 軟體光柵＋軟體合成，影格時間不可信；看下載、主執行緒每幀毫秒、draw call、貼圖量', scenarios: {} };
 try {
   for (const k of ONLY) {
