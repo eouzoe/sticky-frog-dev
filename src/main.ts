@@ -116,7 +116,8 @@ const hooks = {
   audio: A, ui: UI, i18n: { audit, setLang, t },
   autoplay: null as [number, number] | null, // 截圖巡覽用：設成 [rel, grabVy] 讓自動玩家操作
 };
-(window as unknown as { __game: typeof hooks }).__game = hooks;
+// 測試掛鉤只在開發伺服器或 ?debug=1 才掛到 window（正式版不暴露改存檔、刷榜的入口）
+if (import.meta.env.DEV || new URLSearchParams(location.search).has('debug')) (window as unknown as { __game: typeof hooks }).__game = hooks;
 
 // ---------- 存檔、造型 ----------
 const persist = () => { save.updatedAt = Date.now(); cg.saveJSON(SAVE_KEY, save); };

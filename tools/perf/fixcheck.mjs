@@ -2,7 +2,7 @@
 // A. SDK 晚 1.5 秒才就緒、雲端有另一份進度：選單不等它就出來；就緒後本機與雲端合併、寫回雲端；開局後才就緒也一樣
 // B. 強制 WebGL context 掉再恢復：不黑畫面、沒有錯誤、恢復後還能開局畫圖
 import { chromium } from 'playwright-core';
-const url = process.argv[2] ?? 'http://localhost:5173/';
+const url0 = process.argv[2] ?? 'http://localhost:5173/', url = `${url0}${url0.includes('?') ? '&' : '?'}debug=1`; // 正式版要 ?debug=1 才有 __game
 const OUT = new URL('./shots/', import.meta.url).pathname;
 const browser = await chromium.launch({ executablePath: `${process.env.HOME}/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome`,
   args: ['--use-gl=angle', '--use-angle=gles-egl', '--ignore-gpu-blocklist', '--enable-gpu'], env: { ...process.env, GALLIUM_DRIVER: 'd3d12', LD_LIBRARY_PATH: '/usr/lib/wsl/lib' } });

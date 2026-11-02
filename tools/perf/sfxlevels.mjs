@@ -2,7 +2,7 @@
 // 指標：短期響度＝連續 300ms 視窗的最大均方（dB），旋轉貓 oiia 量循環播 2 秒
 // 用法：bun sfxlevels.mjs <網址>
 import { chromium } from 'playwright-core';
-const url = process.argv[2] ?? 'http://localhost:5173/';
+const url0 = process.argv[2] ?? 'http://localhost:5173/', url = `${url0}${url0.includes('?') ? '&' : '?'}debug=1`; // 正式版要 ?debug=1 才有 __game
 const browser = await chromium.launch({ executablePath: `${process.env.HOME}/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome`, args: ['--autoplay-policy=no-user-gesture-required', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const page = await browser.newPage();
 await page.addInitScript(() => {
