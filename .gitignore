@@ -1,3 +1,4 @@
 node_modules
 dist
 .claude/
+tools/perf/shots/

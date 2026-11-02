@@ -7,13 +7,13 @@
 import { WORLDS } from '../config.ts';
 import { createGL, rgba, NOCLIP, NOADD } from './gl.ts';
 import type { Frame, GL, Tex } from './gl.ts';
-import { loadAtlas, decodeAtlas, paintedAtlas, imageFrame, decode, rawFrame } from './atlas.ts';
-import { FX, PARTICLE, rippleStrip, starStrip, auroraStrip } from './paint.ts';
+import { loadAtlas, decodeAtlas, imageFrame, decode, rawFrame, measure } from './atlas.ts';
+import { rippleStrip, starStrip, auroraStrip } from './paint.ts';
 import { rgb, mix, lighten } from './palette.ts';
 import catUrl from '../art/cat.webp';
 import catSpinUrl from '../art/cat-spin.webp';
 import catSpin from '../art/cat-spin.json';
-import { catLook } from './portraits.ts';
+import { loadCatStage } from './portraits.ts';
 
 export interface Cam { x: number; y: number; d: number; fov: number; shakeX: number; shakeY: number }
 const PITCH = -0.04, FOG_NEAR = 30, FOG_FAR = 125, WATER_EDGE = -52;
@@ -101,12 +101,17 @@ function composeStrip(L: Layer, wi: number, bmp: ImageBitmap): Strip | null {
 }
 
 export async function createView(canvas: HTMLCanvasElement, dprCap: number) {
+  const tGL = performance.now();
   const R: GL = createGL(canvas);
+  measure('view:createGL', tGL);
   const dprOf = () => Math.min(devicePixelRatio || 1, dprCap);
-  // 開機要的：共用圖集（蒼蠅、金幣、翻轉圈）；小形狀當場畫。角色造型、貓照片、世界圖集都是用到才載
-  const shared = await loadAtlas(R, 'shared');
-  const frames: Record<string, Frame> = { ...shared.frames, ...paintedAtlas(R, { ...FX, ...PARTICLE }) };
+  // 開機要的：共用圖集（蒼蠅、金幣、翻轉圈）與小形狀圖集（粒子、光環、軌道，離線畫好的）。角色造型、貓照片、世界圖集都是用到才載
+  const [shared, fxA] = await Promise.all([loadAtlas(R, 'shared'), loadAtlas(R, 'fx')]);
+  shared.bitmap.close(); fxA.bitmap.close();
+  const frames: Record<string, Frame> = { ...shared.frames, ...fxA.frames };
+  const tStrips = performance.now();
   const rippleTex = R.texture(rippleStrip(), { repeat: 'xy', mip: true }), starTex = R.texture(starStrip(), { repeat: 'xy' }), auroraTex = R.texture(auroraStrip(), { repeat: 'xy' });
+  measure('view:strips', tStrips);
   const whiteF = frames.white, wu = (whiteF.u0 + whiteF.u1) / 2, wv = (whiteF.v0 + whiteF.v1) / 2; // 純色四邊形：取白色方塊的中心那一格
 
   // 角色造型：每個造型一張小圖集。skinBitmap＝只解碼（商店頭像用），ensureSkin＝解碼＋上傳（遊戲用）
@@ -124,8 +129,8 @@ export async function createView(canvas: HTMLCanvasElement, dprCap: number) {
   // 旋轉貓：站姿照片＋揣手手 9 個角度（tools/cat 從迷因綠幕範本做的），選了貓才下載
   // 站姿錨點在身體中心、高 2.5 世界單位（角色外觀倍率 1.72 之後）；旋轉格的錨點與高度照影片裡跟站姿的相對位置
   let catP: Promise<void> | null = null;
-  // 質感跟選單一致（portraits.ts 的 catLook：描邊／調色）：處理完四周多一圈 p 的邊，錨點與高度跟著換算
-  const ensureCat = () => (catP ??= Promise.all([decode(catUrl), decode(catSpinUrl)]).then(([b, s]) => {
+  // 質感跟選單一致（cat-stage.ts 的 catLook：描邊／調色，跟照片一起動態載）：處理完四周多一圈 p 的邊，錨點與高度跟著換算
+  const ensureCat = () => (catP ??= Promise.all([decode(catUrl), decode(catSpinUrl), loadCatStage()]).then(([b, s, { catLook }]) => {
     const hU = 2.5 / 1.72, C = catSpin;
     const a = catLook(b, 0, 0, b.width, b.height, b.width, b.height);
     frames.c_photo = imageFrame(R, a.c, (a.p + 0.5 * b.width) / a.c.width, (a.p + 0.55 * b.height) / a.c.height, (hU * a.c.height) / b.height);
@@ -144,9 +149,12 @@ export async function createView(canvas: HTMLCanvasElement, dprCap: number) {
   function makeBands(wi: number, bmp: ImageBitmap): Band[] {
     const out: Band[] = [];
     for (const L of layersOf(wi)) {
+      const t0 = performance.now();
       const s = composeStrip(L, wi, bmp); if (!s) continue;
+      measure(`band:${L.keys[0]}:compose ${s.cv.width}x${s.cv.height}`, t0); const t1 = performance.now();
       // context 恢復：重新下載解碼圖集再合成一次（不把長條留在記憶體）
       const tex = R.texture(s.cv, { repeat: true, mip: true, restore: () => decodeAtlas(`w${wi}`).then((b) => { const r = composeStrip(L, wi, b); b.close(); return r!.cv; }) });
+      measure(`band:${L.keys[0]}:upload`, t1);
       out.push({ tex, z: s.z, P: s.P, yTop: s.yTop, yBot: s.yBot });
     }
     return out;
@@ -301,6 +309,8 @@ export async function createView(canvas: HTMLCanvasElement, dprCap: number) {
     get s() { return f / pz; }, get W() { return W; }, get H() { return H; }, get world() { return world; },
     get dirty() { return dirty; }, set dirty(v: boolean) { dirty = v; },
     get atlasBytes() { return R.texBytes; }, get drawCalls() { return R.drawCalls; },
+    /** 這個世界的圖集與背景層都已經在顯示記憶體裡（開關卡前要確認，不然道具會等圖集到了才出現） */
+    worldReady: (wi: number) => loaded.includes(wi),
     ensureSkin, ensureCat, skinBitmap, skinBitmapNow: (id: string) => skinNow.get(id),
     canvasTexture(cv: HTMLCanvasElement, repeat = false): Tex { return R.texture(cv, { repeat }); },
   };

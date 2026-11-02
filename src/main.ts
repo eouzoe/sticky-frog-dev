@@ -9,7 +9,7 @@ import { makeBot } from './bot.ts';
 import type { Bot } from './bot.ts';
 import * as A from './audio.ts';
 import * as UI from './ui.ts';
-import { createFeatTracker, featById, recordFeat } from './feats.ts';
+import { createFeatTracker, featById, recordFeat, BIG_FEATS } from './feats.ts';
 import type { FeatHit } from './feats.ts';
 import { SAVE_KEY, DEFAULT_SAVE, ENDLESS_UNLOCK, normalizeSave, mergeSave, nextStep, rateStars, recordStars } from './save.ts';
 import type { Save, NextStep, ShopItem, ShopTab } from './save.ts';
@@ -18,11 +18,10 @@ import { t, itemName, setLang, loadLang, onLang, detect, urlLang, navLangs, sdkI
 import './i18n.css';
 import { TIERS, pickTier, createGovernor } from './quality.ts';
 import type { Governor, TierName } from './quality.ts';
-import { createJuice } from './juice.ts';
 import type { Juice } from './juice.ts';
 import { TM } from './telemetry.ts';
 import { createView } from './render/view.ts';
-import { prefetch, dropPrefetch } from './render/atlas.ts';
+import { prefetch, dropPrefetch, measure } from './render/atlas.ts';
 import type { View } from './render/view.ts';
 import { createLevelView } from './render/level.ts';
 import type { LevelView } from './render/level.ts';
@@ -30,13 +29,16 @@ import { createCharacter } from './render/character.ts';
 import type { Character, Mood } from './render/character.ts';
 import { createFx, SH } from './render/fx.ts';
 import type { Fx } from './render/fx.ts';
-import { catStage, catSinging, setPortraitSource } from './render/portraits.ts';
+import { loadCatStage, catSinging, setPortraitSource } from './render/portraits.ts';
 import type { Level, PadSnapshot, Sim, SimEvent, XY } from './types.ts';
 
+performance.mark('main-start'); // 主程式開始執行（HTML、CSS、JS 下載與解析都在這之前）
 const CELEBRATE = 1.2; // 落荷葉後的短暫慶祝秒數，然後進結算畫面
 const COIN_PTS = 100; // 每 100 分＝1 金幣（即時入帳）
 const CLEAR_COINS = 25; // 過關獎勵
-const FLIP_KEYS = ['', 'pop.flip1', 'pop.flip2', 'pop.flip3', 'pop.flip4'];
+// 跳字的門檻一律偏嚴：常常跳就廉價，還會打斷盪的手感。分數在 HUD 累計就夠了
+const FLIP_POP = 7; // 轉幾圈以上才跳字
+const CLOSE_GAP = 0.3; // 離危險物多近才算千鈞一髮（sim 在 1.1 單位內就會發事件，這裡再篩）
 const MENU_FRAME_MS = 48; // 選單類畫面最多約 20 fps（只有緩慢的水波與雲，待機少畫三分之一）
 
 // ?perf=1：右上角的效能數字（真機排查用）。frame＝rAF 間隔（含等 GPU）、js＝主執行緒每幀花的時間；>50ms／>200ms 只在遊玩中累計
@@ -70,7 +72,11 @@ const G = {
   prev: { x: 0, y: 0, a: 0 },
 };
 let save: Save = normalizeSave(DEFAULT_SAVE, LEVEL_COUNT);
-let view: View, lvView: LevelView, frog: Character, fx: Fx, juice: Juice, gov: Governor;
+let view: View, lvView: LevelView, frog: Character, fx: Fx, gov: Governor;
+// 手感回饋（粒子、慢動作、震動的組合，約 6 KB）選單出來後才載；載好之前每個呼叫都是空操作。
+// 閒置回呼要給上限（忙碌的機器可能很久不閒置），開關卡時也直接確保載好
+let juice: Juice = new Proxy({}, { get: () => () => {} }) as Juice, juiceP: Promise<void> | null = null;
+const ensureJuice = () => (juiceP ??= import('./juice.ts').then((m) => { juice = m.createJuice({ fx, frog, lvView, G, sfx, duckMusic: A.duckMusic, slowmo, flash: UI.flash, vibrate }); }));
 const canvas = document.getElementById('c') as HTMLCanvasElement;
 
 // ---------- 測試／截圖用掛鉤（tests/*.json 冒煙步驟用） ----------
@@ -128,7 +134,8 @@ function loadEndless(): void {
 function updateEndless(): void {
   const s = G.sim!, L = G.lv!;
   if (L.gen!.x < s.x + 120) extendEndless(L, s.x + 250);
-  const k = endlessWorld(s.x, save.unlocked > 75 ? 6 : save.unlocked > 60 ? 5 : 4);
+  const cap = save.unlocked > 75 ? 6 : save.unlocked > 60 ? 5 : 4, k = endlessWorld(s.x, cap);
+  const kNext = endlessWorld(s.x + 150, cap); if (kNext !== G.world) prefetch(`w${kNext}`); // 快到下一個世界：先把圖集下載解碼好，切換那一幀就有道具
   if (k !== G.world && s.mode !== 'dead') {
     L.world = k; setWorld(k);
     UI.flash(0.6); sfx('win'); UI.popup(t(`world.${k}`, null, WORLDS[k].name), innerWidth / 2, bigY(), 'big'); fx.addTrauma(0.2, true); juice.levelIn(s);
@@ -161,7 +168,13 @@ function restoreEaten(): void {
   s.boostUsed.forEach((v, i) => { if (v) lvView.st.boostGone[i] = 1; });
   G.lv!.pads.forEach((_, i) => { lvView.st.padOn[i] = i <= s.checkpoint ? 1 : 0; });
 }
+let pendingStart = 0;
 function startLevel(n: number): void {
+  const wi = worldOf(n);
+  // 世界圖集還沒到（第一次進這個世界、或剛切過世界）：先換世界讓它開始載，到了再開；不然鉤子、荷葉會等圖集到了才冒出來
+  if (!view.worldReady(wi)) { pendingStart = n; setWorld(wi); void view.ensureWorld(wi).then(() => { if (pendingStart === n) { pendingStart = 0; startLevel(n); } }); return; }
+  pendingStart = 0; void ensureJuice();
+  if (n % 15 === 0 && wi + 1 < WORLDS.length) prefetch(`w${wi + 1}`); // 這個世界的最後一關：先把下一個世界的圖集下載解碼好
   G.ignorePressUntil = performance.now() + 250; G.startedAt = performance.now();
   A.initAudio();
   loadLevel(n); TM.levelStart(n);
@@ -174,7 +187,7 @@ function startLevel(n: number): void {
 function startEndless(): void {
   if (save.unlocked <= ENDLESS_UNLOCK) return;
   G.ignorePressUntil = performance.now() + 250; G.startedAt = performance.now(); // 直接進無盡也要讓畫質調整開始計時
-  A.initAudio(); G.sim = null; loadEndless();
+  A.initAudio(); void ensureJuice(); G.sim = null; loadEndless();
   enterPlaying(); clearHold(); UI.show(null); UI.hint(null);
   G.cam.x = G.sim!.x + 6; G.cam.y = T.CAM_MIN_Y;
   UI.popup(t('pop.endlessBest', { dist: save.endlessBest }), innerWidth / 2, bigY(), 'big');
@@ -188,13 +201,13 @@ function onFeat(f: FeatHit): void {
   G.featLog.push({ id: f.id, value: f.value, t: performance.now() });
   G.runFeats.push(f.id);
   addCoins(d.coins); persist();
-  UI.feat(UI.featName(f.id), UI.featLine(f.id), d.coins); sfx('ring'); sfx('buy'); A.duckMusic(0.35, 0.8); vibrate([15, 30, 15]);
-  fxFeat(f.id);
+  if (BIG_FEATS.has(f.id)) { UI.feat(UI.featName(f.id), UI.featLine(f.id), d.coins); sfx('ring'); sfx('buy'); A.duckMusic(0.35, 0.8); vibrate([15, 30, 15]); fxFeat(f.id); }
+  else { const s = G.sim; if (s) pop(UI.featName(f.id), s.x, s.y + 3, 'gold'); sfx('ring'); } // 其他成就：跟一般跳字一樣簡單閃一下，金幣（計數器會動）與紀錄照給
   if (better && save.feats[f.id].count > 1) UI.popup(t('pop.newRecord'), innerWidth / 2, bigY() + 150, 'gold');
 }
 
 // ---------- 連擊與分數 ----------
-const mult = () => 1 + Math.min(3, Math.floor(G.combo / 5) * 0.5);
+const mult = () => 1 + Math.min(3, Math.floor(G.combo / 8) * 0.5);
 function addCombo(): void { G.combo++; G.comboT = T.COMBO_WINDOW; G.comboPulse = 1; }
 function addScore(v: number): number {
   const s = Math.round(v * mult()), before = G.score; G.score += s;
@@ -233,11 +246,9 @@ function onEvent(e: SimEvent): void {
     case 'flip': {
       G.flipsTotal++; G.bestFlip = Math.max(G.bestFlip, e.n);
       addCombo();
-      const pts = addScore(T.SCORE_FLIP * e.n);
+      addScore(T.SCORE_FLIP * e.n);
       sfx('flip', { n: e.n, combo: G.combo });
-      const name = e.n < FLIP_KEYS.length ? t(FLIP_KEYS[e.n]) : t('pop.flipN', { n: e.n });
-      if (e.n >= 2) pop(name, s.x, s.y + 2.6, 'big');
-      else pop(t('pop.withPts', { text: name, pts }), s.x, s.y + 2, 'gold');
+      if (e.n >= FLIP_POP) pop(t('pop.flipN', { n: e.n }), s.x, s.y + 2.6, 'big');
       juice.flip(s, e.n);
       break;
     }
@@ -258,7 +269,6 @@ function onEvent(e: SimEvent): void {
     }
     case 'bounce':
       sfx('bounce'); addCombo(); addScore(T.SCORE_BOUNCE);
-      pop(t('pop.boing'), e.x, e.y + 1.5, 'gold');
       juice.bounce(e, w); vibrate(15);
       break;
     case 'fan': sfx('fan'); juice.fan(s); break;
@@ -270,9 +280,9 @@ function onEvent(e: SimEvent): void {
       break;
     case 'boost':
       lvView.takeBoost(e.i); juice.boost(e, w); sfx('whoosh'); addCombo();
-      pop(t('pop.boost'), e.x, e.y + 2.4, 'gold');
       break;
     case 'close': {
+      if (e.gap === undefined || e.gap > CLOSE_GAP) break; // 真的貼著過才算
       const pts = addScore(50); addCombo(); sfx('ring');
       pop(t('pop.closeCall', { pts }), e.x, e.y + 2, 'gold'); juice.close(e);
       break;
@@ -295,7 +305,7 @@ function onEvent(e: SimEvent): void {
       sfx('win'); G.winT = CELEBRATE; G.winAnim = 0;
       const g = G.lv!.goal, bull = Math.abs(s.x - g.x) < 1.6;
       juice.win(s, g); vibrate([20, 30, 60]);
-      pop(t(bull ? 'pop.bullseye' : 'pop.landed'), s.x, s.y + 3, 'big');
+      if (bull) pop(t('pop.bullseye'), s.x, s.y + 3, 'big'); // 一般落地不跳字，正中紅心才值得
       if (bull) addScore(200);
       levelCleared();
       break;
@@ -391,7 +401,7 @@ function openLevels(): void { sfx('click'); if (G.sim && G.sim.mode !== 'perch')
 function openRecords(): void { sfx('click'); clearHold(); G.state = 'records'; UI.renderRecords(save, G.lastResult?.score); UI.show('records'); }
 // 商店展示台的旋轉貓：第一次開商店才掛上（圖片到那時才下載）；畫布 2 倍解析度（CSS 最大 230px）
 function openShop(hi: ShopItem | null = null): void {
-  catStage(document.getElementById('showSpin') as HTMLCanvasElement, 460, { feet: 0.97, height: 0.9 });
+  void loadCatStage().then((m) => m.catStage(document.getElementById('showSpin') as HTMLCanvasElement, 460, { feet: 0.97, height: 0.9 }));
   sfx('click'); if (G.sim && G.sim.mode !== 'perch') resetRun(true); clearHold(); G.state = 'shop';
   G.shopHi = hi?.id ?? null; if (hi) UI.setShopTab(hi.tab);
   renderShop(); UI.show('shop'); UI.tryNow(null);
@@ -541,7 +551,7 @@ function autoBot(p: [number, number]): Bot { const k = p.join(','); if (k !== G.
 
 function updatePlaying(realDt: number, dt: number): void {
   const s = G.sim!, lv = G.lv!;
-  if (G.comboT > 0) { G.comboT -= dt; if (G.comboT <= 0) { if (G.combo >= 5) pop(t('pop.combo', { n: G.combo }), s.x, s.y + 3, 'gold'); G.combo = 0; } }
+  if (G.comboT > 0) { G.comboT -= dt; if (G.comboT <= 0) { if (G.combo >= 10) pop(t('pop.combo', { n: G.combo }), s.x, s.y + 3, 'gold'); G.combo = 0; } }
   G.comboPulse = Math.max(0, G.comboPulse - realDt * 5);
   if (G.restartT > 0) { G.restartT -= realDt; if (G.restartT <= 0) resetRun(); }
   if (G.overT > 0) { G.overT -= realDt; if (G.overT <= 0) { G.overT = 0; endlessOver(); return; } }
@@ -696,6 +706,7 @@ function readSave(from: 'local' | 'cloud'): Save { let raw: unknown = null; try 
 // 選單第一幀就要的圖集：存檔目前的世界、身上的造型（貓是照片，另外載）
 const bootAtlases = (s: Save) => { const k = SKINS.find((x) => x.id === s.skin) ?? SKINS[1]; return { world: worldOf(Math.min(s.last, s.unlocked, LEVEL_COUNT)), skin: k.kind === 'cat' ? null : k.kind === 'ape' ? 'ape' : k.id }; };
 async function boot(): Promise<void> {
+  performance.mark('boot-start');
   cg.loadingStart();
   setBoot(0.1);
   const pick = pickTier(); gov = createGovernor(pick);
@@ -711,7 +722,6 @@ async function boot(): Promise<void> {
   // 遊戲平面的圖層順序：關卡物件 → 拖尾 → 角色＋舌頭 → 翻轉圈前半 → 粒子
   view.layer(lvView.drawBack); view.layer(fx.drawTrail); view.layer(frog.draw); view.layer(lvView.drawFront); view.layer(fx.draw);
   setPortraitSource({ now: view.skinBitmapNow, load: view.skinBitmap }, () => { if (G.state === 'shop') renderShop(); else if (G.state === 'menu') UI.setHero(skinOf()); });
-  juice = createJuice({ fx, frog, lvView, G, sfx, duckMusic: A.duckMusic, slowmo, flash: UI.flash, vibrate });
   setBoot(0.9);
   const need = bootAtlases(save);
   await Promise.all([view.ensureWorld(need.world), need.skin ? view.ensureSkin(need.skin) : view.ensureCat()]);
@@ -724,7 +734,9 @@ async function boot(): Promise<void> {
   // 介面語言：?lang= > 玩家自己選的 > CrazyGames locale > 瀏覽器 > English；?lang=xx 是版面測試用的加長假語言
   if (urlLang() === 'xx') enablePseudo();
   const lang = detect({ url: urlLang(), saved: save.lang, sdk: sdkInfo(), nav: navLangs() });
+  const tLang = performance.now();
   await loadLang(lang); // 語系是各自的小檔：開機只下載偵測到的那一個，第一幀就是對的語言
+  measure('boot:lang', tLang); const tMenu = performance.now();
   setLang(lang);
   mountPicker((code) => { save.lang = code; persist(); });
   onLang(() => { if (G.state === 'menu') toMenu(); else if (G.state === 'paused') pauseMeta(); });
@@ -735,8 +747,10 @@ async function boot(): Promise<void> {
   cg.onMute((m) => A.setMuted(m));
   TM.bind(() => ((G.state === 'playing' || G.state === 'paused') && !G.endless && G.sim && G.lv ? { level: G.level, x: G.sim.maxX, prog: Math.min(1, G.sim.maxX / G.lv.goal.x) } : null));
   toMenu();
+  measure('boot:ui', tMenu); const tRender = performance.now();
   // 先在載入畫面底下畫一幀：天空、水面、合批、粒子的著色器都在第一次渲染時編譯，別讓玩家看到的第一幀去付這筆
   if (G.sim) render(0, 0);
+  measure('boot:firstRender', tRender); const tFence = performance.now();
   // 等 GPU 真的把第一幀做完再收載入畫面：第一次用的著色器與貼圖在 GPU 那邊可能要編譯、上傳幾百毫秒（期間 rAF 幾乎不來），
   // 畫完就收的話玩家看到的是一個凍住的選單。用 fence 輪詢（不阻塞主執行緒，載入條照樣動），最多等 3 秒
   await new Promise<void>((r) => {
@@ -748,9 +762,12 @@ async function boot(): Promise<void> {
     };
     tick();
   });
+  measure('boot:fence', tFence);
   setBoot(1);
   // 載入時間的量測點（選單第一幀畫完、從導覽開始算）：開發者工具效能面板看得到，或 performance.getEntriesByName('menu-ready')
   performance.mark('menu-ready');
+  // 選單出來之後再載手感回饋：閒置時、最晚 800 ms；玩家按 PLAY 前幾乎一定載完（startLevel 也會確保）
+  if (window.requestIdleCallback) window.requestIdleCallback(() => void ensureJuice(), { timeout: 800 }); else setTimeout(() => void ensureJuice(), 50);
   TM.menuReady(performance.now(),{ lang: document.documentElement.lang, vw: innerWidth, vh: innerHeight, q: G.quality }); TM.notice(save.privSeen, () => { save.privSeen = true; persist(); });
   const ld = document.getElementById('boot'); ld?.classList.add('done'); setTimeout(() => ld?.classList.add('out'), 120); setTimeout(() => ld?.remove(), 600);
   cg.loadingStop();
