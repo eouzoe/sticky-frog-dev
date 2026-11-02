@@ -9,6 +9,7 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 import { brotliCompressSync, constants } from 'node:zlib';
 import { extname, join, resolve } from 'node:path';
 import { chromium } from 'playwright-core';
+import { BASE, GPU } from './browser.mjs';
 
 const [distArg, onlyArg = 'A,M,B', nArg = '7', sdkMode = 'none', gpuMode = 'gpu'] = process.argv.slice(2);
 const DIST = resolve(distArg), N = +nArg, PORT = 5791;
@@ -60,9 +61,9 @@ const SDK = {
 const med = (a) => { const s = a.filter((x) => x != null).sort((x, y) => x - y); return s.length ? Math.round(s[s.length >> 1]) : null; };
 // gpu：WSL 的 D3D12（Mesa d3d12 → Windows 實體 GPU）；swift：SwiftShader 軟體模擬
 const LAUNCH = gpuMode === 'gpu'
-  ? { args: ['--use-gl=angle', '--use-angle=gles-egl', '--ignore-gpu-blocklist', '--enable-gpu'], env: { ...process.env, GALLIUM_DRIVER: 'd3d12', LD_LIBRARY_PATH: '/usr/lib/wsl/lib' } }
+  ? GPU
   : { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] };
-const browser = await chromium.launch({ executablePath: `${process.env.HOME}/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome`, ...LAUNCH });
+const browser = await chromium.launch({ ...BASE, ...LAUNCH });
 // 預熱：真實使用者打開遊戲時瀏覽器早就開著、GPU 行程已經初始化；這筆一次性成本不算進載入時間
 { const c = await browser.newContext(), p = await c.newPage(); {
   const r = await p.evaluate(() => { const gl = document.createElement('canvas').getContext('webgl2'); const e = gl.getExtension('WEBGL_debug_renderer_info'); gl.clear(gl.COLOR_BUFFER_BIT); gl.finish(); return e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER); });

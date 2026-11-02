@@ -1,9 +1,10 @@
 // 開機路徑的 performance.measure 清單（同一個瀏覽器載兩次，取第二次＝著色器與 GPU 暖機後）；也印 menu-ready 時間
 // 用法：bun bootmarks.mjs <網址> [gpu|swift] [cpuRate]
 import { chromium } from 'playwright-core';
+import { BASE, GPU } from './browser.mjs';
 const [url = 'http://localhost:4180/', mode = 'gpu', rate = '1'] = process.argv.slice(2);
-const LAUNCH = mode === 'gpu' ? { args: ['--use-gl=angle', '--use-angle=gles-egl', '--ignore-gpu-blocklist', '--enable-gpu'], env: { ...process.env, GALLIUM_DRIVER: 'd3d12', LD_LIBRARY_PATH: '/usr/lib/wsl/lib' } } : { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] };
-const browser = await chromium.launch({ executablePath: `${process.env.HOME}/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome`, ...LAUNCH });
+const LAUNCH = mode === 'gpu' ? GPU : { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] };
+const browser = await chromium.launch({ ...BASE, ...LAUNCH });
 const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
 let res;
 for (let i = 0; i < 2; i++) {

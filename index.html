@@ -271,7 +271,7 @@ canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: n
 #clear, #over { position: fixed; inset: 0; pointer-events: none; z-index: 4; display: flex; flex-direction: column; align-items: center; padding-top: 9vh; gap: 4px; }
 #clear[hidden], #over[hidden], #clearCoins[hidden], #clearBest[hidden], #ovNew[hidden], .ovRow[hidden], .cd[hidden] { display: none; }
 body[data-screen="pause"] #clear, body[data-screen="pause"] #over { visibility: hidden; } /* 暫停面板在上面；浮層的狀態留著，繼續時接著播 */
-#clear .sticker, #over .sticker { transform: rotate(-4deg); font-size: 72px; -webkit-text-stroke: 10px var(--w-deep); animation: dieIn .45s var(--spring) both; }
+#clear .sticker, #over .sticker { transform: rotate(-4deg); font-size: 72px; -webkit-text-stroke: 10px var(--w-deep); animation: stickerIn .45s var(--spring) both; max-width: 92vw; white-space: nowrap; } /* max-width＋nowrap：data-fit 才量得到太長、縮得下來 */
 .cstars { display: flex; align-items: flex-end; gap: 4px; }
 .cs { display: flex; flex-direction: column; align-items: center; }
 .cs small { font-size: 15px; -webkit-text-stroke: 4px var(--w-deep); text-shadow: 0 2px 0 var(--w-deep); opacity: .6; white-space: nowrap; }
@@ -335,6 +335,8 @@ body[data-screen="pause"] #clear, body[data-screen="pause"] #over { visibility: 
 #dieText { position: fixed; left: 50%; top: 40%; transform: translate(-50%, -50%); font-size: 76px; -webkit-text-stroke: 11px var(--w-deep); display: none; pointer-events: none; z-index: 4; }
 #dieText.on { display: block; animation: dieIn .36s var(--spring) both; }
 @keyframes dieIn { 0% { transform: translate(-50%, -50%) scale(.3, .2); } 60% { transform: translate(-50%, -50%) scale(1.15, .85); } 100% { transform: translate(-50%, -50%); } }
+/* 過關／無盡結束的標題：在 flex 欄裡置中，不能用 dieIn（它帶 #dieText 的 translate(-50%, -50%)，會把標題往左上推半個自己） */
+@keyframes stickerIn { 0% { transform: rotate(-4deg) scale(.3, .2); } 60% { transform: rotate(-4deg) scale(1.15, .85); } 100% { transform: rotate(-4deg); } }
 
 /* achievement praise: capsule banner */
 #feat { position: fixed; left: 50%; top: 21%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 5; pointer-events: none; }

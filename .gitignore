@@ -2,3 +2,7 @@ node_modules
 dist
 .claude/
 tools/perf/shots/
+.devenv/
+.devenv.flake.nix
+devenv.local.nix
+.direnv/

@@ -146,24 +146,18 @@
   "wait": 150
  },
  {
-  "assert": "window.__game.state === 'cleared' && window.__game.levelResult.stars >= 1 && document.querySelectorAll('#clear .cs.hit').length === window.__game.levelResult.stars && document.querySelectorAll('#clear .cs').length === 3",
-  "msg": "手機：進場動畫中點一下＝跳到結尾，不略過結算"
+  "assert": "window.__game.state === 'playing' && window.__game.level === 2 && document.getElementById('clear').hidden",
+  "msg": "手機：節拍中點一下＝提前結束、直接進第 2 關"
  },
  {
   "shot": "m03c-result"
- },
- {
-  "tap": [
-   12,
-   200
-  ]
  },
  {
   "wait": 700
  },
  {
   "assert": "window.__game.state === 'playing' && window.__game.level === 2 && window.__game.lastWin.level === 1",
-  "msg": "手機：點一下＝下一關，level 加 1"
+  "msg": "手機：提前結束後 level 加 1、開始遊玩"
  },
  {
   "shot": "m04-level2"
@@ -197,7 +191,7 @@
   "shot": "m06-shop"
  },
  {
-  "assert": "(() => { const b = document.querySelector('#shop .back').getBoundingClientRect(), t = document.querySelector('#shop .tab').getBoundingClientRect(), cards = [...document.querySelectorAll('#cards .card')], last = cards[cards.length - 1].getBoundingClientRect(); return b.bottom <= t.top && last.bottom <= innerHeight && cards.length === 11 && document.getElementById('showcase').dataset.id === 'cat'; })()",
+  "assert": "(() => { const b = document.querySelector('#shop .back').getBoundingClientRect(), t = document.querySelector('#shop .tab').getBoundingClientRect(), cards = [...document.querySelectorAll('#cards .card')], last = cards[cards.length - 1].getBoundingClientRect(); return b.bottom <= t.top && last.bottom <= innerHeight && cards.length === 12 && document.getElementById('showcase').dataset.id === 'cat'; })()",
   "msg": "手機商店：BACK 不壓分頁鈕、12 張角色卡最後一張完整可見"
  }
 ]

@@ -5,12 +5,12 @@
 //       bun tools/bake/run.mjs --3d       只跑 3D
 // Chrome 路徑可用 CHROME 環境變數覆寫
 import { chromium } from 'playwright-core';
+import { BASE } from '../perf/browser.mjs';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join, normalize } from 'node:path';
 
 const ROOT = normalize(join(import.meta.dir, '../..'));
 const OUT = join(ROOT, 'src/art');
-const CHROME = process.env.CHROME ?? `${process.env.HOME}/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome`;
 const PAGES = process.argv.includes('--paint') ? ['paint'] : process.argv.includes('--3d') ? ['index'] : ['paint', 'index'];
 const ts = new Bun.Transpiler({ loader: 'ts' });
 const server = Bun.serve({
@@ -24,7 +24,7 @@ const server = Bun.serve({
     return new Response(file);
   },
 });
-const browser = await chromium.launch({ executablePath: CHROME, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+const browser = await chromium.launch({ ...BASE, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 try {
   mkdirSync(OUT, { recursive: true });
   for (const pg of PAGES) {

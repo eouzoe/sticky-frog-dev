@@ -1,9 +1,10 @@
 // 障礙物長相：第 9 關（立在石柱上的石頭）、第 25 關（垂下來的石頭）、第 22 關（蝴蝶）各開一關，鏡頭停在第一個障礙物前截圖；順便確認 fx 圖集有 rock／bfly0／bfly1
 // 用法：bun tools/perf/hazards.mjs [網址]
 import { chromium } from 'playwright-core';
+import { BASE, GPU } from './browser.mjs';
 const url0 = process.argv[2] ?? 'http://localhost:5173/', url = `${url0}${url0.includes('?') ? '&' : '?'}debug=1`; // 正式版要 ?debug=1 才有 __game
 const OUT = new URL('./shots/', import.meta.url).pathname;
-const browser = await chromium.launch({ executablePath: `${process.env.HOME}/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome`, args: ['--use-gl=angle', '--use-angle=gles-egl', '--ignore-gpu-blocklist', '--enable-gpu'], env: { ...process.env, GALLIUM_DRIVER: 'd3d12', LD_LIBRARY_PATH: '/usr/lib/wsl/lib' } });
+const browser = await chromium.launch({ ...BASE, ...GPU });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 const logs = []; page.on('pageerror', (e) => logs.push(String(e))); page.on('console', (m) => { if (m.type() === 'error') logs.push(m.text()); });
 await page.goto(url, { timeout: 120000 });

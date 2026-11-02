@@ -6,7 +6,7 @@
   "eval": "localStorage.setItem('sticky-frog-v1', \"{\\\"unlocked\\\": 61, \\\"stars\\\": {\\\"1\\\": 1, \\\"2\\\": 2, \\\"3\\\": 3, \\\"4\\\": 1, \\\"5\\\": 2, \\\"6\\\": 3, \\\"7\\\": 1, \\\"8\\\": 2, \\\"9\\\": 3, \\\"10\\\": 1, \\\"11\\\": 2, \\\"12\\\": 3, \\\"13\\\": 1, \\\"14\\\": 2, \\\"15\\\": 3, \\\"16\\\": 1, \\\"17\\\": 2, \\\"18\\\": 3, \\\"19\\\": 1, \\\"20\\\": 2, \\\"21\\\": 3, \\\"22\\\": 1, \\\"23\\\": 2, \\\"24\\\": 3, \\\"25\\\": 1, \\\"26\\\": 2, \\\"27\\\": 3, \\\"28\\\": 1, \\\"29\\\": 2, \\\"30\\\": 3, \\\"31\\\": 1, \\\"32\\\": 2, \\\"33\\\": 3, \\\"34\\\": 1, \\\"35\\\": 2, \\\"36\\\": 3, \\\"37\\\": 1, \\\"38\\\": 2, \\\"39\\\": 3, \\\"40\\\": 1, \\\"41\\\": 2, \\\"42\\\": 3, \\\"43\\\": 1, \\\"44\\\": 2, \\\"45\\\": 3, \\\"46\\\": 1, \\\"47\\\": 2, \\\"48\\\": 3, \\\"49\\\": 1, \\\"50\\\": 2, \\\"51\\\": 3, \\\"52\\\": 1, \\\"53\\\": 2, \\\"54\\\": 3, \\\"55\\\": 1, \\\"56\\\": 2, \\\"57\\\": 3, \\\"58\\\": 1, \\\"59\\\": 2, \\\"60\\\": 3}, \\\"coins\\\": 0, \\\"worldsDone\\\": [15, 30, 45, 60], \\\"last\\\": 61, \\\"seen\\\": {\\\"endless\\\": true, \\\"world\\\": 4}, \\\"music\\\": false, \\\"sfx\\\": false}\"); 'ok'"
  },
  {
-  "eval": "location.reload()"
+  "eval": "(addEventListener('visibilitychange', (e) => e.stopImmediatePropagation(), true), location.reload())"
  },
  {
   "wait": 3500
@@ -24,8 +24,8 @@
   "wait": 1200
  },
  {
-  "assert": "document.querySelectorAll('#worldTabs .wcard').length === 6 && !document.querySelectorAll('#worldTabs .wcard')[4].classList.contains('locked')",
-  "msg": "\u9078\u95dc\u6709 5 \u500b\u4e16\u754c\u5206\u9801\u3001\u7b2c 5 \u500b\u5df2\u89e3\u9396"
+  "assert": "document.querySelectorAll('#worldTabs .wcard').length === 7 && !document.querySelectorAll('#worldTabs .wcard')[4].classList.contains('locked')",
+  "msg": "選關有 6 個世界分頁＋主題卡、第 5 個已解鎖"
  },
  {
   "click": "#levelGrid .lvb:nth-child(1)"
@@ -35,7 +35,7 @@
  },
  {
   "assert": "window.__game.level === 61",
-  "msg": "\u5f9e\u9078\u95dc\u9032\u4e86 5-1\uff08\u7b2c 61 \u95dc\uff09"
+  "msg": "從選關進了 5-1（第 61 關）"
  },
  {
   "key": "Space",
@@ -46,7 +46,7 @@
  },
  {
   "assert": "document.getElementById('dieText').textContent.includes('BRRR!')",
-  "msg": "\u5931\u6557\u5b57\u662f BRRR!"
+  "msg": "失敗字是 BRRR!"
  },
  {
   "shot": "frost-die"

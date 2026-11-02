@@ -1,8 +1,9 @@
 // 六個世界各截一張遊玩畫面＋選單；記錄貼圖常駐量與 draw call
 import { chromium } from 'playwright-core';
+import { BASE, GPU } from './browser.mjs';
 const [url = 'http://localhost:5173/', tag = 'w'] = process.argv.slice(2);
 const OUT = new URL('./shots/', import.meta.url).pathname;
-const browser = await chromium.launch({ executablePath: `${process.env.HOME}/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome`, args: ['--use-gl=angle', '--use-angle=gles-egl', '--ignore-gpu-blocklist', '--enable-gpu'], env: { ...process.env, GALLIUM_DRIVER: 'd3d12', LD_LIBRARY_PATH: '/usr/lib/wsl/lib' } });
+const browser = await chromium.launch({ ...BASE, ...GPU });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 const logs = []; page.on('pageerror', (e) => logs.push(String(e))); page.on('console', (m) => { if (m.type() === 'error') logs.push(m.text()); });
 await page.goto(url);

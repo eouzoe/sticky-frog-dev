@@ -1,8 +1,9 @@
 // 真的撞尖刺：找第一個有尖刺的關卡，把青蛙放到尖刺上走正常死亡流程；80 ms 與 260 ms 各截一張（角色附近）
 import { chromium } from 'playwright-core';
+import { BASE, GPU } from './browser.mjs';
 const url0 = process.argv[2] ?? 'http://localhost:5173/', url = `${url0}${url0.includes('?') ? '&' : '?'}debug=1`; // 正式版要 ?debug=1 才有 __game
 const OUT = new URL('./shots/', import.meta.url).pathname;
-const browser = await chromium.launch({ executablePath: `${process.env.HOME}/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome`, args: ['--use-gl=angle', '--use-angle=gles-egl', '--ignore-gpu-blocklist', '--enable-gpu'], env: { ...process.env, GALLIUM_DRIVER: 'd3d12', LD_LIBRARY_PATH: '/usr/lib/wsl/lib' } });
+const browser = await chromium.launch({ ...BASE, ...GPU });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 const logs = []; page.on('pageerror', (e) => logs.push(String(e)));
 await page.goto(url, { timeout: 120000 });
