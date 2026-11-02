@@ -22,23 +22,23 @@
 
 ## 玩法
 
-側視 2.5D：青蛙只在一個平面上移動，世界是 3D 加景深。
+側視 2.5D：青蛙只在一個平面上移動，世界用自寫的 WebGL2 偽 3D 畫出景深（3D 模型離線烘焙成精靈圖集）。
 
 - **按住**：舌頭射向前方最近的鉤點花，黏住後開始擺盪。按得越久，舌頭收得越短、擺得越快。
-- **放開**：帶著擺盪的速度飛出去，依速度在空中翻滾。轉一圈是 FLIP，兩圈 DOUBLE，三圈 TRIPLE。
+- **放開**：帶著擺盪的速度飛出去，依速度在空中翻滾；一次滯空轉 7 圈以上會跳字稱讚。
 - 飛過蒼蠅會自動舔掉，穿過金圈加分，彈跳蘑菇把你彈回空中。
-- 碰到尖刺、鋸片，或掉進水裡（糖漿、霓虹運河、岩漿），就從頭再來。
-- 落在終點的大荷葉上就過關。
+- 碰到石頭、蝴蝶，或掉進水裡（糖漿、霓虹運河、岩漿），就從頭再來。
+- 落在終點的大荷葉上就過關：星星與金幣短暫浮現，不用按任何鍵，自動進下一關。
 
 ## 內容
 
 | | |
 |---|---|
-| 關卡 | 90 關，每 15 關一個世界：Jungle、Candy、Neon City、Volcano、Frostbite Peaks、Sunset Dunes（76 關起有滑沙：落在沙丘上不會死，沿坡面往前滑、從尾端坡頂被拋起；沙面上有一排金圈引路，拿掉沙丘也過得了） |
+| 關卡 | 90 關，每 15 關一個世界：Jungle、Candy、Neon City、Volcano、Frostbite Peaks、Sunset Dunes（76 關起有滑沙：落在沙丘上不會死，沿坡面往前滑、從尾端坡頂被拋起；沙面上有一排金圈引路，拿掉沙丘也過得了）。另有主題系列關卡：擁有整套主題後開啟，每個主題 10 關 |
 | 評星 | 過關 1 顆；吃到七成以上的蒼蠅加 1 顆；在標準時間內過關再加 1 顆 |
 | 無盡模式 | 破第 5 關解鎖。越遠越難，每跑一段換一個世界 |
-| 成就 | 打出漂亮的操作時當場跳出來稱讚：SPIN DOCTOR（一次滯空轉 5 圈）、FROGNADO（7 圈）、NONSTOP、SPEED DEMON、WAVE KISSER、CLOSE SHAVE、CLUTCH SAVE |
-| 商店 | 12 個角色（看板角色 Spinny Cat、9 隻青蛙、Vine Ape、Silk Frog）、4 種舌頭、5 種拖尾 |
+| 成就 | 打出漂亮的操作時當場跳出來稱讚：SPIN DOCTOR（一次滯空轉 7 圈）、FROGNADO（10 圈）、NONSTOP、SPEED DEMON、WAVE KISSER、CLOSE SHAVE |
+| 商店 | 12 個角色（看板角色 Spinny Cat、9 隻青蛙、Vine Ape、Silk Frog）、4 種舌頭、6 種拖尾；旋轉貓主題組合包（角色、舌頭、拖尾、關卡道具整套換） |
 | 語言 | English、Español、Português、Français、Deutsch、Türkçe、Русский、日本語、한국어、Indonesia、繁體中文、简体中文 |
 | 存檔 | 在 CrazyGames 上用 SDK 的雲端存檔，其他環境存在 localStorage |
 
@@ -48,7 +48,7 @@
     <td><img src="docs/shot-swing.jpg" alt="擺盪"></td>
   </tr>
   <tr>
-    <td><img src="docs/shot-result.jpg" alt="過關結算"></td>
+    <td><img src="docs/shot-clear.jpg" alt="過關浮層"></td>
     <td><img src="docs/shot-shop.jpg" alt="商店"></td>
   </tr>
 </table>
@@ -71,6 +71,8 @@ bun run build      # 輸出到 dist/，這份就是上傳 CrazyGames 的版本
 bun run preview    # 在本機跑 dist/
 bun run check      # 型別、oxlint、tests/*-check.mjs
 ```
+
+`tools/perf/` 與 `tools/bake/` 的瀏覽器腳本用 playwright-core，第一次要裝 Chromium：`bun x playwright-core install chromium`。
 
 `dist/` 裡全部用相對路徑（`vite.config.ts` 的 `base: './'`），放在任何子路徑底下都能跑。
 
@@ -99,14 +101,14 @@ src/
 ├── leaderboard.ts   本機前 10 名＋CrazyGames 排行榜接口
 └── cg.ts            CrazyGames SDK v3 包裝（存檔本機永遠鏡像）
 public/
-├── ui/              商店角色頭像
+├── privacy.html     遙測隱私說明
 └── fonts/           Baloo 2 ExtraBold（SIL OFL 1.1）
 tools/
 ├── bake/            離線烘焙：原版 GLB → 精靈圖集（無頭 Chrome）、小形狀光柵
 ├── cat/             旋轉貓素材（yt-dlp＋ffmpeg）
-└── perf/            Playwright 量測與驗證腳本（開機、遊玩剖析、流程、主題、截圖）
+└── perf/            Playwright 量測與驗證腳本（開機、遊玩剖析、流程、主題、步驟檔執行器、README 截圖）
 server/telemetry/    遙測收資料端（Worker＋D1）與報告腳本
-tests/               bun run check 跑的檢查（*-check.mjs）與瀏覽器冒煙步驟
+tests/               bun run check 跑的檢查（*-check.mjs）、瀏覽器步驟檔（smoke-*、tour-* 等 .json）、上游的效能量測紀錄（perf-*.json）
 ```
 
 ### 架構
@@ -142,10 +144,10 @@ flowchart LR
 
 ## 測試
 
-Node 檢查，不需要瀏覽器：
+不需要瀏覽器的檢查（CI 也跑這些）：
 
 ```bash
-for f in tests/*-check.mjs; do node "$f" > /dev/null && echo "ok   $f" || echo "FAIL $f"; done
+bun run check
 ```
 
 | 檢查 | 內容 |
@@ -153,14 +155,22 @@ for f in tests/*-check.mjs; do node "$f" > /dev/null && echo "ok   $f" || echo "
 | `sim-check.mjs` | 自動玩家用 12 組參數跑全部關卡，每一關都要破得了 |
 | `endless-check.mjs` | 無盡模式用 12 個種子接力跑完 |
 | `feats-check.mjs` | 每種成就「達成」與「差一點」都判對 |
-| `save-check.mjs` | 舊存檔相容、下一步推薦、本機排行 |
+| `save-check.mjs` | 舊存檔相容、本機與雲端合併、主題擁有與套用、下一步推薦、本機排行 |
+| `flow-check.mjs`、`beat-check.mjs` | 一局之內的流程狀態機、一局結束的節拍表 |
 | `i18n-check.mjs` | 12 種語言的字串齊全 |
 | `telemetry-check.mjs` | 遙測：沒設網址不送、事件欄位、排隊分批、不送的情況 |
 | `unlock-check.mjs`、`pad-check.mjs`、`boost-check.mjs`、`burst-check.mjs` | 解鎖順序、中途荷葉、加速圈、特效數量上限 |
 
-`tests/smoke-*.json` 是瀏覽器冒煙步驟，用 Playwright 實際開遊戲操作。執行工具（`smoke.sh`、`shot.mjs`）目前放在這個 repo 外面，還沒搬進來。
+瀏覽器裡實際開遊戲操作（先 `bun run build && bun run preview`）：
 
-開發用的掛鉤在 `window.__game`，例如 `__game.start(12)` 直接開第 12 關、`__game.autoplay = [0.25, -10]` 讓自動玩家接手、`__game.look('cat')` 換角色。
+```bash
+bun tools/perf/smoke.mjs tests/smoke-*.json tests/tour-*.json   # 步驟檔：斷言＋截圖到 tools/perf/shots/
+bun tools/perf/flowcheck.mjs http://localhost:4173/               # 一局結束流程 22 項
+bun tools/perf/themecheck.mjs http://localhost:4173/              # 主題組合包與系列關卡
+bun tools/perf/readme-shots.mjs                                   # 重新產生 README 的截圖與 GIF
+```
+
+開發用的掛鉤在 `window.__game`（開發伺服器一定有；正式建置要在網址加 `?debug=1`），例如 `__game.start(12)` 直接開第 12 關、`__game.autoplay = [0.25, -10]` 讓自動玩家接手、`__game.look('cat')` 換角色。
 
 ## 遊玩數據
 
