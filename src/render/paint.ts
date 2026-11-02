@@ -44,6 +44,25 @@ export const FX: Record<string, Def> = {
   } },
   bfly0: { b: [-1.3, 1.3, -1, 1], px: 40, tint: true, paint: (g, c) => butterfly(g, c, 1) },
   bfly1: { b: [-1.3, 1.3, -1, 1], px: 40, tint: true, paint: (g, c) => butterfly(g, c, 0.4) },
+  // 旋轉貓主題的道具（向量卡通佔位，正式素材等美術方向定）：小魚乾（蒼蠅）、貓跳台（起點樹樁，頂層在 y=2.25 讓角色站）、軟墊（終點荷葉，12 單位寬）
+  fish: { b: [-0.8, 0.8, -0.5, 0.5], px: 40, tint: false, paint: (g) => {
+    vinyl(g, () => { g.beginPath(); g.moveTo(-0.45, 0); g.quadraticCurveTo(-0.2, 0.42, 0.3, 0.32); g.quadraticCurveTo(0.55, 0.2, 0.72, 0); g.quadraticCurveTo(0.55, -0.2, 0.3, -0.32); g.quadraticCurveTo(-0.2, -0.42, -0.45, 0); g.closePath(); }, '#e9c07a', [0.1, 0, 0.5, 0.35], { lw: 0.06, hi: 0.35 });
+    vinyl(g, () => { g.beginPath(); g.moveTo(-0.42, 0); g.lineTo(-0.78, 0.3); g.lineTo(-0.7, 0); g.lineTo(-0.78, -0.3); g.closePath(); }, '#e9c07a', [-0.6, 0, 0.2, 0.3], { lw: 0.06, hi: 0.3 });
+    g.fillStyle = INK; ell(g, 0.5, 0.06, 0.05, 0.05); g.fill();
+    g.lineWidth = 0.04; g.strokeStyle = rgba(INK, 0.45); g.beginPath(); for (const x of [-0.1, 0.1, 0.3]) { g.moveTo(x, 0.22); g.lineTo(x - 0.08, -0.22); } g.stroke();
+  } },
+  catTower: { b: [-2, 2, -2.6, 2.6], px: 20, tint: false, paint: (g) => {
+    vinyl(g, () => rrect(g, 0, -0.1, 0.9, 4.6, 0.3), '#c58b55', [0, 0, 0.45, 2.3], { lw: 0.08, hi: 0.25 }); // 劍麻柱
+    g.lineWidth = 0.06; g.strokeStyle = rgba(INK, 0.3); g.beginPath(); for (let y = -1.9; y < 1.9; y += 0.35) { g.moveTo(-0.42, y); g.lineTo(0.42, y + 0.18); } g.stroke();
+    blob(g, 0, -2.3, 1.7, 0.32, '#f2dcbb', { lw: 0.08, hi: 0.3, glint: false }); // 底座
+    blob(g, 0.4, 0.1, 1.2, 0.3, '#f2dcbb', { lw: 0.08, hi: 0.3, glint: false }); // 中層
+    blob(g, 0, 2.25, 1.9, 0.36, '#f2dcbb', { lw: 0.08, hi: 0.35, glint: false }); // 頂層
+  } },
+  cushion: { b: [-6, 6, -1.4, 1.4], px: 12, tint: false, paint: (g) => {
+    vinyl(g, () => rrect(g, 0, 0, 11.6, 2.2, 1.1), '#ff9fc3', [0, 0, 5.8, 1.1], { lw: 0.14, hi: 0.35, lo: 0.2 });
+    g.fillStyle = rgba(INK, 0.25); for (const x of [-3.5, 0, 3.5]) { ell(g, x, 0, 0.22, 0.22); g.fill(); } // 軟墊的扣子
+    g.lineWidth = 0.1; g.strokeStyle = rgba('#ffffff', 0.5); g.beginPath(); g.moveTo(-5, 0.75); g.quadraticCurveTo(0, 1.05, 5, 0.75); g.stroke();
+  } },
 };
 // 圓石：不規則多邊形用中點二次曲線圓滑
 function boulder(g: Ctx): void {

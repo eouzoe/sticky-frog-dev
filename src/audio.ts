@@ -6,7 +6,7 @@ export type { PlayOpts };
 type Engine = typeof import('./audio-engine.ts');
 
 let E: Engine | null = null, loading: Promise<Engine> | null = null;
-const S = { muted: false, music: true, sfx: true, world: 0, paused: false, oiia: false };
+const S = { muted: false, music: true, sfx: true, world: 0, paused: false, oiia: false, theme: {} as Record<string, string> }; // theme：主題的音效替換表（play 的名字 → 主題音效名）
 const queue: [string, PlayOpts, number][] = [];
 
 function load(): Promise<Engine> {
@@ -23,7 +23,8 @@ function load(): Promise<Engine> {
 }
 /** 第一次使用者手勢時呼叫（pointerdown／touchstart）：載引擎、建 AudioContext */
 export function initAudio(): void { if (E) E.initAudio(); else void load(); }
-export function play(name: string, o: PlayOpts = {}): void { if (E) E.play(name, o); else if (loading) queue.push([name, o, performance.now()]); }
+export function play(name: string, o: PlayOpts = {}): void { const n = S.theme[name] ?? name; if (E) E.play(n, o); else if (loading) queue.push([n, o, performance.now()]); }
+export function setTheme(map: Record<string, string>): void { S.theme = map; }
 export function setMuted(m: boolean): void { S.muted = m; E?.setMuted(m); }
 export function setMusic(on: boolean): void { S.music = on; E?.setMusic(on); }
 export function setSfx(on: boolean): void { S.sfx = on; E?.setSfx(on); }

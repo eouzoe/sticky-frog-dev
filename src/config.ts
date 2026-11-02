@@ -156,7 +156,26 @@ export const TRAILS: readonly TrailSpec[] = [
   { id: 'fire', name: 'Fire', price: 100, colors: ['#ffe066', '#ff8c1a', '#ff3b1f'] },
   { id: 'bubble', name: 'Bubbles', price: 140, colors: ['#bff4ff', '#7be0ff'] },
   { id: 'star', name: 'Stardust', price: 200, colors: ['#fff6a0', '#ffd23f', '#ff9ff3'] },
+  { id: 'wool', name: 'Wool', price: 90, colors: ['#ff7ab8', '#ffd0e8', '#ffffff'] }, // 旋轉貓組合包的毛線拖尾
 ];
+
+// ---------- 主題資料包：一整套（角色、舌頭、拖尾、道具替換、音效替換、系列關卡）打包賣；引擎不認識任何特定主題 ----------
+export const THEME_LEVELS = 10; // 每個主題的系列關卡數；關卡號從 LEVEL_COUNT+1 起、依主題順序排
+export interface Theme {
+  id: string; skin: string; tongue: string; trail: string;
+  props: Record<string, string>; // 道具替換表：關卡畫面的 key（fly、stump、goal……）→ 圖集格名
+  sfx: Record<string, string>; // 音效替換表：play(name) 的 name → 主題音效名
+  price: number; sale?: { price: number; hours: number }; // 組合包價；限時特價（玩家第一次開商店起算幾小時，先用本機時間）
+}
+export const THEMES: readonly Theme[] = [
+  { id: 'cat', skin: 'cat', tongue: 'yarn', trail: 'wool', props: { fly: 'fish', stump: 'catTower', goal: 'cushion' }, sfx: {}, price: 220, sale: { price: 160, hours: 48 } }, // 音效不另做（使用者定）
+];
+export const themeKey = (id: string) => `set:${id}`; // owned 裡代表「整套（含系列關卡）」的 id
+export const themeItems = (th: Theme) => [th.skin, th.tongue, th.trail];
+/** 擁有整套：買了組合包，或單品集齊 */
+export const ownsTheme = (owned: readonly string[], th: Theme) => owned.includes(themeKey(th.id)) || themeItems(th).every((id) => owned.includes(id));
+/** 現在的組合包價：特價期內用特價 */
+export const themePrice = (th: Theme, saleAt: number, now: number) => (th.sale && saleAt && now < saleAt + th.sale.hours * 3600000 ? th.sale.price : th.price);
 
 // CrazyGames 排行榜加密金鑰（Developer Portal 產生；排行榜只開放受邀遊戲）。空字串＝不送分，只用本機前 10 名。
 export const LB_KEY = '';

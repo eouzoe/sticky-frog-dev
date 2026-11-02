@@ -290,6 +290,7 @@ body[data-screen="pause"] #clear, body[data-screen="pause"] #over { visibility: 
 .ovRow b { margin: 0 10px 0 6px; }
 .cd { width: 180px; height: 12px; margin-top: 10px; border-radius: 999px; background: rgba(255, 255, 255, .35); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .75); overflow: hidden; }
 .cd i { display: block; height: 100%; border-radius: inherit; background: var(--sun); transform-origin: 0 50%; }
+.show .buy s { opacity: .55; font-size: .72em; margin-right: 2px; } /* 組合包特價：原價劃掉 */
 .lvb > span:first-child { line-height: 1; margin-top: -10px; }
 .lvb .st { position: absolute; bottom: 9px; left: 50%; transform: translateX(-50%); display: flex; gap: 1px; }
 .lvb .st i { width: 15px; height: 15px; background: rgba(255, 255, 255, .35); clip-path: polygon(50% 0, 63% 35%, 100% 38%, 71% 61%, 81% 100%, 50% 79%, 19% 100%, 29% 61%, 0 38%, 37% 35%); }
@@ -558,7 +559,7 @@ window.__bootFail = function () { var b = document.getElementById('boot'); if (!
   <div class="topbar"><button class="bub back" data-i18n-aria="aria.back" data-in><svg class="i"><use href="#i-back" /></svg></button><div class="ttl tx" data-in data-i18n="shop.title" data-fit></div><div class="sp"></div><div class="cap tx num" id="shopCoins" data-in><svg class="i"><use href="#i-coin" /></svg><span class="coinN">0</span></div></div>
   <div class="body">
     <div class="show" id="showcase" data-id="cat" data-in>
-      <span class="ribbon">&#9733; <span data-i18n="shop.star"></span></span>
+      <span class="ribbon" id="showRibbon"></span>
       <canvas class="spin" role="img" id="showSpin"></canvas>
       <div class="pedestal"></div>
       <h2 id="showName" data-fit></h2>

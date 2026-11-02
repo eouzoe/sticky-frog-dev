@@ -1,7 +1,7 @@
 // DOM 介面（軟膠公仔設計系統）：畫面切換、按鈕壓扁回彈、HUD、跳字、成就膠囊、過關／無盡結束浮層、觸控教學、選關、商店、紀錄頁、選單下一步推薦。
 // 每幀呼叫的 hud()／tickFlash() 只在數值改變時才寫 DOM。
-import { SKINS, TRAILS, TONGUES, WORLDS } from './config.ts';
-import type { Skin, TongueSpec, TrailSpec } from './config.ts';
+import { SKINS, TRAILS, TONGUES, WORLDS, THEMES, THEME_LEVELS, ownsTheme, themePrice } from './config.ts';
+import type { Skin, TongueSpec, TrailSpec, Theme } from './config.ts';
 import { FEATS, featById } from './feats.ts';
 import type { FeatDef } from './feats.ts';
 import { LEVEL_COUNT, levelLabel, worldOf } from './level.ts';
@@ -308,12 +308,24 @@ export function renderLevels(save: Save, onPick: (n: number) => void, onTab?: (w
     b.onclick = () => { if (locked) { A.play('ui_nope'); return; } worldTab = i; renderLevels(save, onPick, onTab); onTab?.(i); };
     tabs.appendChild(b);
   });
-  const total = Object.values(save.stars).reduce((a, b) => a + b, 0);
+  // 主題系列關卡：每個主題一張卡，擁有整套才開；關卡號接在主線後面
+  THEMES.forEach((th, j) => {
+    const i = WORLDS.length + j, locked = !ownsTheme(save.owned, th), first = LEVEL_COUNT + j * THEME_LEVELS + 1;
+    const got = Array.from({ length: THEME_LEVELS }, (_, k) => save.stars[first + k] ?? 0).reduce((a, b) => a + b, 0);
+    const b = document.createElement('button');
+    b.className = `wcard${i === worldTab ? ' on' : ''}${locked ? ' locked' : ''}`;
+    b.style.cssText = '--s0:#ffd6e8;--s1:#fff3f8;--d:#8e2f6b;--p:#ff7ab8';
+    b.innerHTML = `<i class="blob"></i>${locked ? `<span class="lk">${icon('lock')}</span>` : ''}<span class="wn" data-fit>&#9733; ${itemName('skins', SKINS.find((k) => k.id === th.skin))}</span><span class="wp" data-fit>${locked ? t('levels.set') : `&#9733; ${got}/${THEME_LEVELS * 3}`}</span>`;
+    b.onclick = () => { if (locked) { A.play('ui_nope'); return; } worldTab = i; renderLevels(save, onPick, onTab); onTab?.(i); };
+    tabs.appendChild(b);
+  });
+  const total = Object.entries(save.stars).reduce((a, [k, v]) => a + (Number(k) <= LEVEL_COUNT ? v : 0), 0);
   $('starTotal').textContent = `${total}/${LEVEL_COUNT * 3}`;
   const g = $('levelGrid'); g.innerHTML = '';
-  for (let k = 0; k < 15; k++) {
-    const n = worldTab * 15 + k + 1; if (n > LEVEL_COUNT) break;
-    const b = document.createElement('button'), locked = n > save.unlocked, cur = n === save.unlocked;
+  const themeTab = worldTab >= WORLDS.length, count = themeTab ? THEME_LEVELS : 15, base = themeTab ? LEVEL_COUNT + (worldTab - WORLDS.length) * THEME_LEVELS : worldTab * 15;
+  for (let k = 0; k < count; k++) {
+    const n = base + k + 1; if (!themeTab && n > LEVEL_COUNT) break;
+    const b = document.createElement('button'), locked = !themeTab && n > save.unlocked, cur = !themeTab && n === save.unlocked;
     b.className = `lvb${locked ? ' locked' : cur ? ' cur' : ''}`;
     b.innerHTML = locked ? icon('lock') : `<span>${k + 1}</span>${starRow(save.stars[n] ?? 0)}`;
     b.setAttribute('aria-label', t(locked ? 'aria.levelLocked' : 'aria.level', { level: levelLabel(n) }));
@@ -322,7 +334,7 @@ export function renderLevels(save: Save, onPick: (n: number) => void, onTab?: (w
   }
   fit(tabs);
 }
-export function setWorldTab(n: number): void { worldTab = worldOf(n); }
+export function setWorldTab(n: number): void { worldTab = n > LEVEL_COUNT ? WORLDS.length + Math.floor((n - LEVEL_COUNT - 1) / THEME_LEVELS) : worldOf(n); }
 export const getWorldTab = () => worldTab;
 
 // ---------- 商店 ----------
@@ -342,24 +354,29 @@ function trailSvg(it: TrailSpec): string {
     <circle cx="104" cy="40" r="11" fill="#fff" stroke="rgba(40,30,70,.15)" stroke-width="2"/><circle cx="100" cy="36" r="3" fill="#fff"/></svg>`;
 }
 const picOf = (tab: ShopTab, it: Item) => (tab === 'skins' ? `<img src="${portraitURL(it.id)}" alt="" />` : tab === 'tongues' ? tongueSvg(it.id) : trailSvg(it as TrailSpec));
-export function renderShop(save: Save, onAct: (tab: ShopTab, it: Item) => void, hi: string | null = null): void {
+// 特價剩多少：小時或分鐘（單位字母不翻譯）
+const left = (ms: number) => (ms >= 3600000 ? `${Math.ceil(ms / 3600000)}h` : `${Math.max(1, Math.ceil(ms / 60000))}m`);
+export function renderShop(save: Save, onAct: (tab: ShopTab, it: Item) => void, hi: string | null, onSet: (th: Theme) => void, now = Date.now()): void {
   for (const tb of document.querySelectorAll<HTMLElement>('#shop .tab')) {
     tb.classList.toggle('on', tb.dataset.t === shopTab);
-    tb.onclick = () => { shopTab = tb.dataset.t as ShopTab; A.play('tab'); renderShop(save, onAct, hi); };
+    tb.onclick = () => { shopTab = tb.dataset.t as ShopTab; A.play('tab'); renderShop(save, onAct, hi, onSet, now); };
   }
-  // 展示台：旋轉貓咪（看板角色）永遠置頂
-  const cat = FEATURED, catOwned = save.owned.includes(cat.id), catEq = save.skin === cat.id, buy = $('showBuy');
-  buy.className = `b buy ${catOwned ? 'go owned' : 'sun'}`;
-  buy.innerHTML = catEq ? `${icon('check')}<span>${t('shop.equipped')}</span>` : catOwned ? `<span>${t('shop.useIt')}</span>` : `${icon('coin')}<span class="num">${cat.price}</span><span>${t('shop.buy')}</span>`;
-  $('showName').textContent = itemName('skins', cat); $('showSpin').setAttribute('aria-label', itemName('skins', cat));
-  $('showSub').textContent = t('shop.comesWith', { tongue: itemName('tongues', TONGUES.find((x) => x.id === cat.tongue)) });
-  buy.onclick = () => onAct('skins', cat);
-  // 只有一樣東西會呼吸：買得起的貓 > 選單推薦的那件 > 這一頁最便宜買得起的
-  const catFirst = !catOwned && save.coins >= cat.price;
-  buy.classList.toggle('afford', catFirst);
-  const list = LISTS[shopTab].filter((it) => it !== cat), eqId = save[EQ[shopTab]];
+  // 展示台：主題組合包（第一個主題）永遠置頂——整套買、整套用；單品在分頁裡照舊、集齊也算擁有整套
+  const th = THEMES[0], skin = SKINS.find((k) => k.id === th.skin)!, owned = ownsTheme(save.owned, th), buy = $('showBuy');
+  const on = owned && save.theme === th.id && save.skin === th.skin && save.tongue === th.tongue && save.trail === th.trail;
+  const price = themePrice(th, save.saleAt, now), sale = price < th.price;
+  buy.className = `b buy ${owned ? 'go owned' : 'sun'}`;
+  buy.innerHTML = on ? `${icon('check')}<span>${t('shop.equipped')}</span>` : owned ? `<span>${t('shop.useIt')}</span>` : `${icon('coin')}${sale ? `<s class="num">${th.price}</s>` : ''}<span class="num">${price}</span><span>${t('shop.buy')}</span>`;
+  $('showName').textContent = itemName('skins', skin); $('showSpin').setAttribute('aria-label', itemName('skins', skin));
+  $('showSub').textContent = t('shop.setLine', { skin: itemName('skins', skin), tongue: itemName('tongues', TONGUES.find((x) => x.id === th.tongue)), trail: itemName('trails', TRAILS.find((x) => x.id === th.trail)), n: THEME_LEVELS });
+  $('showRibbon').textContent = sale && !owned ? t('shop.saleEnds', { time: left(save.saleAt + th.sale!.hours * 3600000 - now) }) : t('shop.set');
+  buy.onclick = () => onSet(th);
+  // 只有一樣東西會呼吸：買得起的組合包 > 選單推薦的那件 > 這一頁最便宜買得起的
+  const setFirst = !owned && save.coins >= price;
+  buy.classList.toggle('afford', setFirst);
+  const list = LISTS[shopTab], eqId = save[EQ[shopTab]];
   const cheapest = list.filter((it) => !save.owned.includes(it.id) && it.price <= save.coins).sort((a, b) => a.price - b.price)[0]?.id;
-  const breathe = catFirst ? null : (hi && list.some((it) => it.id === hi) ? hi : cheapest);
+  const breathe = setFirst ? null : (hi && list.some((it) => it.id === hi) ? hi : cheapest);
   const c = $('cards'); c.innerHTML = '';
   let hiEl: HTMLElement | null = null;
   for (const it of list) {

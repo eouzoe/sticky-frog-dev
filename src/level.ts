@@ -1,11 +1,13 @@
 // 90 關程序產生（種子固定）：同一關每次長一樣。難度＝全域進度 + 世界內進度。
-import { TUNE } from './config.ts';
+import { TUNE, THEME_LEVELS } from './config.ts';
 import { duneH } from './sim.ts';
 import type { Boost, Dune, Fan, GenCursor, Level, Move } from './types.ts';
 
 export const LEVEL_COUNT = 90;
-export const worldOf = (n: number) => Math.min(7, Math.floor((n - 1) / 15));
-export const levelLabel = (n: number) => `${worldOf(n) + 1}-${((n - 1) % 15) + 1}`;
+export const THEME_WORLD = 0; // 主題系列關卡（LEVEL_COUNT+1 起，每個主題 THEME_LEVELS 關）用的世界：道具由主題替換
+export const isThemeLevel = (n: number) => n > LEVEL_COUNT;
+export const worldOf = (n: number) => (isThemeLevel(n) ? THEME_WORLD : Math.min(7, Math.floor((n - 1) / 15)));
+export const levelLabel = (n: number) => (isThemeLevel(n) ? `★-${((n - LEVEL_COUNT - 1) % THEME_LEVELS) + 1}` : `${worldOf(n) + 1}-${((n - 1) % 15) + 1}`);
 
 function mulberry32(a: number): () => number {
   return () => {
@@ -53,21 +55,23 @@ const emptyLevel = (n: number, world: number, diff: number): Level => ({
 
 export function generateLevel(n: number, salt: number = SALT[n] ?? 0): Level {
   const r = mulberry32(n * 7919 + 1013 + salt * 100003);
-  const local = ((n - 1) % 15) / 14;
+  // 主題系列關卡：難度對應中段（第 33–60 關的元素種類與密度），由第幾關決定；nd＝拿來查解鎖表與長度的「等效關卡號」
+  const k = isThemeLevel(n) ? ((n - LEVEL_COUNT - 1) % THEME_LEVELS) + 1 : 0, nd = k ? 30 + k * 3 : n;
+  const local = ((nd - 1) % 15) / 14;
   // 前 60 關寫死 /59（LEVEL_COUNT 變動不能讓它們重新產生）；61 關以後每個世界從 0.45 爬到 0.85
-  let diff = n <= 60 ? clamp(((n - 1) / 59) * 0.75 + local * 0.3, 0, 1) : 0.45 + local * 0.4;
-  const plan: PlanEntry | null = n > 60 ? ((n > 75 ? PLAN6 : PLAN)[(n - 1) % 15 + 1] ?? {}) : null;
+  let diff = k ? 0.4 + ((k - 1) / Math.max(1, THEME_LEVELS - 1)) * 0.35 : nd <= 60 ? clamp(((nd - 1) / 59) * 0.75 + local * 0.3, 0, 1) : 0.45 + local * 0.4;
+  const plan: PlanEntry | null = !k && nd > 60 ? ((nd > 75 ? PLAN6 : PLAN)[(nd - 1) % 15 + 1] ?? {}) : null;
   if (plan?.teach) diff = 0.1;
   else if (plan?.calm) diff = Math.max(0.1, diff - 0.1);
   const L = emptyLevel(n, worldOf(n), diff);
   const g: GenCursor = { r, x: 7, y: 11, prevType: 'hook' };
   firstHook(L, g);
-  const targetLen = n === 1 ? 46 : 52 + Math.min(n, 60) * 3.4;
+  const targetLen = nd === 1 ? 46 : 52 + Math.min(nd, 60) * 3.4;
   const forces: [number, string][] = plan ? [...(plan.pad ?? []).map((f): [number, string] => [f, 'pad']), ...(plan.boost ?? []).map((f): [number, string] => [f, 'boost']), ...(plan.dune ?? []).map((f): [number, string] => [f, 'dune'])].sort((a, b) => a[0] - b[0]) : [];
   g.end = targetLen - 30; // 終點前不放沙丘段落
   while (g.x < targetLen) {
     if (!g.force && forces.length && g.x >= forces[0][0] * targetLen) g.force = forces.shift()![1];
-    addSegment(L, g, n, diff, plan);
+    addSegment(L, g, nd, diff, plan);
   }
   const x = g.x;
 
