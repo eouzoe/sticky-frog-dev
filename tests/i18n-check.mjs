@@ -61,10 +61,10 @@ for (const { s, at, before } of literals(ui)) {
 
 // ---- 3. src/main.js: nothing raw handed to the text-showing calls
 const main = read('src/main.ts');
-for (const m of main.matchAll(/\b(?:pop|UI\.(?:popup|hint|dieText|nextUp|setPlay|pauseMeta|clearSticker|feat|tryNow))\(\s*(['"`])([^'"`]*)\1?/g)) {
+for (const m of main.matchAll(/\b(?:pop|UI\.(?:popup|hint|dieText|nextUp|setPlay|pauseMeta|clearShow|feat|tryNow))\(\s*(['"`])([^'"`]*)\1?/g)) {
   if (m[2] && words(m[2]) && !m[0].includes('${')) errs.push(`src/main.js raw text to ${m[0].slice(0, 30)}…`);
 }
-for (const m of main.matchAll(/\b(?:pop|UI\.(?:popup|hint|dieText|clearSticker))\(\s*`/g)) errs.push(`src/main.js template literal to ${m[0]} (use t())`);
+for (const m of main.matchAll(/\b(?:pop|UI\.(?:popup|hint|dieText|clearShow))\(\s*`/g)) errs.push(`src/main.js template literal to ${m[0]} (use t())`);
 
 // ---- 4. keys: used ⊆ en.js (or data keys), en.js ⊆ used
 const srcAll = ['src/ui.ts', 'src/main.ts', 'index.html'].map(read).join('\n'); // i18n.js only has examples in comments + the picker's set.language
