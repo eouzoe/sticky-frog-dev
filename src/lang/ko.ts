@@ -35,6 +35,6 @@ export default {
   'feat.flow': '논스톱!', 'featLine.flow': '한 스테이지를 감속 없이 질주.',
   'feat.speed': '속도의 화신!', 'featLine.speed': '너무 빨라서 눈이 못 따라가.',
   'feat.skim': '파도와 뽀뽀!', 'featLine.skim': '물에 닿고도 살아남았다.',
-  'feat.shave': '털끝 차이!', 'featLine.shave': '가시와 머리카락 한 올 차이.',
-  'new.title': 'NEW!', 'new.mush': '점프 버섯', 'new.swarm': '파리 떼', 'new.ring': '황금 링', 'new.move': '움직이는 고리', 'new.spikeLow': '낮은 가시', 'new.mushChain': '연속 버섯', 'new.ringArc': '더블 링', 'new.fan': '선풍기', 'new.saw': '톱날', 'new.spikeHigh': '높은 가시', 'new.tunnel': '위아래 가시', 'new.pad': '체크포인트 연잎', 'new.boost': '부스트 링', 'new.dune': '모래 서핑',
+  'feat.shave': '털끝 차이!', 'featLine.shave': '바위와 머리카락 한 올 차이.',
+  'new.title': 'NEW!', 'new.mush': '점프 버섯', 'new.swarm': '파리 떼', 'new.ring': '황금 링', 'new.move': '움직이는 고리', 'new.spikeLow': '낮은 바위', 'new.mushChain': '연속 버섯', 'new.ringArc': '더블 링', 'new.fan': '선풍기', 'new.saw': '나비', 'new.spikeHigh': '매달린 바위', 'new.tunnel': '위아래 바위', 'new.pad': '체크포인트 연잎', 'new.boost': '부스트 링', 'new.dune': '모래 서핑',
 };

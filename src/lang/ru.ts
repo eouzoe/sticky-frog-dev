@@ -35,6 +35,6 @@ export default {
   'feat.flow': 'БЕЗ ТОРМОЗОВ!', 'featLine.flow': 'Целый уровень без потери скорости.',
   'feat.speed': 'ДЕМОН СКОРОСТИ!', 'featLine.speed': 'Это было слишком быстро.',
   'feat.skim': 'ПОЦЕЛУЙ ВОЛНЫ!', 'featLine.skim': 'Коснулся воды и выжил.',
-  'feat.shave': 'ВОЛОСОК ОТ БЕДЫ!', 'featLine.shave': 'На волосок от шипов.',
-  'new.title': 'НОВОЕ!', 'new.mush': 'Грибы-батуты', 'new.swarm': 'Рой мух', 'new.ring': 'Золотое кольцо', 'new.move': 'Движущийся крюк', 'new.spikeLow': 'Низкие шипы', 'new.mushChain': 'Цепочка грибов', 'new.ringArc': 'Двойное кольцо', 'new.fan': 'Вентилятор', 'new.saw': 'Пила', 'new.spikeHigh': 'Высокие шипы', 'new.tunnel': 'Шипы сверху и снизу', 'new.pad': 'Кувшинка-чекпойнт', 'new.boost': 'Ускоряющее кольцо', 'new.dune': 'Сёрфинг по дюнам',
+  'feat.shave': 'ВОЛОСОК ОТ БЕДЫ!', 'featLine.shave': 'На волосок от камней.',
+  'new.title': 'НОВОЕ!', 'new.mush': 'Грибы-батуты', 'new.swarm': 'Рой мух', 'new.ring': 'Золотое кольцо', 'new.move': 'Движущийся крюк', 'new.spikeLow': 'Низкие камни', 'new.mushChain': 'Цепочка грибов', 'new.ringArc': 'Двойное кольцо', 'new.fan': 'Вентилятор', 'new.saw': 'Бабочка', 'new.spikeHigh': 'Висячие камни', 'new.tunnel': 'Камни сверху и снизу', 'new.pad': 'Кувшинка-чекпойнт', 'new.boost': 'Ускоряющее кольцо', 'new.dune': 'Сёрфинг по дюнам',
 };

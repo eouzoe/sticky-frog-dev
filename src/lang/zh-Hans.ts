@@ -35,6 +35,6 @@ export default {
   'feat.flow': '一路畅通！', 'featLine.flow': '整关都没减速。',
   'feat.speed': '极速恶魔！', 'featLine.speed': '这速度也太快了吧。',
   'feat.skim': '亲吻浪花！', 'featLine.skim': '碰到水还活得好好的。',
-  'feat.shave': '擦边球！', 'featLine.shave': '离尖刺只差一根头发。',
-  'new.title': '新！', 'new.mush': '弹跳蘑菇', 'new.swarm': '苍蝇串', 'new.ring': '金圈', 'new.move': '移动钩点', 'new.spikeLow': '低处尖刺', 'new.mushChain': '连续蘑菇', 'new.ringArc': '双圈', 'new.fan': '风扇', 'new.saw': '锯片', 'new.spikeHigh': '高处尖刺', 'new.tunnel': '上下夹击', 'new.pad': '中途荷叶', 'new.boost': '加速圈', 'new.dune': '沙丘滑沙',
+  'feat.shave': '擦边球！', 'featLine.shave': '离石头只差一根头发。',
+  'new.title': '新！', 'new.mush': '弹跳蘑菇', 'new.swarm': '苍蝇串', 'new.ring': '金圈', 'new.move': '移动钩点', 'new.spikeLow': '低处石头', 'new.mushChain': '连续蘑菇', 'new.ringArc': '双圈', 'new.fan': '风扇', 'new.saw': '蝴蝶', 'new.spikeHigh': '悬挂石头', 'new.tunnel': '上下夹击', 'new.pad': '中途荷叶', 'new.boost': '加速圈', 'new.dune': '沙丘滑沙',
 };

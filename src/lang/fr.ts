@@ -35,6 +35,6 @@ export default {
   'feat.flow': 'SANS FREIN !', 'featLine.flow': 'Un niveau entier sans ralentir.',
   'feat.speed': 'DÉMON DE VITESSE !', 'featLine.speed': 'C’était beaucoup trop rapide.',
   'feat.skim': 'BAISER DE VAGUE !', 'featLine.skim': 'Tu as touché l’eau et tu t’en es sorti.',
-  'feat.shave': 'RASAGE DE PRÈS !', 'featLine.shave': 'À un poil des pointes.',
-  'new.title': 'NOUVEAU !', 'new.mush': 'Champignon rebondissant', 'new.swarm': 'Essaim de mouches', 'new.ring': 'Anneau doré', 'new.move': 'Crochet mobile', 'new.spikeLow': 'Piques basses', 'new.mushChain': 'Chaîne de champignons', 'new.ringArc': 'Double anneau', 'new.fan': 'Ventilateur', 'new.saw': 'Scie', 'new.spikeHigh': 'Piques hautes', 'new.tunnel': 'Piques haut et bas', 'new.pad': 'Nénuphar de reprise', 'new.boost': 'Anneau turbo', 'new.dune': 'Surf des dunes',
+  'feat.shave': 'RASAGE DE PRÈS !', 'featLine.shave': 'À un poil des rochers.',
+  'new.title': 'NOUVEAU !', 'new.mush': 'Champignon rebondissant', 'new.swarm': 'Essaim de mouches', 'new.ring': 'Anneau doré', 'new.move': 'Crochet mobile', 'new.spikeLow': 'Rochers bas', 'new.mushChain': 'Chaîne de champignons', 'new.ringArc': 'Double anneau', 'new.fan': 'Ventilateur', 'new.saw': 'Papillon', 'new.spikeHigh': 'Rochers suspendus', 'new.tunnel': 'Rochers haut et bas', 'new.pad': 'Nénuphar de reprise', 'new.boost': 'Anneau turbo', 'new.dune': 'Surf des dunes',
 };

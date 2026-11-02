@@ -35,6 +35,6 @@ export default {
   'feat.flow': 'SEM FREIO!', 'featLine.flow': 'Uma fase inteira sem perder o ritmo.',
   'feat.speed': 'DEMÔNIO DA VELOCIDADE!', 'featLine.speed': 'Isso foi rápido demais.',
   'feat.skim': 'BEIJA-ONDA!', 'featLine.skim': 'Tocou na água e sobreviveu.',
-  'feat.shave': 'BARBA FEITA!', 'featLine.shave': 'Por um fio dos espinhos.',
-  'new.title': 'NOVO!', 'new.mush': 'Cogumelo saltitante', 'new.swarm': 'Enxame de moscas', 'new.ring': 'Anel dourado', 'new.move': 'Gancho móvel', 'new.spikeLow': 'Espinhos baixos', 'new.mushChain': 'Fila de cogumelos', 'new.ringArc': 'Anel duplo', 'new.fan': 'Ventilador', 'new.saw': 'Serra', 'new.spikeHigh': 'Espinhos altos', 'new.tunnel': 'Espinhos em cima e embaixo', 'new.pad': 'Vitória-régia de checkpoint', 'new.boost': 'Anel de impulso', 'new.dune': 'Surf nas dunas',
+  'feat.shave': 'BARBA FEITA!', 'featLine.shave': 'Por um fio das pedras.',
+  'new.title': 'NOVO!', 'new.mush': 'Cogumelo saltitante', 'new.swarm': 'Enxame de moscas', 'new.ring': 'Anel dourado', 'new.move': 'Gancho móvel', 'new.spikeLow': 'Pedras baixas', 'new.mushChain': 'Fila de cogumelos', 'new.ringArc': 'Anel duplo', 'new.fan': 'Ventilador', 'new.saw': 'Borboleta', 'new.spikeHigh': 'Pedras suspensas', 'new.tunnel': 'Pedras em cima e embaixo', 'new.pad': 'Vitória-régia de checkpoint', 'new.boost': 'Anel de impulso', 'new.dune': 'Surf nas dunas',
 };

@@ -36,6 +36,6 @@ export default {
   'feat.flow': '¡SIN FRENOS!', 'featLine.flow': 'Un nivel entero sin perder velocidad.',
   'feat.speed': '¡DEMONIO VELOZ!', 'featLine.speed': 'Eso fue demasiado rápido.',
   'feat.skim': '¡BESO A LAS OLAS!', 'featLine.skim': 'Tocaste el agua y lo contaste.',
-  'feat.shave': '¡AFEITADO AL RAS!', 'featLine.shave': 'A un pelo de los pinchos.',
-  'new.title': '¡NUEVO!', 'new.mush': 'Seta saltarina', 'new.swarm': 'Enjambre de moscas', 'new.ring': 'Aro dorado', 'new.move': 'Gancho móvil', 'new.spikeLow': 'Pinchos bajos', 'new.mushChain': 'Cadena de setas', 'new.ringArc': 'Aro doble', 'new.fan': 'Ventilador', 'new.saw': 'Sierra', 'new.spikeHigh': 'Pinchos altos', 'new.tunnel': 'Pinchos arriba y abajo', 'new.pad': 'Nenúfar de control', 'new.boost': 'Aro de impulso', 'new.dune': 'Surf de dunas',
+  'feat.shave': '¡AFEITADO AL RAS!', 'featLine.shave': 'A un pelo de las rocas.',
+  'new.title': '¡NUEVO!', 'new.mush': 'Seta saltarina', 'new.swarm': 'Enjambre de moscas', 'new.ring': 'Aro dorado', 'new.move': 'Gancho móvil', 'new.spikeLow': 'Rocas bajas', 'new.mushChain': 'Cadena de setas', 'new.ringArc': 'Aro doble', 'new.fan': 'Ventilador', 'new.saw': 'Mariposa', 'new.spikeHigh': 'Rocas colgantes', 'new.tunnel': 'Rocas arriba y abajo', 'new.pad': 'Nenúfar de control', 'new.boost': 'Aro de impulso', 'new.dune': 'Surf de dunas',
 };

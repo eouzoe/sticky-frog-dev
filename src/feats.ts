@@ -28,7 +28,7 @@ export const FEATS: readonly FeatDef[] = [
   { id: 'flow', name: 'NONSTOP!', line: 'A whole level without slowing down.', coins: 25, better: 'min', fmt: (v) => `${v.toFixed(2)}s stalled` },
   { id: 'speed', name: 'SPEED DEMON!', line: 'That was way too fast.', coins: 25, better: 'max', fmt: (v) => `${v.toFixed(1)} m/s` },
   { id: 'skim', name: 'WAVE KISSER!', line: 'Touched the water and lived.', coins: 20, better: 'min', fmt: (v) => `${v.toFixed(2)} m above` },
-  { id: 'shave', name: 'CLOSE SHAVE!', line: 'A hair away from the spikes.', coins: 20, better: 'min', fmt: (v) => `${v.toFixed(2)} m gap` },
+  { id: 'shave', name: 'CLOSE SHAVE!', line: 'A hair away from the rocks.', coins: 20, better: 'min', fmt: (v) => `${v.toFixed(2)} m gap` },
 ];
 export const featById = (id: string): FeatDef | undefined => FEATS.find((f) => f.id === id);
 

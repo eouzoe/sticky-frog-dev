@@ -37,7 +37,34 @@ export const FX: Record<string, Def> = {
   glow: { b: [-1, 1, -1, 1], px: 32, tint: false, paint: (g) => { const gr = g.createRadialGradient(0, 0, 0, 0, 0, 1); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.4, 'rgba(255,255,255,0.45)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(-1, -1, 2, 2); } },
   white: { b: [-1, 1, -1, 1], px: 8, tint: false, paint: (g) => { g.fillStyle = '#ffffff'; g.fillRect(-1, -1, 2, 2); } }, // 純色四邊形用（取中心那一格）
   disc: { b: [-1, 1, -1, 1], px: 32, tint: false, paint: (g) => { g.fillStyle = '#ffffff'; ell(g, 0, 0, 0.94, 0.94); g.fill(); } }, // 太陽日輪
+  // 障礙物（全年齡：石頭取代尖刺、蝴蝶取代鋸片；碰撞還是圓形，只換圖）。執行時各世界用 hazard／saw 色上色
+  rock: { b: [-1, 1, -1, 1], px: 48, tint: true, paint: (g, c) => {
+    vinyl(g, () => boulder(g), c, [0, 0, 0.9, 0.85], { lw: 0.08, hi: 0.35, lo: 0.25 });
+    g.lineWidth = 0.05; g.strokeStyle = inkOf(c); g.beginPath(); g.moveTo(-0.35, 0.2); g.lineTo(-0.1, -0.05); g.lineTo(-0.2, -0.4); g.moveTo(0.3, 0.45); g.lineTo(0.5, 0.15); g.stroke(); // 兩道裂紋
+  } },
+  bfly0: { b: [-1.3, 1.3, -1, 1], px: 40, tint: true, paint: (g, c) => butterfly(g, c, 1) },
+  bfly1: { b: [-1.3, 1.3, -1, 1], px: 40, tint: true, paint: (g, c) => butterfly(g, c, 0.4) },
 };
+// 圓石：不規則多邊形用中點二次曲線圓滑
+function boulder(g: Ctx): void {
+  const pts = [[-0.95, -0.55], [-0.75, 0.35], [-0.3, 0.85], [0.35, 0.9], [0.85, 0.5], [0.97, -0.2], [0.7, -0.8], [0, -0.95], [-0.6, -0.85]], n = pts.length;
+  const mid = (a: number[], b: number[]) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  g.beginPath(); const m0 = mid(pts[n - 1], pts[0]); g.moveTo(m0[0], m0[1]);
+  for (let i = 0; i < n; i++) { const p = pts[i], m = mid(p, pts[(i + 1) % n]); g.quadraticCurveTo(p[0], p[1], m[0], m[1]); }
+  g.closePath();
+}
+// 蝴蝶：上翅大、下翅小、左右對稱；spread＝翅膀張開程度（合翅時 x 壓扁），兩格輪流播就是拍翅
+function butterfly(g: Ctx, c: string, spread: number): void {
+  for (const sgn of [-1, 1]) {
+    g.save(); g.scale(sgn * spread, 1);
+    blob(g, 0.62, 0.3, 0.6, 0.48, c, { lw: 0.06, hi: 0.35, rot: -0.35, glint: false });
+    blob(g, 0.42, -0.42, 0.42, 0.36, c, { lw: 0.06, hi: 0.3, rot: 0.5, glint: false });
+    g.fillStyle = rgba('#ffffff', 0.55); ell(g, 0.75, 0.35, 0.16, 0.14); g.fill(); // 翅上圓點
+    g.restore();
+  }
+  blob(g, 0, 0, 0.11, 0.55, INK, { outline: false, glint: false, hi: 0.2 }); // 身體
+  g.lineWidth = 0.05; g.strokeStyle = INK; g.beginPath(); g.moveTo(-0.04, 0.5); g.quadraticCurveTo(-0.25, 0.85, -0.4, 0.95); g.moveTo(0.04, 0.5); g.quadraticCurveTo(0.25, 0.85, 0.4, 0.95); g.stroke(); // 觸鬚
+}
 
 // ============================================================ 粒子（白色形狀，每顆粒子各自 tint）
 const PP = 40;
