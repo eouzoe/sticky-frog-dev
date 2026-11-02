@@ -444,8 +444,8 @@ function renderShop() {
 function shopPick(tab, it) {
     let bought = false;
     if (!save.owned.includes(it.id)) {
-      if (save.coins < it.price) { sfx('miss'); return; }
-      save.coins -= it.price; save.owned.push(it.id); sfx('buy'); UI.setCoins(save.coins); bought = true;
+      if (save.coins < it.price) { sfx('miss'); TM.want(it.id, it.price, save.coins); return; } // cannot afford: the pricing signal
+      save.coins -= it.price; save.owned.push(it.id); sfx('buy'); UI.setCoins(save.coins); bought = true; TM.buy(it.id, it.price);
       if (it.tongue && !save.owned.includes(it.tongue)) save.owned.push(it.tongue); // 角色送招牌舌頭
       if (G.shopHi === it.id) G.shopHi = null;
     } else sfx('click');

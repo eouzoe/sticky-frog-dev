@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS events (
   level INTEGER, x REAL, prog REAL,  -- prog＝0..100（％）
   cause TEXT, secs REAL, stars INTEGER, n INTEGER, flies INTEGER, reason TEXT,
   dist INTEGER, score INTEGER,
+  item TEXT, price INTEGER, coins INTEGER,  -- shop_want / shop_buy; databases created before these columns: run migrate-0001-shop.sql once
   lang TEXT, vw INTEGER, vh INTEGER, quality TEXT, boot_ms INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_events_type_level ON events (type, level);

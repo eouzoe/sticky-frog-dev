@@ -3,7 +3,7 @@
 // 事件先排隊，每 10 秒或頁面隱藏時用 sendBeacon 送出；送失敗就丟掉，不重試。隱私說明見 public/privacy.html。
 const FLUSH_MS = 10000, MAX_BATCH = 100, MAX_QUEUE = 300, ID_KEY = 'sf_anon';
 const LOCAL = /^(localhost|127\.0\.0\.1|\[::1\])$/;
-const NOOP = { on: false, bind() {}, notice() {}, menuReady() {}, levelStart() {}, death() {}, clear() {}, leave() {}, endlessOver() {}, flush() {} };
+const NOOP = { on: false, bind() {}, notice() {}, menuReady() {}, levelStart() {}, death() {}, clear() {}, leave() {}, endlessOver() {}, want() {}, buy() {}, flush() {} };
 
 // o: { url, build, host, search, ls, uuid, now, send(url, body)->bool, timer(fn, ms), autoplay()->bool, desktop }
 export function createTelemetry(o) {
@@ -48,6 +48,9 @@ export function createTelemetry(o) {
       push({ t: 'level_abandon', lv: c.level, x: r1(c.x), p: r1(c.prog * 100), sec: sec(o.now() - t0), r: reason });
     },
     endlessOver(dist, score) { push({ t: 'endless_over', dist, score }); },
+    // Shop: a tap on an item the player cannot afford (price vs coins in hand), and a purchase. Item ids are clipped to the server's 24-character limit.
+    want(item, price, coins) { push({ t: 'shop_want', it: String(item).slice(0, 24), pr: price, co: coins }); },
+    buy(item, price) { push({ t: 'shop_buy', it: String(item).slice(0, 24), pr: price }); },
     flush,
   };
   return api;
