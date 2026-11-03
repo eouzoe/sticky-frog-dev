@@ -1,4 +1,4 @@
-// 存檔：預設值、讀檔正規化（舊存檔相容）、選單「下一步」推薦。純邏輯，Node 可測（tests/save-check.mjs）。
+// 存檔：預設值、讀檔正規化（舊存檔相容）、選單「下一步」推薦。純邏輯，Node 可測（tests/save.test.ts）。
 import { SKINS, TRAILS, TONGUES, THEMES, THEME_LEVELS, themeKey, ownsTheme } from './config.ts';
 import type { Skin, TongueSpec, TrailSpec } from './config.ts';
 import type { FeatRecord } from './feats.ts';

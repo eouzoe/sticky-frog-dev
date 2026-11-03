@@ -1,5 +1,5 @@
 // 介面語言：t('key', {vars}) 查表、語言偵測、設定選單、即時切換（不重載）。
-// 字串在 src/lang/<code>.ts（英文是來源：src/lang/en.ts）。規則見 src/lang/README.md；檢查：node tests/i18n-check.mjs。
+// 字串在 src/lang/<code>.ts（英文是來源：src/lang/en.ts）。規則見 src/lang/README.md；檢查：tests/i18n.test.ts。
 // 資料名稱（角色／舌頭／拖尾、世界、成就）的英文留在資料旁邊（config.ts、feats.ts）當備援，其他語言放在 it.<tab>.<id> 等 key。
 // 語系延遲載入：英文打包在主程式（備援），其他語言是各自的小檔，用到才下載（開機只抓偵測到的那一個）。
 import en from './lang/en.ts';
@@ -139,7 +139,7 @@ export function setLang(code: string): string {
   const changed = next !== cur;
   cur = next;
   D = DICTS[cur];
-  if (typeof document === 'undefined') return cur; // Node：tests/i18n-check.mjs
+  if (typeof document === 'undefined') return cur; // Node：tests/i18n.test.ts
   document.documentElement.lang = cur;
   applyDom();
   for (const el of document.querySelectorAll('.langCode')) el.textContent = SHORT[cur] ?? cur.toUpperCase();

@@ -130,7 +130,7 @@ export function createSim(level: Level, from: PadSnapshot | null = null): Sim {
   return s;
 }
 
-// 荷葉存檔快照（main 在 'pad' 事件時存，tests/pad-check.mjs 也用）
+// 荷葉存檔快照（main 在 'pad' 事件時存，tests/pad.test.ts 也用）
 export const padSnapshot = (s: Sim): PadSnapshot => ({ pad: s.checkpoint, flies: s.flies.slice(), rings: s.rings.slice(), boostUsed: s.boostUsed.slice(), fliesGot: s.fliesGot, time: s.time });
 
 function pickTarget(s: Sim): void {
