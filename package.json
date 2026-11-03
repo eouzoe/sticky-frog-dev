@@ -1,15 +1,11 @@
 {
   "name": "sticky-frog",
   "version": "0.2.0",
-  "devDependencies": {
-    "oxfmt": "0.75.0",
-    "oxlint": "1.90.0",
-    "playwright-core": "1.64.1",
-    "three": "0.186.1",
-    "typescript": "7.0.2",
-    "vite": "8.3.5"
-  },
   "private": true,
+  "workspaces": [
+    "server/telemetry"
+  ],
+  "type": "module",
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
@@ -18,7 +14,15 @@
     "lint": "oxlint --deny-warnings",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "check": "bun run typecheck && bun run lint && for f in tests/*-check.mjs; do bun \"$f\" > /dev/null && echo \"ok   $f\" || { echo \"FAIL $f\"; exit 1; }; done"
+    "bake": "bun tools/bake/run.mjs"
   },
-  "type": "module"
+  "devDependencies": {
+    "oxfmt": "0.75.0",
+    "oxlint": "1.90.0",
+    "playwright-core": "1.64.1",
+    "three": "0.187.0",
+    "typescript": "7.0.2",
+    "vite": "8.3.5"
+  },
+  "packageManager": "bun@1.4.4"
 }
