@@ -1,6 +1,7 @@
 // CrazyGames 需要相對路徑（base: './'），dist 放在任何子路徑底下都能跑。
 // 主程式是單一 JS 檔；只有語系拆成各自的小檔（src/i18n.ts 動態 import），開機只抓偵測到的那一個。
-import type { Plugin, UserConfig } from 'vite';
+import type { Plugin } from 'vite';
+import { defineConfig } from 'vitest/config';
 declare const process: { env: Record<string, string | undefined> }; // Vite 設定檔在 Node 跑；不為這一行裝 @types/node
 
 // VITE_WEB=1：網頁版建置，拿掉 CrazyGames SDK 腳本；預設建置（上傳 CrazyGames 的）不變
@@ -40,11 +41,13 @@ const prefetchAtlases = (): Plugin => ({
   },
 });
 
-export default {
+export default defineConfig({
   base: './',
   plugins: [webBuild(), prefetchAtlases()],
   build: {
     target: 'es2022',
     assetsInlineLimit: 0,
   },
-} satisfies UserConfig;
+  // 規則測試（tests/*.test.ts）的 Vitest 設定也在這裡；server/telemetry 有自己的設定，在 workerd 裡跑
+  test: { include: ['tests/**/*.test.ts'] },
+});
