@@ -148,16 +148,16 @@ flowchart LR
 
 全部檢查都不需要瀏覽器，`devenv test` 一次跑完；單跑一類：`devenv tasks run check:rules`（其他：typecheck、lint、build、telemetry）。遊戲規則檢查：
 
-| 檢查                                                                      | 內容                                                             |
-| ------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `sim.test.ts`                                                             | 自動玩家用 12 組參數跑全部關卡，每一關都要破得了                 |
-| `endless.test.ts`                                                         | 無盡模式用 12 個種子接力跑完                                     |
-| `feats.test.ts`                                                           | 每種成就「達成」與「差一點」都判對                               |
-| `save.test.ts`                                                            | 舊存檔相容、本機與雲端合併、主題擁有與套用、下一步推薦、本機排行 |
-| `flow.test.ts`、`beat.test.ts`                                            | 一局之內的流程狀態機、一局結束的節拍表                           |
-| `i18n.test.ts`                                                            | 12 種語言的字串齊全                                              |
-| `telemetry.test.ts`                                                       | 遙測：沒設網址不送、事件欄位、排隊分批、不送的情況               |
-| `unlock.test.ts`、`pad.test.ts`、`boost.test.ts`、`burst.test.ts`、`dune.test.ts`、`ring-score.test.ts`、`quality.test.ts` | 解鎖順序、中途荷葉、加速圈、噴泉、滑沙、金圈分數、畫質分級 |
+| 檢查                                                                                                                       | 內容                                                             |
+| -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `sim.test.ts`                                                                                                              | 自動玩家用 12 組參數跑全部關卡，每一關都要破得了                 |
+| `endless.test.ts`                                                                                                          | 無盡模式用 12 個種子接力跑完                                     |
+| `feats.test.ts`                                                                                                            | 每種成就「達成」與「差一點」都判對                               |
+| `save.test.ts`                                                                                                             | 舊存檔相容、本機與雲端合併、主題擁有與套用、下一步推薦、本機排行 |
+| `flow.test.ts`、`beat.test.ts`                                                                                             | 一局之內的流程狀態機、一局結束的節拍表                           |
+| `i18n.test.ts`                                                                                                             | 12 種語言的字串齊全                                              |
+| `telemetry.test.ts`                                                                                                        | 遙測：沒設網址不送、事件欄位、排隊分批、不送的情況               |
+| `unlock.test.ts`、`pad.test.ts`、`boost.test.ts`、`burst.test.ts`、`dune.test.ts`、`ring-score.test.ts`、`quality.test.ts` | 解鎖順序、中途荷葉、加速圈、噴泉、滑沙、金圈分數、畫質分級       |
 
 開發用的掛鉤在 `window.__game`（開發伺服器一定有；正式建置要在網址加 `?debug=1`），例如 `__game.start(12)` 直接開第 12 關、`__game.autoplay = [0.25, -10]` 讓自動玩家接手、`__game.look('cat')` 換角色。
 
