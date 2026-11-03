@@ -161,15 +161,19 @@ describe('3. 排隊與分批', () => {
     expect(events(r2).length === 300 && events(r2)[0].dist === 100).toBe(true);
   });
   it('送出失敗：丟掉、不重試、不拋例外', () => {
+    let calls = 0;
     const r3 = rig({
       send: () => {
+        calls++;
         throw new Error('boom');
       },
     });
     r3.tm.endlessOver(1, 1);
-    r3.tm.flush();
-    r3.tm.flush();
-    expect(true).toBe(true); // 走到這裡＝沒拋例外
+    expect(() => {
+      r3.tm.flush();
+      r3.tm.flush();
+    }).not.toThrow();
+    expect(calls, '第二次 flush 不該重送丟掉的批次').toBe(1);
   });
   it('sendBeacon 回 false：只試一次', () => {
     let calls = 0;
