@@ -1,7 +1,0 @@
-[
- {"wait": 2000},
- {"click": "#playBtn"}, {"wait": 600},
- {"eval": "(() => { const A = window.__game.audio; A.initAudio(); window.__ac = 0; const o = OscillatorNode.prototype.start, b = AudioBufferSourceNode.prototype.start; OscillatorNode.prototype.start = function (...a) { window.__ac++; return o.apply(this, a); }; AudioBufferSourceNode.prototype.start = function (...a) { window.__ac++; return b.apply(this, a); }; return 'patched'; })()"},
- {"eval": "(() => { const A = window.__game.audio, r = {}; for (const n of ['ui_press','ui_nope','ui_pop','panel_in','coin_tick','coin_land','feat','next_up','tab']) { window.__ac = 0; A.play(n, { n: 2 }); r[n] = window.__ac; } window.__probe = r; return r; })()"},
- {"assert": "Object.keys(window.__probe).length === 9 && Object.values(window.__probe).every((v) => v > 0)", "msg": "9 個 UI 音效接點都建立了發聲節點"}
-]

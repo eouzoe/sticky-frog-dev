@@ -48,7 +48,7 @@ export function dropPrefetch(): void {
 
 /** 只解碼一張烘焙圖集（商店頭像用，不上傳 GPU）；座標表一併載好，rawFrame／rawKeys 才查得到 */
 export const decodeAtlas = (name: string): Promise<ImageBitmap> => Promise.all([take(name), loadMeta(name)]).then(([b]) => b);
-/** 開機路徑的量測點（開發者工具效能面板看得到；scratchpad 的 bootmarks 腳本會列出來） */
+/** 開機路徑的量測點（開發者工具的效能面板看得到） */
 export const measure = (name: string, start: number) => performance.measure(name, { start, end: performance.now() });
 /** 載入一張烘焙圖集：回傳貼圖、這張圖集的所有格、解碼後的點陣圖 */
 export async function loadAtlas(R: GL, name: string, pre?: Promise<ImageBitmap>): Promise<{ tex: Tex; frames: Record<string, Frame>; bitmap: ImageBitmap }> {

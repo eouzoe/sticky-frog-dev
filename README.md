@@ -72,7 +72,7 @@ bun run preview    # 在本機跑 dist/
 bun run check      # 型別、oxlint、tests/*-check.mjs
 ```
 
-`tools/perf/` 與 `tools/bake/` 的瀏覽器腳本用 playwright-core，第一次要裝 Chromium：`bun x playwright-core install chromium`。
+`tools/bake/` 用 playwright-core 開無頭 Chromium 烘焙圖集，第一次要先裝：`bun x playwright-core install chromium`。
 
 `dist/` 裡全部用相對路徑（`vite.config.ts` 的 `base: './'`），放在任何子路徑底下都能跑。
 
@@ -105,10 +105,9 @@ public/
 └── fonts/           Baloo 2 ExtraBold（SIL OFL 1.1）
 tools/
 ├── bake/            離線烘焙：原版 GLB → 精靈圖集（無頭 Chrome）、小形狀光柵
-├── cat/             旋轉貓素材（yt-dlp＋ffmpeg）
-└── perf/            Playwright 量測與驗證腳本（開機、遊玩剖析、流程、主題、步驟檔執行器、README 截圖）
+└── cat/             旋轉貓素材（yt-dlp＋ffmpeg）
 server/telemetry/    遙測收資料端（Worker＋D1）與報告腳本
-tests/               bun run check 跑的檢查（*-check.mjs）、瀏覽器步驟檔（smoke-*、tour-* 等 .json）、上游的效能量測紀錄（perf-*.json）
+tests/               bun run check 跑的檢查（*-check.mjs）
 ```
 
 ### 架構
@@ -161,14 +160,6 @@ bun run check
 | `telemetry-check.mjs` | 遙測：沒設網址不送、事件欄位、排隊分批、不送的情況 |
 | `unlock-check.mjs`、`pad-check.mjs`、`boost-check.mjs`、`burst-check.mjs` | 解鎖順序、中途荷葉、加速圈、特效數量上限 |
 
-瀏覽器裡實際開遊戲操作（先 `bun run build && bun run preview`）：
-
-```bash
-bun tools/perf/smoke.mjs tests/smoke-*.json tests/tour-*.json   # 步驟檔：斷言＋截圖到 tools/perf/shots/
-bun tools/perf/flowcheck.mjs http://localhost:4173/               # 一局結束流程 22 項
-bun tools/perf/themecheck.mjs http://localhost:4173/              # 主題組合包與系列關卡
-bun tools/perf/readme-shots.mjs                                   # 重新產生 README 的截圖與 GIF
-```
 
 開發用的掛鉤在 `window.__game`（開發伺服器一定有；正式建置要在網址加 `?debug=1`），例如 `__game.start(12)` 直接開第 12 關、`__game.autoplay = [0.25, -10]` 讓自動玩家接手、`__game.look('cat')` 換角色。
 
@@ -192,8 +183,7 @@ VITE_TELEMETRY_URL=https://<你的 worker>.workers.dev/e VITE_BUILD=$(git rev-pa
 
 ## 目前狀態
 
-- 第一次送 CrazyGames 審核未通過（整體品質）。之後把渲染器從 three.js 換成自寫 WebGL2 偽 3D（素材離線烘焙成圖集）、開機只載需要的素材、一局結束改成無按鈕的固定節拍、障礙物改全年齡、加主題資料包；數字與計畫見 `docs/PLAN.md`、`docs/REVIEW-2026-10-30.md`。
-- 開發筆記（手感清單、每個設計決定的原因、驗證方式）在 [`docs/DEVNOTES.md`](docs/DEVNOTES.md)。
+- 第一次送 CrazyGames 審核未通過（整體品質）。之後把渲染器從 three.js 換成自寫 WebGL2 偽 3D（素材離線烘焙成圖集）、開機只載需要的素材、一局結束改成無按鈕的固定節拍、障礙物改全年齡、加主題資料包。
 
 ## 素材與授權
 
