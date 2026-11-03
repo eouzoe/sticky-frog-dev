@@ -5,13 +5,18 @@ import type { PlayOpts } from './audio-engine.ts';
 export type { PlayOpts };
 type Engine = typeof import('./audio-engine.ts');
 
-let E: Engine | null = null, loading: Promise<Engine> | null = null;
+let E: Engine | null = null,
+  loading: Promise<Engine> | null = null;
 const S = { muted: false, music: true, sfx: true, world: 0, paused: false, oiia: false, theme: {} as Record<string, string> }; // theme：主題的音效替換表（play 的名字 → 主題音效名）
 const queue: [string, PlayOpts, number][] = [];
 
 function load(): Promise<Engine> {
   return (loading ??= import('./audio-engine.ts').then((m) => {
-    m.setMuted(S.muted); m.setMusic(S.music); m.setSfx(S.sfx); m.setWorld(S.world); m.setPaused(S.paused);
+    m.setMuted(S.muted);
+    m.setMusic(S.music);
+    m.setSfx(S.sfx);
+    m.setWorld(S.world);
+    m.setPaused(S.paused);
     if (S.oiia) m.wantOiia();
     m.initAudio(); // 第一次手勢已經發生過（有 sticky activation），之後建 AudioContext 也算在手勢內
     E = m;
@@ -22,17 +27,52 @@ function load(): Promise<Engine> {
   }));
 }
 /** 第一次使用者手勢時呼叫（pointerdown／touchstart）：載引擎、建 AudioContext */
-export function initAudio(): void { if (E) E.initAudio(); else void load(); }
-export function play(name: string, o: PlayOpts = {}): void { const n = S.theme[name] ?? name; if (E) E.play(n, o); else if (loading) queue.push([n, o, performance.now()]); }
-export function setTheme(map: Record<string, string>): void { S.theme = map; }
-export function setMuted(m: boolean): void { S.muted = m; E?.setMuted(m); }
-export function setMusic(on: boolean): void { S.music = on; E?.setMusic(on); }
-export function setSfx(on: boolean): void { S.sfx = on; E?.setSfx(on); }
-export function setWorld(i: number): void { S.world = i; E?.setWorld(i); }
-export function setPaused(p: boolean): void { S.paused = p; E?.setPaused(p); }
-export function duckMusic(amount?: number, hold?: number): void { E?.duckMusic(amount, hold); }
-export function wantOiia(): void { S.oiia = true; E?.wantOiia(); }
-export function oiiaStart(): void { E?.oiiaStart(); }
-export function oiiaStop(): void { E?.oiiaStop(); }
+export function initAudio(): void {
+  if (E) E.initAudio();
+  else void load();
+}
+export function play(name: string, o: PlayOpts = {}): void {
+  const n = S.theme[name] ?? name;
+  if (E) E.play(n, o);
+  else if (loading) queue.push([n, o, performance.now()]);
+}
+export function setTheme(map: Record<string, string>): void {
+  S.theme = map;
+}
+export function setMuted(m: boolean): void {
+  S.muted = m;
+  E?.setMuted(m);
+}
+export function setMusic(on: boolean): void {
+  S.music = on;
+  E?.setMusic(on);
+}
+export function setSfx(on: boolean): void {
+  S.sfx = on;
+  E?.setSfx(on);
+}
+export function setWorld(i: number): void {
+  S.world = i;
+  E?.setWorld(i);
+}
+export function setPaused(p: boolean): void {
+  S.paused = p;
+  E?.setPaused(p);
+}
+export function duckMusic(amount?: number, hold?: number): void {
+  E?.duckMusic(amount, hold);
+}
+export function wantOiia(): void {
+  S.oiia = true;
+  E?.wantOiia();
+}
+export function oiiaStart(): void {
+  E?.oiiaStart();
+}
+export function oiiaStop(): void {
+  E?.oiiaStop();
+}
 /** 現在的拍位（音樂還沒起來就用牆鐘推，跟引擎沒 AudioContext 時一樣） */
-export function beatPos(): number { return E ? E.beatPos() : (performance.now() / 1000) * 110 / 60; }
+export function beatPos(): number {
+  return E ? E.beatPos() : ((performance.now() / 1000) * 110) / 60;
+}

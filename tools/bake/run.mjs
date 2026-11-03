@@ -16,7 +16,8 @@ const ts = new Bun.Transpiler({ loader: 'ts' });
 const server = Bun.serve({
   port: 0,
   async fetch(req) {
-    const p = decodeURIComponent(new URL(req.url).pathname), f = normalize(join(ROOT, p));
+    const p = decodeURIComponent(new URL(req.url).pathname),
+      f = normalize(join(ROOT, p));
     if (!f.startsWith(ROOT)) return new Response('no', { status: 403 });
     const file = Bun.file(f);
     if (!file.size) return new Response('not found', { status: 404 });
@@ -29,7 +30,9 @@ try {
   mkdirSync(OUT, { recursive: true });
   for (const pg of PAGES) {
     const page = await browser.newPage();
-    page.on('console', (m) => { if (m.text().startsWith('[bake]') || m.type() === 'error') console.log(m.text()); });
+    page.on('console', (m) => {
+      if (m.text().startsWith('[bake]') || m.type() === 'error') console.log(m.text());
+    });
     page.on('pageerror', (e) => console.log('pageerror', e.message));
     const t0 = Date.now();
     await page.goto(`http://localhost:${server.port}/tools/bake/${pg}.html`);
@@ -42,11 +45,18 @@ try {
       writeFileSync(join(OUT, `atlas-${name}.webp`), buf);
       // 這張圖集的座標表：frames 的 a 欄位說它屬於哪張，寫進各自的 json 時拿掉
       const frames = {};
-      for (const [key, fr] of Object.entries(r.frames)) if (fr.a === name) { const { a: _a, ...rest } = fr; frames[key] = rest; }
+      for (const [key, fr] of Object.entries(r.frames))
+        if (fr.a === name) {
+          const { a: _a, ...rest } = fr;
+          frames[key] = rest;
+        }
       writeFileSync(join(OUT, `atlas-${name}.json`), JSON.stringify({ w: a.w, h: a.h, frames }));
       console.log(`atlas-${name}.webp ${a.w}x${a.h} ${(buf.length / 1024).toFixed(1)} KB，${Object.keys(frames).length} 格`);
     }
     console.log(`${pg}：${((Date.now() - t0) / 1000).toFixed(0)} s`);
     await page.close();
   }
-} finally { await browser.close(); server.stop(); }
+} finally {
+  await browser.close();
+  server.stop();
+}

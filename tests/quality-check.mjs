@@ -23,17 +23,30 @@ assert.deepEqual(run(g, [45, 45]), [null, 'mid'], '連續 2 秒 < 48 → 降');
 assert.equal(createGovernor({ tier: 'low' }).tick(10), null, 'low 不會再降');
 // 升：19 秒好不升，第 20 秒好且距離上次換級 ≥ 30 才升
 g = createGovernor({ tier: 'mid', max: 'high' });
-const seq = Array(29).fill(60); assert.ok(run(g, seq).every((x) => x === null), '30 秒內不升');
+const seq = Array(29).fill(60);
+assert.ok(
+  run(g, seq).every((x) => x === null),
+  '30 秒內不升',
+);
 assert.equal(g.tick(60), 'high', '開局 30 秒後且連續 20 秒好 → 升');
 g = createGovernor({ tier: 'mid', max: 'mid' });
-assert.ok(run(g, Array(100).fill(60)).every((x) => x === null), '到達 max 不再升');
+assert.ok(
+  run(g, Array(100).fill(60)).every((x) => x === null),
+  '到達 max 不再升',
+);
 // 升上去 25 秒內又掉 → 禁止，之後再怎麼好都不升回去
 g = createGovernor({ tier: 'mid', max: 'high' });
 run(g, Array(30).fill(60)); // 第 30 秒升到 high
 assert.equal(g.tier, 'high');
 assert.equal(g.tick(20), 'mid', '升上去馬上掉 → 降');
-assert.ok(run(g, Array(200).fill(60)).every((x) => x === null), 'high 被禁止，不再升回');
+assert.ok(
+  run(g, Array(200).fill(60)).every((x) => x === null),
+  'high 被禁止，不再升回',
+);
 // forced 不動
 g = createGovernor({ tier: 'high', forced: true });
-assert.ok(run(g, Array(10).fill(5)).every((x) => x === null), '強制級別不自動調整');
+assert.ok(
+  run(g, Array(10).fill(5)).every((x) => x === null),
+  '強制級別不自動調整',
+);
 console.log('quality-check OK');

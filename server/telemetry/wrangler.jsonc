@@ -1,0 +1,15 @@
+// 匿名遊玩數據收集端。database_id 是佔位：真正的 ID 放在 gitignored 的 wrangler.local.jsonc（複製本檔、改 id），部署、遷移、報告都加 -c wrangler.local.jsonc。
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sticky-frog-telemetry",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-03",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "sticky-frog-telemetry",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations",
+    },
+  ],
+}

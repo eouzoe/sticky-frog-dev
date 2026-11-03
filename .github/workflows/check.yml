@@ -1,25 +1,20 @@
-# Continuous integration: typecheck, lint, the check scripts, the telemetry server tests and a production build.
-# Manual only: run it once at the end of each batch (gh workflow run check.yml --ref <branch>), not on every push.
+# 同一套 devenv 環境在 CI 裡跑 devenv test（型別、lint、遊戲規則檢查、建置、收資料端測試）。手動觸發：gh workflow run check.yml --ref <branch>
 name: check
 on:
   workflow_dispatch:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/checkout@v7
+      - uses: cachix/install-nix-action@v31
+      - uses: cachix/cachix-action@v17
         with:
-          bun-version: 1.4.4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: bun install --frozen-lockfile
-      - name: typecheck, lint, tests/*-check.mjs
-        run: bun run check
-      - name: telemetry server (Vitest in workerd)
-        working-directory: server/telemetry
-        run: npm ci && npm test
-      - name: build
-        run: bun run build
+          name: devenv
+      - name: Install devenv
+        run: nix profile add nixpkgs#devenv
+      - name: Install dependencies
+        run: devenv shell -- bun install --frozen-lockfile
+      - name: devenv test
+        run: devenv test

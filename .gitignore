@@ -1,7 +1,13 @@
 node_modules
 dist
-.claude/
-.devenv/
-.devenv.flake.nix
+
+# devenv
+.devenv*
 devenv.local.nix
-.direnv/
+devenv.local.yaml
+.direnv
+
+# Cloudflare：本機 D1 狀態、產生的型別、含真實 database_id 的設定
+.wrangler
+server/telemetry/worker-configuration.d.ts
+server/telemetry/wrangler.local.jsonc

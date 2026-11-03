@@ -6,8 +6,13 @@ const out = { x: 0, v: 0 };
 
 /** 把 x 以勁度 k、阻尼 c 拉向 target（f＝額外加速度）；回傳共用物件 {x, v}，呼叫端立刻取用 */
 export function spring(x: number, v: number, target: number, k: number, c: number, dt: number, f = 0): { x: number; v: number } {
-  const n = Math.max(1, Math.ceil(dt / MAX_STEP)), h = dt / n;
-  for (let i = 0; i < n; i++) { v += ((target - x) * k - v * c + f) * h; x += v * h; }
-  out.x = x; out.v = v;
+  const n = Math.max(1, Math.ceil(dt / MAX_STEP)),
+    h = dt / n;
+  for (let i = 0; i < n; i++) {
+    v += ((target - x) * k - v * c + f) * h;
+    x += v * h;
+  }
+  out.x = x;
+  out.v = v;
   return out;
 }

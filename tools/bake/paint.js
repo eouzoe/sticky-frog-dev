@@ -6,4 +6,6 @@ try {
   const frames = {};
   for (const it of items) frames[it.key] = { a: 'fx', x: it.x, y: it.y, w: it.w, h: it.h, ax: +it.ax.toFixed(3), ay: +it.ay.toFixed(3), u: +it.u.toFixed(6) };
   window.__bake = { atlases: { fx: { w, h, webp: cv.toDataURL('image/webp', 0.92) } }, frames };
-} catch (e) { window.__bakeError = String(e?.stack ?? e); }
+} catch (e) {
+  window.__bakeError = String(e?.stack ?? e);
+}
