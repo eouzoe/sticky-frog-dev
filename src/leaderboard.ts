@@ -10,7 +10,8 @@ const TOP = 10;
 // 本機榜：回傳這次的名次（1 起算；沒進前 10 回 0）。list 會被改成新的陣列內容
 export function addLocal(list: LbEntry[], entry: LbEntry): number {
   const next = [...list, entry].sort((a, b) => b.score - a.score).slice(0, TOP);
-  list.length = 0; list.push(...next);
+  list.length = 0;
+  list.push(...next);
   return next.indexOf(entry) + 1;
 }
 
@@ -20,7 +21,8 @@ async function encryptScore(score: number, base64Key: string): Promise<string> {
   const key = await crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['encrypt']);
   const cipher = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(String(score))));
   const packed = new Uint8Array(iv.length + cipher.length);
-  packed.set(iv, 0); packed.set(cipher, iv.length);
+  packed.set(iv, 0);
+  packed.set(cipher, iv.length);
   return btoa(String.fromCharCode(...packed));
 }
 
@@ -28,5 +30,11 @@ async function encryptScore(score: number, base64Key: string): Promise<string> {
 export async function submitPlatform(score: number): Promise<boolean> {
   const user = window.CrazyGames?.SDK?.user;
   if (!LB_KEY || !cg.ready || typeof user?.submitScore !== 'function') return false;
-  try { await user.submitScore({ encryptedScore: await encryptScore(score, LB_KEY), score }); return true; } catch (e) { console.warn('[leaderboard]', e); return false; }
+  try {
+    await user.submitScore({ encryptedScore: await encryptScore(score, LB_KEY), score });
+    return true;
+  } catch (e) {
+    console.warn('[leaderboard]', e);
+    return false;
+  }
 }

@@ -19,14 +19,19 @@ const prefetchAtlases = (): Plugin => ({
   transformIndexHtml: {
     order: 'post',
     handler(html, ctx) {
-      const u: Record<string, string> = {}, j: Record<string, string> = {};
-      for (const f of Object.keys(ctx.bundle ?? {})) { const m = /^assets\/atlas-(\w+)-[\w-]+\.(webp|json)$/.exec(f); if (m) (m[2] === 'webp' ? u : j)[m[1]] = `./${f}`; }
+      const u: Record<string, string> = {},
+        j: Record<string, string> = {};
+      for (const f of Object.keys(ctx.bundle ?? {})) {
+        const m = /^assets\/atlas-(\w+)-[\w-]+\.(webp|json)$/.exec(f);
+        if (m) (m[2] === 'webp' ? u : j)[m[1]] = `./${f}`;
+      }
       for (const k of ['shared', 'fx', 'w0', 'c_tree']) if (!u[k] || !j[k]) throw new Error(`prefetch-atlases：找不到 atlas-${k} 的 webp 或 json`);
-      const js = `(function(){var u=${JSON.stringify(u)},j=${JSON.stringify(j)},w="w0",c="c_tree";`
-        + 'try{var s=JSON.parse(localStorage.getItem("sticky-frog-v1")||"null");if(s){var n=Math.min(s.last||1,s.unlocked||1,90);w="w"+Math.min(5,Math.floor((n-1)/15));c=s.skin==="cat"?"":"c_"+s.skin}}catch(e){}'
-        + 'var p=window.__pre={},q=window.__preMeta={};["shared","fx",w,c].forEach(function(k){if(!u[k])return;p[k]=fetch(u[k]).then(function(r){if(!r.ok)throw Error(r.status);return r.blob()})'
-        + '.then(function(b){return createImageBitmap(b,{premultiplyAlpha:"premultiply",colorSpaceConversion:"none"})});p[k].catch(function(){});'
-        + 'q[k]=fetch(j[k]).then(function(r){if(!r.ok)throw Error(r.status);return r.json()});q[k].catch(function(){})})})();';
+      const js =
+        `(function(){var u=${JSON.stringify(u)},j=${JSON.stringify(j)},w="w0",c="c_tree";` +
+        'try{var s=JSON.parse(localStorage.getItem("sticky-frog-v1")||"null");if(s){var n=Math.min(s.last||1,s.unlocked||1,90);w="w"+Math.min(5,Math.floor((n-1)/15));c=s.skin==="cat"?"":"c_"+s.skin}}catch(e){}' +
+        'var p=window.__pre={},q=window.__preMeta={};["shared","fx",w,c].forEach(function(k){if(!u[k])return;p[k]=fetch(u[k]).then(function(r){if(!r.ok)throw Error(r.status);return r.blob()})' +
+        '.then(function(b){return createImageBitmap(b,{premultiplyAlpha:"premultiply",colorSpaceConversion:"none"})});p[k].catch(function(){});' +
+        'q[k]=fetch(j[k]).then(function(r){if(!r.ok)throw Error(r.status);return r.json()});q[k].catch(function(){})})})();';
       // 插在 <meta charset> 後面：字元編碼宣告要留在檔案前 1024 位元組內
       const meta = '<meta charset="utf-8" />';
       if (!html.includes(meta)) throw new Error('prefetch-atlases：找不到 <meta charset>');

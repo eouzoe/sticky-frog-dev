@@ -8,8 +8,12 @@ import { createSim, step } from '../src/sim.ts';
 import { makeBot } from '../src/bot.ts';
 import { PARAMS } from './sim-check.mjs';
 
-const plant = process.argv.includes('--plant'), noboost = process.argv.includes('--noboost');
-let passes = 0, deaths = 0, boosts = 0, unsolved = 0;
+const plant = process.argv.includes('--plant'),
+  noboost = process.argv.includes('--noboost');
+let passes = 0,
+  deaths = 0,
+  boosts = 0,
+  unsolved = 0;
 const rows = [];
 for (let n = 61; n <= 75; n++) {
   const lv = generateLevel(n);
@@ -18,15 +22,23 @@ for (let n = 61; n <= 75; n++) {
   if (plant) for (const b of lv.boosts) if (!b.off) for (let k = 3; k <= 11; k += 2) lv.spikes.push({ x: b.x + b.dx * k, y: b.y + b.dy * k, r: 0.95, hang: true });
   let wins = 0;
   for (const [rel, gv] of PARAMS) {
-    const s = createSim(lv), bot = makeBot(rel, gv);
+    const s = createSim(lv),
+      bot = makeBot(rel, gv);
     let last = -99;
     while (s.t < 90 && s.mode !== 'dead' && s.mode !== 'won') {
       step(s, T.DT, bot(s));
-      for (const e of s.events) if (e.type === 'boost') { last = s.t; passes++; }
+      for (const e of s.events)
+        if (e.type === 'boost') {
+          last = s.t;
+          passes++;
+        }
       s.events.length = 0;
     }
     if (s.mode === 'won') wins++;
-    if (s.mode === 'dead' && s.t - last <= 1.5) { deaths++; rows.push(`L${n} rel=${rel} gv=${gv} cause=${s.cause} dt=${(s.t - last).toFixed(2)}`); }
+    if (s.mode === 'dead' && s.t - last <= 1.5) {
+      deaths++;
+      rows.push(`L${n} rel=${rel} gv=${gv} cause=${s.cause} dt=${(s.t - last).toFixed(2)}`);
+    }
   }
   if (wins === 0) unsolved++;
   if (noboost) console.log(`L${n} WIN ${wins}/${PARAMS.length}`);

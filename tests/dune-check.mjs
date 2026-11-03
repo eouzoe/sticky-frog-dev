@@ -16,25 +16,54 @@ import { createSim, step, duneH } from '../src/sim.ts';
 import { makeBot, makeSurfBot } from '../src/bot.ts';
 import { PARAMS } from './sim-check.mjs';
 
-const has = (f) => process.argv.includes(f), plant = has('--plant'), nodune = has('--nodune'), back = has('--back'), times = has('--times');
-const STUCK_T = 2.0, STUCK_DX = 1.5, WINDOW = 1.5, GAP = 0.6;
-const med = (a) => { if (!a.length) return NaN; const b = [...a].sort((x, y) => x - y), m = b.length >> 1; return b.length % 2 ? b[m] : (b[m - 1] + b[m]) / 2; };
+const has = (f) => process.argv.includes(f),
+  plant = has('--plant'),
+  nodune = has('--nodune'),
+  back = has('--back'),
+  times = has('--times');
+const STUCK_T = 2.0,
+  STUCK_DX = 1.5,
+  WINDOW = 1.5,
+  GAP = 0.6;
+const med = (a) => {
+  if (!a.length) return NaN;
+  const b = [...a].sort((x, y) => x - y),
+    m = b.length >> 1;
+  return b.length % 2 ? b[m] : (b[m - 1] + b[m]) / 2;
+};
 
 if (back) {
-  let runs = 0, deaths = 0, kicks = 0; const rows = [];
+  let runs = 0,
+    deaths = 0,
+    kicks = 0;
+  const rows = [];
   for (let n = 76; n <= 90; n++) {
     const lv = generateLevel(n);
     for (const d of lv.dunes) {
       if (!d.lip || d.off) continue;
-      for (const dx of [0.4, 1.4, 2.6, 3.8, 5.0]) for (const vx of [2, 7, 12]) for (const [rel, gv] of PARAMS) {
-        const s = createSim(lv), bot = makeBot(rel, gv);
-        s.mode = 'air'; s.started = true; s.tongue.state = 'idle'; s.x = d.x1 + dx; s.vx = vx; s.vy = 0; s.y = duneH(d, s.x) + 3;
-        runs++;
-        while (s.t < 12 && s.mode !== 'dead' && s.mode !== 'won' && !(s.duneT > -90 && s.t - s.duneT > 2.2)) {
-          step(s, T.DT, bot(s)); for (const e of s.events) if (e.type === 'launch' && e.back) kicks++; s.events.length = 0;
-        }
-        if (s.mode === 'dead' && s.duneT > -90 && s.t - s.duneT <= WINDOW) { deaths++; if (rows.length < 20) rows.push(`L${n} dx=${dx} vx=${vx} rel=${rel} gv=${gv} cause=${s.cause} dt=${(s.t - s.duneT).toFixed(2)}`); }
-      }
+      for (const dx of [0.4, 1.4, 2.6, 3.8, 5.0])
+        for (const vx of [2, 7, 12])
+          for (const [rel, gv] of PARAMS) {
+            const s = createSim(lv),
+              bot = makeBot(rel, gv);
+            s.mode = 'air';
+            s.started = true;
+            s.tongue.state = 'idle';
+            s.x = d.x1 + dx;
+            s.vx = vx;
+            s.vy = 0;
+            s.y = duneH(d, s.x) + 3;
+            runs++;
+            while (s.t < 12 && s.mode !== 'dead' && s.mode !== 'won' && !(s.duneT > -90 && s.t - s.duneT > 2.2)) {
+              step(s, T.DT, bot(s));
+              for (const e of s.events) if (e.type === 'launch' && e.back) kicks++;
+              s.events.length = 0;
+            }
+            if (s.mode === 'dead' && s.duneT > -90 && s.t - s.duneT <= WINDOW) {
+              deaths++;
+              if (rows.length < 20) rows.push(`L${n} dx=${dx} vx=${vx} rel=${rel} gv=${gv} cause=${s.cause} dt=${(s.t - s.duneT).toFixed(2)}`);
+            }
+          }
     }
   }
   console.log(`back-runs=${runs} back-kicks=${kicks} deaths-within-1.5s=${deaths}`);
@@ -47,51 +76,134 @@ const trailOf = (lv) => lv.rings.map((r, i) => (r.trail !== undefined ? i : -1))
 function runBots(lv, mk, trail) {
   const o = { wins: 0, best: Infinity, lan: 0, lau: 0, dth: 0, stk: 0, tch: 0, eps: [], fr: [] };
   for (const [rel, gv] of PARAMS) {
-    const s = createSim(lv), bot = mk(rel, gv);
-    let touchedHere = false, cT = 0, cX = 0, inC = false, gapT = 0, stuckHere = false, acc = 0, inEp = false, lastC = 0;
+    const s = createSim(lv),
+      bot = mk(rel, gv);
+    let touchedHere = false,
+      cT = 0,
+      cX = 0,
+      inC = false,
+      gapT = 0,
+      stuckHere = false,
+      acc = 0,
+      inEp = false,
+      lastC = 0;
     while (s.t < 90 && s.mode !== 'dead' && s.mode !== 'won') {
       step(s, T.DT, bot(s));
       for (const e of s.events) {
-        if (e.type === 'dune') { touchedHere = true; if (s.tongue.state !== 'stuck') { o.lan++; if (inEp) o.eps.push(acc); inEp = true; acc = 0; lastC = s.t; } }
-        else if (e.type === 'launch') o.lau++;
+        if (e.type === 'dune') {
+          touchedHere = true;
+          if (s.tongue.state !== 'stuck') {
+            o.lan++;
+            if (inEp) o.eps.push(acc);
+            inEp = true;
+            acc = 0;
+            lastC = s.t;
+          }
+        } else if (e.type === 'launch') o.lau++;
       }
       s.events.length = 0;
       if (s.onDune >= 0) {
-        if (inEp) { acc += T.DT; lastC = s.t; }
-        if (!inC) { inC = true; cT = s.t; cX = s.x; } gapT = 0;
-        if (s.t - cT >= STUCK_T) { if (s.x - cX < STUCK_DX && !stuckHere) { stuckHere = true; o.stk++; rows.push(`L${lv.n} rel=${rel} gv=${gv} 卡住 x=${s.x.toFixed(1)} t=${s.t.toFixed(1)}`); } cT = s.t; cX = s.x; }
-      } else if (inC) { gapT += T.DT; if (gapT > GAP) inC = false; }
-      if (inEp && s.t - lastC > GAP) { o.eps.push(acc); inEp = false; }
+        if (inEp) {
+          acc += T.DT;
+          lastC = s.t;
+        }
+        if (!inC) {
+          inC = true;
+          cT = s.t;
+          cX = s.x;
+        }
+        gapT = 0;
+        if (s.t - cT >= STUCK_T) {
+          if (s.x - cX < STUCK_DX && !stuckHere) {
+            stuckHere = true;
+            o.stk++;
+            rows.push(`L${lv.n} rel=${rel} gv=${gv} 卡住 x=${s.x.toFixed(1)} t=${s.t.toFixed(1)}`);
+          }
+          cT = s.t;
+          cX = s.x;
+        }
+      } else if (inC) {
+        gapT += T.DT;
+        if (gapT > GAP) inC = false;
+      }
+      if (inEp && s.t - lastC > GAP) {
+        o.eps.push(acc);
+        inEp = false;
+      }
     }
     if (inEp) o.eps.push(acc);
     if (touchedHere || s.duneT > -90) o.tch++;
-    if (s.mode === 'won') { o.wins++; o.best = Math.min(o.best, s.time); }
-    if (s.mode === 'dead' && s.duneT > -90 && s.t - s.duneT <= WINDOW) { o.dth++; rows.push(`L${lv.n} rel=${rel} gv=${gv} cause=${s.cause} dt=${(s.t - s.duneT).toFixed(2)} x=${s.x.toFixed(1)}`); }
+    if (s.mode === 'won') {
+      o.wins++;
+      o.best = Math.min(o.best, s.time);
+    }
+    if (s.mode === 'dead' && s.duneT > -90 && s.t - s.duneT <= WINDOW) {
+      o.dth++;
+      rows.push(`L${lv.n} rel=${rel} gv=${gv} cause=${s.cause} dt=${(s.t - s.duneT).toFixed(2)} x=${s.x.toFixed(1)}`);
+    }
     if (trail.length) o.fr.push(trail.filter((i) => s.rings[i]).length / trail.length);
   }
   return o;
 }
-let touched = 0, landings = 0, launches = 0, deaths = 0, stuck = 0, unsolved = 0, fields = 0, lowTouch = 0, lowRing = 0, harder = 0;
-const rows = [], allEp = [], ep1 = [];
+let touched = 0,
+  landings = 0,
+  launches = 0,
+  deaths = 0,
+  stuck = 0,
+  unsolved = 0,
+  fields = 0,
+  lowTouch = 0,
+  lowRing = 0,
+  harder = 0;
+const rows = [],
+  allEp = [],
+  ep1 = [];
 for (let n = 76; n <= 90; n++) {
   const lv = generateLevel(n);
   fields += lv.dunes.filter((d) => d.lip && !d.off).length;
   const trail = trailOf(lv);
   if (nodune) lv.dunes.length = 0;
-  if (plant) for (const d of lv.dunes) if (d.lip && !d.off) for (const [dx, dy] of [[3, 3], [5, 5], [7, 7], [9, 6], [11, 4]]) lv.spikes.push({ x: d.x1 + dx, y: d.H + dy, r: 0.95, hang: true });
-  const norm = runBots(lv, makeBot, trail), surf = nodune || times ? norm : runBots(lv, makeSurfBot, trail);
+  if (plant)
+    for (const d of lv.dunes)
+      if (d.lip && !d.off)
+        for (const [dx, dy] of [
+          [3, 3],
+          [5, 5],
+          [7, 7],
+          [9, 6],
+          [11, 4],
+        ])
+          lv.spikes.push({ x: d.x1 + dx, y: d.H + dy, r: 0.95, hang: true });
+  const norm = runBots(lv, makeBot, trail),
+    surf = nodune || times ? norm : runBots(lv, makeSurfBot, trail);
   const nf = nodune || times ? 0 : med(surf.fr);
   if (norm.wins === 0 || (!nodune && !times && surf.wins === 0)) unsolved++;
   if (!nodune && !plant && !times && surf.tch < 9) lowTouch++;
   if (!nodune && !plant && !times && !(nf >= 0.7)) lowRing++;
   if (!nodune && !plant && !times && surf.wins < norm.wins - 1) harder++;
-  touched += surf.tch; landings += surf.lan; launches += surf.lau; deaths += surf.dth; stuck += surf.stk; allEp.push(...surf.eps); if (n === 76) ep1.push(...surf.eps);
+  touched += surf.tch;
+  landings += surf.lan;
+  launches += surf.lau;
+  deaths += surf.dth;
+  stuck += surf.stk;
+  allEp.push(...surf.eps);
+  if (n === 76) ep1.push(...surf.eps);
   const par = lv.par;
-  if (times) { const ok = norm.best <= par; console.log(`L${n} par=${par}s 最快 一般 bot=${norm.best.toFixed(1)}s ${ok ? 'ok' : 'FAIL'}`); if (!ok) unsolved++; continue; }
-  console.log(`L${n} fields=${lv.dunes.filter((d) => d.lip && !d.off).length} trail=${trail.length} 滑沙bot: touch=${String(surf.tch).padStart(2)}/12 landings=${String(surf.lan).padStart(3)} launches=${String(surf.lau).padStart(3)} slide-median=${med(surf.eps).toFixed(2)}s ring-median=${(nf * 100).toFixed(0)}% deaths=${surf.dth} stuck=${surf.stk} 最快=${surf.best.toFixed(1)}s | WIN 滑沙 ${surf.wins}/12 一般 ${norm.wins}/12 par=${par}s 一般最快=${norm.best.toFixed(1)}s`);
+  if (times) {
+    const ok = norm.best <= par;
+    console.log(`L${n} par=${par}s 最快 一般 bot=${norm.best.toFixed(1)}s ${ok ? 'ok' : 'FAIL'}`);
+    if (!ok) unsolved++;
+    continue;
+  }
+  console.log(
+    `L${n} fields=${lv.dunes.filter((d) => d.lip && !d.off).length} trail=${trail.length} 滑沙bot: touch=${String(surf.tch).padStart(2)}/12 landings=${String(surf.lan).padStart(3)} launches=${String(surf.lau).padStart(3)} slide-median=${med(surf.eps).toFixed(2)}s ring-median=${(nf * 100).toFixed(0)}% deaths=${surf.dth} stuck=${surf.stk} 最快=${surf.best.toFixed(1)}s | WIN 滑沙 ${surf.wins}/12 一般 ${norm.wins}/12 par=${par}s 一般最快=${norm.best.toFixed(1)}s`,
+  );
 }
-const m1 = med(ep1), mAll = med(allEp);
-console.log(`fields=${fields} bots-touch=${touched} landings=${landings} launches=${launches} slides=${allEp.length} slide-median(6-1)=${m1.toFixed(2)}s slide-median(76-90)=${mAll.toFixed(2)}s levels-with-<9-bots=${lowTouch} levels-ring<70%=${lowRing} levels-surf-harder=${harder} deaths-within-1.5s=${deaths} stuck=${stuck}${nodune || times ? ` unsolved=${unsolved}` : ''}`);
+const m1 = med(ep1),
+  mAll = med(allEp);
+console.log(
+  `fields=${fields} bots-touch=${touched} landings=${landings} launches=${launches} slides=${allEp.length} slide-median(6-1)=${m1.toFixed(2)}s slide-median(76-90)=${mAll.toFixed(2)}s levels-with-<9-bots=${lowTouch} levels-ring<70%=${lowRing} levels-surf-harder=${harder} deaths-within-1.5s=${deaths} stuck=${stuck}${nodune || times ? ` unsolved=${unsolved}` : ''}`,
+);
 for (const r of rows.slice(0, 30)) console.log(r);
 if (times || nodune) process.exit(unsolved ? 1 : 0);
 if (plant) process.exit(deaths > 0 ? 0 : 1);

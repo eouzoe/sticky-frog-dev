@@ -14,7 +14,9 @@ function check(name, want, got) {
 const ids = (arr) => arr.filter((f) => !f.silent).map((f) => f.id);
 // 跑一段：steps＝[[sim 欄位, 事件|null], …]，回傳全部達成的 id
 function play(steps, s0 = sim()) {
-  const ft = createFeatTracker(), got = [], s = { ...s0 };
+  const ft = createFeatTracker(),
+    got = [],
+    s = { ...s0 };
   for (const [patch, e] of steps) {
     Object.assign(s, patch);
     got.push(...ids(ft.tick(s, 1 / 120)));
@@ -38,26 +40,49 @@ check('flow 達成（停滯 0.05 秒）', ['flow'], play([...fast, ...slow(0.05)
 check('flow 差一點（停滯 0.15 秒）', [], play([...fast, ...slow(0.15), ...fast, ...win], sim({ time: 99 })));
 
 // speed：平均速度＝長度／時間
-check('speed 達成', ['speed'], play(win, sim({ time: 100 / (K.SPEED + 0.2) })).filter((id) => id === 'speed'));
-check('speed 差一點', [], play(win, sim({ time: 100 / (K.SPEED - 0.2) })).filter((id) => id === 'speed'));
+check(
+  'speed 達成',
+  ['speed'],
+  play(win, sim({ time: 100 / (K.SPEED + 0.2) })).filter((id) => id === 'speed'),
+);
+check(
+  'speed 差一點',
+  [],
+  play(win, sim({ time: 100 / (K.SPEED - 0.2) })).filter((id) => id === 'speed'),
+);
 
 // skim：掉到離落水線 SKIM_Y 以內又飛回去
-const dip = (low) => [[{ y: W + 2.5, vx: 3 }, null], [{ y: W + low }, null], [{ y: W + 2 }, null], [{ y: W + K.SKIM_BACK + 0.5 }, null]];
+const dip = (low) => [
+  [{ y: W + 2.5, vx: 3 }, null],
+  [{ y: W + low }, null],
+  [{ y: W + 2 }, null],
+  [{ y: W + K.SKIM_BACK + 0.5 }, null],
+];
 check('skim 達成', ['skim'], play(dip(K.SKIM_Y - 0.1)));
 // 沙丘上方不是水：同樣的低飛，level 有沙丘蓋住那個 x 就不算，沒有就照算
 const sandLv = { ...lv(), dunes: [{ x0: -5, x1: 5, H: 2, lip: false }] };
 check('skim：低飛在沙丘上方不算 WAVE KISSER', [], play(dip(K.SKIM_Y - 0.1).map(([p, e]) => [{ ...p, level: sandLv }, e])));
 check('skim 差一點（太高）', [], play(dip(K.SKIM_Y + 0.1)));
-check('skim 沒救回來（落水）', [], play([[{ y: W + 2.5 }, null], [{ y: W + 0.1 }, null], [{ mode: 'dead' }, { type: 'die' }], [{ mode: 'air', y: 9 }, null]]));
+check(
+  'skim 沒救回來（落水）',
+  [],
+  play([
+    [{ y: W + 2.5 }, null],
+    [{ y: W + 0.1 }, null],
+    [{ mode: 'dead' }, { type: 'die' }],
+    [{ mode: 'air', y: 9 }, null],
+  ]),
+);
 
 // shave：擦過危險物的最近距離
 check('shave 達成', ['shave'], play([[{}, { type: 'close', gap: K.SHAVE - 0.02 }]]));
 check('shave 差一點', [], play([[{}, { type: 'close', gap: K.SHAVE + 0.02 }]]));
 
-
 // 紀錄：第一次日期、最佳值、次數
 const rec = {};
-recordFeat(rec, 'shave', 0.1, new Date(2026, 9, 26)); recordFeat(rec, 'shave', 0.05); recordFeat(rec, 'shave', 0.2);
+recordFeat(rec, 'shave', 0.1, new Date(2026, 9, 26));
+recordFeat(rec, 'shave', 0.05);
+recordFeat(rec, 'shave', 0.2);
 check('紀錄：首次日期本地、最佳取小、次數', { first: '2026-10-26', best: 0.05, count: 3 }, rec.shave);
 // 滑沙不算停下：同樣停滯 0.2 秒的速度（< STALL_V），貼著沙面（onDune ≥ 0）不計、離開沙面照算
 check('NONSTOP：滑沙中速度低於門檻不算停滯', ['flow'], play([...fast, ...slow(0.2).map(([p, e]) => [{ ...p, onDune: 0 }, e]), ...fast, ...win], sim({ time: 99 })));

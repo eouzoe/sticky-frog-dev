@@ -2,4 +2,4 @@ inputs:
   nixpkgs:
     url: github:cachix/devenv-nixpkgs/rolling
 
-require_version: ">=2.2.2"
+require_version: '>=2.2.2'

@@ -31,8 +31,18 @@ const muteFns = new Set<(m: boolean) => void>();
 const readyFns = new Set<() => void>();
 
 const settingsMuted = () => !!(ready && sdk()?.game?.settings?.muteAudio);
-const emitMute = () => { const m = settingsMuted(); muteFns.forEach((fn) => fn(m)); };
-const call = (fn: (s: any) => void) => { if (!ready) return; try { fn(sdk()); } catch (e) { console.warn('[cg]', e); } };
+const emitMute = () => {
+  const m = settingsMuted();
+  muteFns.forEach((fn) => fn(m));
+};
+const call = (fn: (s: any) => void) => {
+  if (!ready) return;
+  try {
+    fn(sdk());
+  } catch (e) {
+    console.warn('[cg]', e);
+  }
+};
 
 // 把最新的要求告訴 SDK，但不快於 GAP_MS；很快的 stop→start（或反過來）會互相抵銷
 function syncGameplay(force = false): void {
@@ -40,7 +50,10 @@ function syncGameplay(force = false): void {
   syncTimer = 0;
   if (sdkPlaying === playing) return;
   const wait = lastGameplayCall + GAP_MS - performance.now();
-  if (wait > 0 && !force) { syncTimer = window.setTimeout(syncGameplay, wait); return; }
+  if (wait > 0 && !force) {
+    syncTimer = window.setTimeout(syncGameplay, wait);
+    return;
+  }
   sdkPlaying = playing;
   lastGameplayCall = performance.now();
   call((s) => (playing ? s.game.gameplayStart() : s.game.gameplayStop()));
@@ -59,7 +72,10 @@ async function tryInit(): Promise<boolean> {
     emitMute();
     readyFns.forEach((fn) => fn());
     return true;
-  } catch (e) { console.warn('[cg] init failed, running without SDK for now', e); return false; }
+  } catch (e) {
+    console.warn('[cg] init failed, running without SDK for now', e);
+    return false;
+  }
 }
 
 export const cg = {
@@ -67,36 +83,83 @@ export const cg = {
   init(): Promise<boolean> {
     if (!initing) {
       initing = tryInit().then((ok) => {
-        if (!ok && !ready) window.__cgSdk?.then(() => { if (!ready) void tryInit(); });
+        if (!ok && !ready)
+          window.__cgSdk?.then(() => {
+            if (!ready) void tryInit();
+          });
         return ok;
       });
     }
     return initing;
   },
-  get ready() { return ready; },
+  get ready() {
+    return ready;
+  },
   /** SDK 晚到就緒時要做的事（例如改從雲端讀存檔） */
-  onReady(fn: () => void) { readyFns.add(fn); if (ready) fn(); },
-  loadingStart() { loading = true; call((s) => s.game.loadingStart()); },
-  loadingStop() { loading = false; call((s) => s.game.loadingStop()); },
-  gameplayStart() { if (playing) return; playing = true; syncGameplay(); },
-  gameplayStop() { if (!playing) return; playing = false; syncGameplay(); },
+  onReady(fn: () => void) {
+    readyFns.add(fn);
+    if (ready) fn();
+  },
+  loadingStart() {
+    loading = true;
+    call((s) => s.game.loadingStart());
+  },
+  loadingStop() {
+    loading = false;
+    call((s) => s.game.loadingStop());
+  },
+  gameplayStart() {
+    if (playing) return;
+    playing = true;
+    syncGameplay();
+  },
+  gameplayStop() {
+    if (!playing) return;
+    playing = false;
+    syncGameplay();
+  },
   // 少見的真正成就（新紀錄、破世界）；10 秒內多的呼叫丟掉
-  happytime() { const now = performance.now(); if (now - lastHappy < HAPPY_GAP_MS) return; lastHappy = now; call((s) => s.game.happytime()); },
+  happytime() {
+    const now = performance.now();
+    if (now - lastHappy < HAPPY_GAP_MS) return;
+    lastHappy = now;
+    call((s) => s.game.happytime());
+  },
   // fn(muted) 在平台靜音設定改變時觸發
-  onMute(fn: (m: boolean) => void) { muteFns.add(fn); fn(settingsMuted()); return () => muteFns.delete(fn); },
-  get muted() { return settingsMuted(); },
+  onMute(fn: (m: boolean) => void) {
+    muteFns.add(fn);
+    fn(settingsMuted());
+    return () => muteFns.delete(fn);
+  },
+  get muted() {
+    return settingsMuted();
+  },
   // 存檔：localStorage 永遠是鏡像（開機先讀它，不等 SDK），SDK 就緒後同時寫雲端；from 指定只讀哪一邊（開機讀本機、就緒後讀雲端來合併）
   getItem(key: string, from: 'auto' | 'local' | 'cloud' = 'auto'): string | null {
     try {
       const cloud = from !== 'local' && ready && !!sdk().data;
       if (from === 'cloud' && !cloud) return null;
       return cloud ? sdk().data.getItem(key) : localStorage.getItem(key);
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   },
   setItem(key: string, value: string): void {
     const v = String(value);
-    try { localStorage.setItem(key, v); } catch { /* 存不了就算了 */ }
-    if (ready && sdk().data) { try { sdk().data.setItem(key, v); } catch (e) { console.warn('[cg] setItem', e); } }
+    try {
+      localStorage.setItem(key, v);
+    } catch {
+      /* 存不了就算了 */
+    }
+    if (ready && sdk().data) {
+      try {
+        sdk().data.setItem(key, v);
+      } catch (e) {
+        console.warn('[cg] setItem', e);
+      }
+    }
   },
-  saveJSON(key: string, obj: unknown): void { cg.setItem(key, JSON.stringify(obj)); },
+  saveJSON(key: string, obj: unknown): void {
+    cg.setItem(key, JSON.stringify(obj));
+  },
 };

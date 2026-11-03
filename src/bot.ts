@@ -29,20 +29,26 @@ export function makeSurfBot(rel: number, grabVy: number): Bot {
     if (s.mode === 'perch') return true;
     // 在沙丘片區上方：先不出舌，讓青蛙落到沙上滑，滑到最後一座 lip 的一半才照一般規則找鉤點
     if (tg.state !== 'stuck' && s.level.dunes.length) {
-      for (const d of s.level.dunes) if (d.lip && !d.off && s.x <= d.x1) {
-        let a = d.x0; for (const e of s.level.dunes) if (e.f === d.f && e.x0 < a) a = e.x0;
-        if (s.x >= a - 2.5 && s.x < d.x0 + (d.x1 - d.x0) * 0.5) return false;
-        break;
-      }
+      for (const d of s.level.dunes)
+        if (d.lip && !d.off && s.x <= d.x1) {
+          let a = d.x0;
+          for (const e of s.level.dunes) if (e.f === d.f && e.x0 < a) a = e.x0;
+          if (s.x >= a - 2.5 && s.x < d.x0 + (d.x1 - d.x0) * 0.5) return false;
+          break;
+        }
     }
     if (tg.state === 'stuck') {
       // 前面有沙丘片區：在鉤點上握著，直到「現在放手的落點」到軌跡起點才放手
-      const lv = s.level, d0 = lv.dunes.find((d) => d.first && !d.off && d.x0 > tg.ax && d.x0 - tg.ax < 5);
+      const lv = s.level,
+        d0 = lv.dunes.find((d) => d.first && !d.off && d.x0 > tg.ax && d.x0 - tg.ax < 5);
       if (d0) {
         const r0 = lv.rings.find((r) => r.trail === d0.f && r.k === 0);
         if (r0) {
-          const g = T.GRAVITY, vy = s.vy, disc = vy * vy + 4 * (g / 2) * (s.y - r0.y);
-          const t = disc >= 0 ? (vy + Math.sqrt(disc)) / g : 0, landX = s.x + s.vx * t;
+          const g = T.GRAVITY,
+            vy = s.vy,
+            disc = vy * vy + 4 * (g / 2) * (s.y - r0.y);
+          const t = disc >= 0 ? (vy + Math.sqrt(disc)) / g : 0,
+            landX = s.x + s.vx * t;
           if (s.vx > 1.5 && s.vy > -2 && landX >= r0.x - 0.3) return false;
           if (s.vx > 1.5 && s.x - tg.ax < tg.L * 1.6) return true;
         }

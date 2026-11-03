@@ -8,22 +8,35 @@ import { makeBot } from '../src/bot.ts';
 import { PARAMS } from './sim-check.mjs';
 
 const plant = process.argv.includes('--plant');
-let pushes = 0, deaths = 0, bursts = 0;
+let pushes = 0,
+  deaths = 0,
+  bursts = 0;
 const rows = [];
 for (let n = 46; n <= 60; n++) {
   const lv = generateLevel(n);
   bursts += lv.fans.filter((f) => f.burst).length;
   if (plant) for (const f of lv.fans) if (f.burst) for (let k = 0; k < 4; k++) lv.spikes.push({ x: f.x, y: f.y0 + 3 + k * 2.4, r: 0.95, hang: true });
   for (const [rel, gv] of PARAMS) {
-    const s = createSim(lv), bot = makeBot(rel, gv);
-    let last = -99, pushed = false;
+    const s = createSim(lv),
+      bot = makeBot(rel, gv);
+    let last = -99,
+      pushed = false;
     while (s.t < 90 && s.mode !== 'dead' && s.mode !== 'won') {
       step(s, T.DT, bot(s));
-      if (s.fanIn >= 0 && lv.fans[s.fanIn].burst && burstOn(lv.fans[s.fanIn].burst, s.t)) { last = s.t; if (!pushed) { pushed = true; pushes++; } }
+      if (s.fanIn >= 0 && lv.fans[s.fanIn].burst && burstOn(lv.fans[s.fanIn].burst, s.t)) {
+        last = s.t;
+        if (!pushed) {
+          pushed = true;
+          pushes++;
+        }
+      }
     }
-    if (s.mode === 'dead' && s.t - last <= 1.5) { deaths++; rows.push(`L${n} rel=${rel} gv=${gv} cause=${s.cause} dt=${(s.t - last).toFixed(2)}`); }
+    if (s.mode === 'dead' && s.t - last <= 1.5) {
+      deaths++;
+      rows.push(`L${n} rel=${rel} gv=${gv} cause=${s.cause} dt=${(s.t - last).toFixed(2)}`);
+    }
   }
 }
 console.log(`burst fans=${bursts} runs-pushed=${pushes} deaths-within-1.5s=${deaths}`);
 for (const r of rows.slice(0, 20)) console.log(r);
-process.exit(plant ? (deaths > 0 ? 0 : 1) : (deaths ? 1 : 0));
+process.exit(plant ? (deaths > 0 ? 0 : 1) : deaths ? 1 : 0);

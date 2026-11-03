@@ -9,8 +9,12 @@ const tmp: XY = { x: 0, y: 0 };
 export function movePos(o: { x: number; y: number; move?: Move }, t: number, out: XY): XY {
   if (o.move) {
     const k = Math.sin(t * o.move.f + o.move.ph);
-    out.x = o.x + o.move.ax * k; out.y = o.y + o.move.ay * k;
-  } else { out.x = o.x; out.y = o.y; }
+    out.x = o.x + o.move.ax * k;
+    out.y = o.y + o.move.ay * k;
+  } else {
+    out.x = o.x;
+    out.y = o.y;
+  }
   return out;
 }
 export function flyPos(f: { x: number; y: number; ph: number }, t: number, out: XY): XY {
@@ -30,50 +34,98 @@ export const burstWarn = (b: Burst, t: number) => burstPhase(b, t) > b.P - BURST
 export const duneStart = (d: Dune) => (d.first ? d.x0 - T.DUNE_APRON : d.x0);
 export const duneEnd = (d: Dune) => (d.lip ? d.x1 + T.DUNE_BACK : d.x1);
 export function duneH(d: Dune, x: number): number {
-  if (d.first && x < d.x0) { if (x < d.x0 - T.DUNE_APRON) return 0; return T.DUNE_BASE * 0.5 * (1 - Math.cos(Math.PI * (x - d.x0 + T.DUNE_APRON) / T.DUNE_APRON)); }
-  if (d.lip && x > d.x1) { if (x > d.x1 + T.DUNE_BACK) return 0; return (T.DUNE_BASE + d.H) * 0.5 * (1 + Math.cos(Math.PI * (x - d.x1) / T.DUNE_BACK)); }
+  if (d.first && x < d.x0) {
+    if (x < d.x0 - T.DUNE_APRON) return 0;
+    return T.DUNE_BASE * 0.5 * (1 - Math.cos((Math.PI * (x - d.x0 + T.DUNE_APRON)) / T.DUNE_APRON));
+  }
+  if (d.lip && x > d.x1) {
+    if (x > d.x1 + T.DUNE_BACK) return 0;
+    return (T.DUNE_BASE + d.H) * 0.5 * (1 + Math.cos((Math.PI * (x - d.x1)) / T.DUNE_BACK));
+  }
   if (x < d.x0 || x > d.x1) return 0;
   const u = (x - d.x0) / (d.x1 - d.x0);
   return T.DUNE_BASE + (d.lip ? d.H * (1 - Math.cos(u * Math.PI * 0.5)) : d.H * 0.5 * (1 - Math.cos(u * TAU)));
 }
 export function duneSlope(d: Dune, x: number): number {
-  if (d.first && x < d.x0) { if (x < d.x0 - T.DUNE_APRON) return 0; return T.DUNE_BASE * 0.5 * Math.PI / T.DUNE_APRON * Math.sin(Math.PI * (x - d.x0 + T.DUNE_APRON) / T.DUNE_APRON); }
-  if (d.lip && x > d.x1) { if (x > d.x1 + T.DUNE_BACK) return 0; return -(T.DUNE_BASE + d.H) * 0.5 * Math.PI / T.DUNE_BACK * Math.sin(Math.PI * (x - d.x1) / T.DUNE_BACK); }
+  if (d.first && x < d.x0) {
+    if (x < d.x0 - T.DUNE_APRON) return 0;
+    return ((T.DUNE_BASE * 0.5 * Math.PI) / T.DUNE_APRON) * Math.sin((Math.PI * (x - d.x0 + T.DUNE_APRON)) / T.DUNE_APRON);
+  }
+  if (d.lip && x > d.x1) {
+    if (x > d.x1 + T.DUNE_BACK) return 0;
+    return ((-(T.DUNE_BASE + d.H) * 0.5 * Math.PI) / T.DUNE_BACK) * Math.sin((Math.PI * (x - d.x1)) / T.DUNE_BACK);
+  }
   if (x < d.x0 || x > d.x1) return 0;
-  const w = d.x1 - d.x0, u = (x - d.x0) / w;
-  return d.lip ? d.H * Math.PI * 0.5 / w * Math.sin(u * Math.PI * 0.5) : d.H * Math.PI / w * Math.sin(u * TAU);
+  const w = d.x1 - d.x0,
+    u = (x - d.x0) / w;
+  return d.lip ? ((d.H * Math.PI * 0.5) / w) * Math.sin(u * Math.PI * 0.5) : ((d.H * Math.PI) / w) * Math.sin(u * TAU);
 }
 // 這顆金圈吃到給幾分：沙丘軌跡上的圈用 SCORE_RING_TRAIL，其餘 SCORE_RING
 export const ringPoints = (lv: Level, i: number) => (lv.rings[i]?.trail !== undefined ? T.SCORE_RING_TRAIL : T.SCORE_RING);
 export function duneAt(lv: Level, x: number): number {
   const ds = lv.dunes;
   if (!ds) return -1; // 測試裡手寫的關卡物件可能沒有 dunes
-  for (let i = 0; i < ds.length; i++) { const d = ds[i]; if (!d.off && x >= duneStart(d) && x <= duneEnd(d)) return i; }
+  for (let i = 0; i < ds.length; i++) {
+    const d = ds[i];
+    if (!d.off && x >= duneStart(d) && x <= duneEnd(d)) return i;
+  }
   return -1;
 }
 
 // from＝荷葉存檔：從那座荷葉重生，已吃的蒼蠅、圈圈、加速圈照快照
 export function createSim(level: Level, from: PadSnapshot | null = null): Sim {
   const s: Sim = {
-    level, t: 0, time: 0, started: false,
-    x: level.start.x, y: level.start.y + T.FROG_R, vx: 0, vy: 0,
-    angle: 0, omega: 0,
-    mode: 'perch', crouch: 0,
-    prevHold: false, hold: false,
+    level,
+    t: 0,
+    time: 0,
+    started: false,
+    x: level.start.x,
+    y: level.start.y + T.FROG_R,
+    vx: 0,
+    vy: 0,
+    angle: 0,
+    omega: 0,
+    mode: 'perch',
+    crouch: 0,
+    prevHold: false,
+    hold: false,
     target: -1,
     tongue: { state: 'idle', hook: -1, tip: 0, rest: 0, dx: 1, dy: 0, tx: 0, ty: 0, L: 0, ax: 0, ay: 0 },
-    airRot: 0, airFlips: 0, airTime: 0,
-    flies: level.flies.map(() => false), rings: level.rings.map(() => false),
-    fliesGot: 0, attaches: 0, flipsTotal: 0, bounces: 0, maxX: level.start.x,
-    fanIn: -1, cause: null, near: [], nearMin: [], // 一般陣列：無盡模式會一直往關卡尾端加危險物
-    onDune: -1, duneT: -99, backT: -99, checkpoint: -1, boostUsed: level.boosts.map(() => false), boosts: 0, boostT: -99,
+    airRot: 0,
+    airFlips: 0,
+    airTime: 0,
+    flies: level.flies.map(() => false),
+    rings: level.rings.map(() => false),
+    fliesGot: 0,
+    attaches: 0,
+    flipsTotal: 0,
+    bounces: 0,
+    maxX: level.start.x,
+    fanIn: -1,
+    cause: null,
+    near: [],
+    nearMin: [], // 一般陣列：無盡模式會一直往關卡尾端加危險物
+    onDune: -1,
+    duneT: -99,
+    backT: -99,
+    checkpoint: -1,
+    boostUsed: level.boosts.map(() => false),
+    boosts: 0,
+    boostT: -99,
     events: [],
   };
   if (from) {
     const p = level.pads[from.pad];
-    s.x = p.x; s.y = p.y + T.FROG_R; s.maxX = p.x; s.started = true; s.checkpoint = from.pad;
-    s.flies = from.flies.slice(); s.rings = from.rings.slice(); s.boostUsed = from.boostUsed.slice();
-    s.fliesGot = from.fliesGot; s.time = from.time;
+    s.x = p.x;
+    s.y = p.y + T.FROG_R;
+    s.maxX = p.x;
+    s.started = true;
+    s.checkpoint = from.pad;
+    s.flies = from.flies.slice();
+    s.rings = from.rings.slice();
+    s.boostUsed = from.boostUsed.slice();
+    s.fliesGot = from.fliesGot;
+    s.time = from.time;
   }
   return s;
 }
@@ -83,15 +135,20 @@ export const padSnapshot = (s: Sim): PadSnapshot => ({ pad: s.checkpoint, flies:
 
 function pickTarget(s: Sim): void {
   const hooks = s.level.hooks;
-  let best = -1, bestScore = Infinity;
+  let best = -1,
+    bestScore = Infinity;
   for (let i = 0; i < hooks.length; i++) {
     movePos(hooks[i], s.t, tmp);
-    const dx = tmp.x - s.x, dy = tmp.y - s.y;
+    const dx = tmp.x - s.x,
+      dy = tmp.y - s.y;
     if (dx < -10 || dx > T.TONGUE_RANGE) continue;
     const d = Math.hypot(dx, dy);
     if (d > T.TONGUE_RANGE) continue;
     const score = d + (dx < -1 ? 8 : 0) + (dy < -1 ? 4 : 0) - Math.min(Math.max(dx, 0), 6) * 0.4;
-    if (score < bestScore) { bestScore = score; best = i; }
+    if (score < bestScore) {
+      bestScore = score;
+      best = i;
+    }
   }
   s.target = best;
 }
@@ -102,31 +159,42 @@ function shoot(s: Sim): void {
   pickTarget(s);
   tg.tip = 0;
   if (s.target < 0) {
-    tg.state = 'miss'; tg.dx = s.vx >= 0 ? 0.7 : -0.7; tg.dy = 0.7;
+    tg.state = 'miss';
+    tg.dx = s.vx >= 0 ? 0.7 : -0.7;
+    tg.dy = 0.7;
     s.events.push({ type: 'miss' });
     return;
   }
-  tg.state = 'shoot'; tg.hook = s.target;
+  tg.state = 'shoot';
+  tg.hook = s.target;
   s.events.push({ type: 'shoot', hook: s.target });
 }
 
 function detach(s: Sim): void {
   const tg = s.tongue;
-  const rx = s.x - tg.ax, ry = s.y - tg.ay;
+  const rx = s.x - tg.ax,
+    ry = s.y - tg.ay;
   const w = (rx * s.vy - ry * s.vx) / Math.max(1, rx * rx + ry * ry); // 擺盪角速度（逆時針為正）
-  s.vx *= T.RELEASE_BOOST; s.vy *= T.RELEASE_BOOST;
+  s.vx *= T.RELEASE_BOOST;
+  s.vy *= T.RELEASE_BOOST;
   if (s.vy > 0) s.vy += T.RELEASE_UP;
   const sp = Math.hypot(s.vx, s.vy);
   s.omega = Math.sign(w || 1) * Math.min(T.SPIN_MAX, sp * T.SPIN_PER_SPEED);
-  tg.state = 'retract'; tg.tip = Math.hypot(rx, ry);
-  tg.dx = -rx / (tg.tip || 1); tg.dy = -ry / (tg.tip || 1);
-  s.mode = 'air'; s.airRot = 0; s.airFlips = 0; s.airTime = 0;
+  tg.state = 'retract';
+  tg.tip = Math.hypot(rx, ry);
+  tg.dx = -rx / (tg.tip || 1);
+  tg.dy = -ry / (tg.tip || 1);
+  s.mode = 'air';
+  s.airRot = 0;
+  s.airFlips = 0;
+  s.airTime = 0;
   s.events.push({ type: 'release', speed: sp, hook: tg.hook });
 }
 
 function die(s: Sim, cause: DeathCause): void {
   if (s.mode === 'dead' || s.mode === 'won') return;
-  s.mode = 'dead'; s.cause = cause;
+  s.mode = 'dead';
+  s.cause = cause;
   s.tongue.state = 'idle';
   s.events.push({ type: 'die', cause, x: s.x, y: s.y, vx: s.vx, vy: s.vy });
 }
@@ -135,25 +203,35 @@ export function step(s: Sim, dt: number, hold: boolean): void {
   s.t += dt;
   if (s.mode === 'dead' || s.mode === 'won') return;
   if (s.started) s.time += dt;
-  const lv = s.level, tg = s.tongue;
+  const lv = s.level,
+    tg = s.tongue;
 
   if (hold && !s.prevHold) {
     if (s.mode === 'perch') {
-      if (s.crouch <= 0) { s.crouch = T.JUMP_DELAY; s.started = true; s.events.push({ type: 'crouch' }); }
+      if (s.crouch <= 0) {
+        s.crouch = T.JUMP_DELAY;
+        s.started = true;
+        s.events.push({ type: 'crouch' });
+      }
     } else shoot(s);
   }
   if (!hold && s.prevHold) {
     if (tg.state === 'stuck') detach(s);
-    else if (tg.state === 'shoot') { tg.state = 'retract'; }
+    else if (tg.state === 'shoot') {
+      tg.state = 'retract';
+    }
   }
-  s.prevHold = hold; s.hold = hold;
+  s.prevHold = hold;
+  s.hold = hold;
 
   if (s.mode === 'perch') {
     pickTarget(s);
     if (s.crouch > 0) {
       s.crouch -= dt;
       if (s.crouch <= 0) {
-        s.mode = 'air'; s.vx = T.JUMP_V[0]; s.vy = T.JUMP_V[1];
+        s.mode = 'air';
+        s.vx = T.JUMP_V[0];
+        s.vy = T.JUMP_V[1];
         s.events.push({ type: 'jump' });
         if (hold) shoot(s);
       }
@@ -164,19 +242,31 @@ export function step(s: Sim, dt: number, hold: boolean): void {
   // 舌頭
   if (tg.state === 'shoot') {
     movePos(lv.hooks[tg.hook], s.t, tmp);
-    const dx = tmp.x - s.x, dy = tmp.y - s.y, d = Math.hypot(dx, dy);
+    const dx = tmp.x - s.x,
+      dy = tmp.y - s.y,
+      d = Math.hypot(dx, dy);
     tg.tip += T.TONGUE_SPEED * dt;
-    tg.dx = dx / d; tg.dy = dy / d;
+    tg.dx = dx / d;
+    tg.dy = dy / d;
     if (d > T.TONGUE_RANGE * 1.25) tg.state = 'retract';
     else if (tg.tip >= d) {
-      tg.state = 'stuck'; tg.L = Math.min(T.ROPE_MAX, Math.max(T.ROPE_MIN, d)); tg.rest = Math.min(tg.L, T.ROPE_REST); tg.ax = tmp.x; tg.ay = tmp.y;
-      s.mode = 'swing'; s.attaches++;
+      tg.state = 'stuck';
+      tg.L = Math.min(T.ROPE_MAX, Math.max(T.ROPE_MIN, d));
+      tg.rest = Math.min(tg.L, T.ROPE_REST);
+      tg.ax = tmp.x;
+      tg.ay = tmp.y;
+      s.mode = 'swing';
+      s.attaches++;
       s.events.push({ type: 'attach', hook: tg.hook, x: tmp.x, y: tmp.y, speed: Math.hypot(s.vx, s.vy), flips: s.airFlips, fy: s.y, fvy: s.vy });
-      s.airFlips = 0; s.airRot = 0;
+      s.airFlips = 0;
+      s.airRot = 0;
     }
   } else if (tg.state === 'retract') {
     tg.tip -= T.TONGUE_SPEED * 1.4 * dt;
-    if (tg.tip <= 0) { tg.tip = 0; tg.state = 'idle'; }
+    if (tg.tip <= 0) {
+      tg.tip = 0;
+      tg.state = 'idle';
+    }
   } else if (tg.state === 'miss') {
     tg.tip += 40 * dt;
     if (tg.tip > 3.2) tg.state = 'retract';
@@ -189,8 +279,9 @@ export function step(s: Sim, dt: number, hold: boolean): void {
   for (let i = 0; i < lv.fans.length; i++) {
     const f = lv.fans[i];
     if (Math.abs(s.x - f.x) < f.w * 0.5 && s.y > f.y0 && s.y < f.y1) {
-      const k = 1.25 - 0.55 * (s.y - f.y0) / (f.y1 - f.y0);
-      s.vy += T.FAN_ACC * k * (f.burst && burstOn(f.burst, s.t) ? 2 : 1) * dt; inFan = i;
+      const k = 1.25 - (0.55 * (s.y - f.y0)) / (f.y1 - f.y0);
+      s.vy += T.FAN_ACC * k * (f.burst && burstOn(f.burst, s.t) ? 2 : 1) * dt;
+      inFan = i;
     }
   }
   if (inFan >= 0 && s.fanIn !== inFan) s.events.push({ type: 'fan', i: inFan });
@@ -198,41 +289,63 @@ export function step(s: Sim, dt: number, hold: boolean): void {
 
   if (tg.state === 'stuck') {
     movePos(lv.hooks[tg.hook], s.t, tmp);
-    tg.ax = tmp.x; tg.ay = tmp.y;
-    const rx = s.x - tg.ax, ry = s.y - tg.ay, d = Math.hypot(rx, ry) || 1;
-    const nx = rx / d, ny = ry / d, tx = -ny, ty = nx;
+    tg.ax = tmp.x;
+    tg.ay = tmp.y;
+    const rx = s.x - tg.ax,
+      ry = s.y - tg.ay,
+      d = Math.hypot(rx, ry) || 1;
+    const nx = rx / d,
+      ny = ry / d,
+      tx = -ny,
+      ty = nx;
     let vt = s.vx * tx + s.vy * ty;
     const taut = d > tg.L - 0.05;
     if (tg.L > tg.rest) tg.L = Math.max(tg.rest, tg.L - T.ELASTIC_RATE * dt);
     else if (hold && taut && tg.L > T.ROPE_MIN) {
       const nL = Math.max(T.ROPE_MIN, tg.L - T.PUMP_RATE * dt);
       const k = tg.L / nL; // 角動量守恆：收短 → 轉更快
-      s.vx += tx * vt * (k - 1); s.vy += ty * vt * (k - 1); vt *= k;
+      s.vx += tx * vt * (k - 1);
+      s.vy += ty * vt * (k - 1);
+      vt *= k;
       tg.L = nL;
     }
     if (taut && ny < 0.2 && Math.abs(vt) > 0.5) {
       const a = Math.sign(vt) * T.SWING_ASSIST * dt;
-      s.vx += tx * a; s.vy += ty * a;
+      s.vx += tx * a;
+      s.vy += ty * a;
     }
   }
 
   const drag = 1 - T.AIR_DRAG * dt;
-  s.vx *= drag; s.vy *= drag;
+  s.vx *= drag;
+  s.vy *= drag;
   const sp = Math.hypot(s.vx, s.vy);
-  if (sp > T.MAX_SPEED) { s.vx *= T.MAX_SPEED / sp; s.vy *= T.MAX_SPEED / sp; }
-  s.x += s.vx * dt; s.y += s.vy * dt;
+  if (sp > T.MAX_SPEED) {
+    s.vx *= T.MAX_SPEED / sp;
+    s.vy *= T.MAX_SPEED / sp;
+  }
+  s.x += s.vx * dt;
+  s.y += s.vy * dt;
 
   if (tg.state === 'stuck') {
-    const rx = s.x - tg.ax, ry = s.y - tg.ay, d = Math.hypot(rx, ry);
+    const rx = s.x - tg.ax,
+      ry = s.y - tg.ay,
+      d = Math.hypot(rx, ry);
     if (d > tg.L) {
-      const nx = rx / d, ny = ry / d;
-      s.x = tg.ax + nx * tg.L; s.y = tg.ay + ny * tg.L;
+      const nx = rx / d,
+        ny = ry / d;
+      s.x = tg.ax + nx * tg.L;
+      s.y = tg.ay + ny * tg.L;
       const vr = s.vx * nx + s.vy * ny;
-      if (vr > 0) { s.vx -= vr * nx; s.vy -= vr * ny; }
+      if (vr > 0) {
+        s.vx -= vr * nx;
+        s.vy -= vr * ny;
+      }
     }
     // 頭朝鉤點
     const ta = Math.atan2(-(tg.ax - s.x), tg.ay - s.y);
-    let da = ta - s.angle; da -= Math.round(da / TAU) * TAU;
+    let da = ta - s.angle;
+    da -= Math.round(da / TAU) * TAU;
     s.angle += da * (1 - Math.exp(-dt * 22));
   } else {
     s.angle += s.omega * dt;
@@ -240,7 +353,8 @@ export function step(s: Sim, dt: number, hold: boolean): void {
     s.omega *= 1 - T.SPIN_DAMP * dt;
     s.airTime += dt;
     while (Math.abs(s.airRot) >= (s.airFlips + 1) * TAU - T.FLIP_TOLERANCE) {
-      s.airFlips++; s.flipsTotal++;
+      s.airFlips++;
+      s.flipsTotal++;
       s.events.push({ type: 'flip', n: s.airFlips, x: s.x, y: s.y });
     }
   }
@@ -249,62 +363,91 @@ export function step(s: Sim, dt: number, hold: boolean): void {
   const R = T.FROG_R;
   for (let i = 0; i < lv.mush.length; i++) {
     const m = lv.mush[i];
-    const dx = s.x - m.x, dy = s.y - m.y, rr = m.r + R;
+    const dx = s.x - m.x,
+      dy = s.y - m.y,
+      rr = m.r + R;
     if (dx * dx + dy * dy < rr * rr) {
-      const d = Math.hypot(dx, dy) || 1, nx = dx / d, ny = dy / d;
+      const d = Math.hypot(dx, dy) || 1,
+        nx = dx / d,
+        ny = dy / d;
       const vn = s.vx * nx + s.vy * ny;
       if (vn < 0) {
         const out = Math.max(T.MUSH_MIN_BOUNCE, -vn * T.MUSH_REST);
         if (ny > 0.25) {
           // 從上面踩到＝彈跳床：固定的往前上方彈出，可預測
-          s.vx = (s.vx >= -0.5 ? 1 : -1) * T.MUSH_VX; s.vy = T.MUSH_VY;
+          s.vx = (s.vx >= -0.5 ? 1 : -1) * T.MUSH_VX;
+          s.vy = T.MUSH_VY;
         } else {
-          s.vx -= vn * nx; s.vy -= vn * ny;
-          s.vx += nx * out; s.vy += ny * out;
+          s.vx -= vn * nx;
+          s.vy -= vn * ny;
+          s.vx += nx * out;
+          s.vy += ny * out;
         }
         s.omega += (s.vx >= 0 ? -1 : 1) * 3;
         s.bounces++;
         s.events.push({ type: 'bounce', i, speed: out, x: m.x, y: m.y + m.r });
       }
-      s.x = m.x + nx * rr; s.y = m.y + ny * rr;
+      s.x = m.x + nx * rr;
+      s.y = m.y + ny * rr;
     }
   }
   // 沙丘：只在 lv.dunes 有東西時執行（第 1–75 關沒有，軌跡逐位元不變）
   if (lv.dunes.length) {
-    const di = duneAt(lv, s.x), prev = s.onDune;
+    const di = duneAt(lv, s.x),
+      prev = s.onDune;
     let touch = -1;
     if (di >= 0) {
-      const d = lv.dunes[di], h = duneH(d, s.x), gap = s.y - R - h;
+      const d = lv.dunes[di],
+        h = duneH(d, s.x),
+        gap = s.y - R - h;
       // 貼地：上一步貼著沙面、離沙面不到 DUNE_SNAP、沒有明顯往上離開時繼續貼著；lip 與背坡不貼
       let snap = false;
-      if (gap >= 0 && gap < T.DUNE_SNAP && prev >= 0 && !d.lip && tg.state !== 'stuck') { const k = duneSlope(d, s.x); snap = (s.vy - s.vx * k) / Math.hypot(1, k) < 14; }
+      if (gap >= 0 && gap < T.DUNE_SNAP && prev >= 0 && !d.lip && tg.state !== 'stuck') {
+        const k = duneSlope(d, s.x);
+        snap = (s.vy - s.vx * k) / Math.hypot(1, k) < 14;
+      }
       if (gap < 0 || snap) {
         touch = di;
-        const sl = duneSlope(d, s.x), inv = 1 / Math.hypot(1, sl), nx = -sl * inv, ny = inv;
+        const sl = duneSlope(d, s.x),
+          inv = 1 / Math.hypot(1, sl),
+          nx = -sl * inv,
+          ny = inv;
         const impact = -(s.vx * nx + s.vy * ny);
         s.y = h + R;
         const vn = s.vx * nx + s.vy * ny;
-        if (vn < 0) { s.vx -= vn * nx; s.vy -= vn * ny; }
+        if (vn < 0) {
+          s.vx -= vn * nx;
+          s.vy -= vn * ny;
+        }
         const inBack = !!d.lip && s.x > d.x1;
-        if (inBack) { // 背坡：往前上方拋出去（不會順著背坡滑進流沙）
+        if (inBack) {
+          // 背坡：往前上方拋出去（不會順著背坡滑進流沙）
           if (s.vx < T.DUNE_BACK_VX) s.vx = T.DUNE_BACK_VX;
           if (s.vy < T.DUNE_BACK_VY) s.vy = T.DUNE_BACK_VY;
           if (s.t - s.backT > 0.3) s.events.push({ type: 'launch', i: di, x: s.x, y: s.y, vx: s.vx, vy: s.vy, back: true });
           s.backT = s.t;
         }
-        const fl = d.lip && !inBack ? T.DUNE_LIP_FLOOR : T.DUNE_FLOOR, vt = s.vx * inv + s.vy * sl * inv;
-        if (!inBack && vt < fl) { s.vx += (fl - vt) * inv; s.vy += (fl - vt) * sl * inv; }
+        const fl = d.lip && !inBack ? T.DUNE_LIP_FLOOR : T.DUNE_FLOOR,
+          vt = s.vx * inv + s.vy * sl * inv;
+        if (!inBack && vt < fl) {
+          s.vx += (fl - vt) * inv;
+          s.vy += (fl - vt) * sl * inv;
+        }
         if (tg.state !== 'stuck') {
           // 貼坡：角速度歸零、角度順著坡面
-          s.omega = 0; s.airRot = 0; s.airFlips = 0;
-          let da = Math.atan(sl) - s.angle; da -= Math.round(da / TAU) * TAU;
+          s.omega = 0;
+          s.airRot = 0;
+          s.airFlips = 0;
+          let da = Math.atan(sl) - s.angle;
+          da -= Math.round(da / TAU) * TAU;
           s.angle += da * (1 - Math.exp(-dt * 24));
         }
         if (prev < 0 && s.t - s.duneT > 0.25) s.events.push({ type: 'dune', i: di, x: s.x, y: s.y, speed: Math.max(0, impact), vx: s.vx });
         s.duneT = s.t;
       }
     }
-    if (touch < 0 && prev >= 0 && lv.dunes[prev].lip && s.x > lv.dunes[prev].x1 - 1.5 && s.vx > 8 && s.t - s.backT > 0.3) s.events.push({ type: 'launch', i: prev, x: s.x, y: s.y, vx: s.vx, vy: s.vy });
+    if (touch < 0 && prev >= 0 && lv.dunes[prev].lip && s.x > lv.dunes[prev].x1 - 1.5 && s.vx > 8 && s.t - s.backT > 0.3)
+      s.events.push({ type: 'launch', i: prev, x: s.x, y: s.y, vx: s.vx, vy: s.vy });
     s.onDune = touch;
   }
   // 危險物：碰到就死；擦身而過（進入 1 單位內又離開）＝ CLOSE CALL
@@ -312,10 +455,16 @@ export function step(s: Sim, dt: number, hold: boolean): void {
   for (let i = 0; i < nS + lv.saws.length; i++) {
     const h: XY = i < nS ? lv.spikes[i] : movePos(lv.saws[i - nS], s.t, tmp);
     const r = i < nS ? lv.spikes[i].r : lv.saws[i - nS].r;
-    const d = Math.hypot(s.x - h.x, s.y - h.y), rr = r + R * 0.8;
+    const d = Math.hypot(s.x - h.x, s.y - h.y),
+      rr = r + R * 0.8;
     if (d < rr) return die(s, i < nS ? 'spike' : 'saw');
-    if (d < rr + 1.1) { s.nearMin[i] = s.near[i] === 1 ? Math.min(s.nearMin[i], d - rr) : d - rr; s.near[i] = 1; }
-    else if (s.near[i] === 1 && d > rr + 2) { s.near[i] = 2; s.events.push({ type: 'close', x: s.x, y: s.y, gap: s.nearMin[i] }); }
+    if (d < rr + 1.1) {
+      s.nearMin[i] = s.near[i] === 1 ? Math.min(s.nearMin[i], d - rr) : d - rr;
+      s.near[i] = 1;
+    } else if (s.near[i] === 1 && d > rr + 2) {
+      s.near[i] = 2;
+      s.events.push({ type: 'close', x: s.x, y: s.y, gap: s.nearMin[i] });
+    }
   }
   for (let i = 0; i < lv.rings.length; i++) {
     if (s.rings[i]) continue;
@@ -329,7 +478,8 @@ export function step(s: Sim, dt: number, hold: boolean): void {
     if (s.flies[i]) continue;
     flyPos(lv.flies[i], s.t, tmp);
     if (Math.hypot(s.x - tmp.x, s.y - tmp.y) < T.FLY_EAT_R) {
-      s.flies[i] = true; s.fliesGot++;
+      s.flies[i] = true;
+      s.fliesGot++;
       s.events.push({ type: 'fly', i, x: tmp.x, y: tmp.y });
     }
   }
@@ -337,8 +487,11 @@ export function step(s: Sim, dt: number, hold: boolean): void {
     const b = lv.boosts[i];
     if (b.off || s.boostUsed[i]) continue;
     if (Math.hypot(s.x - b.x, s.y - b.y) < T.BOOST_R) {
-      s.boostUsed[i] = true; s.boosts++; s.boostT = s.t;
-      s.vx += b.dx * T.BOOST_V; s.vy += b.dy * T.BOOST_V;
+      s.boostUsed[i] = true;
+      s.boosts++;
+      s.boostT = s.t;
+      s.vx += b.dx * T.BOOST_V;
+      s.vy += b.dy * T.BOOST_V;
       s.events.push({ type: 'boost', i, x: b.x, y: b.y, dx: b.dx, dy: b.dy, speed: Math.hypot(s.vx, s.vy) });
     }
   }
@@ -347,19 +500,32 @@ export function step(s: Sim, dt: number, hold: boolean): void {
     const p = lv.pads[i];
     if (Math.abs(s.x - p.x) < p.w * 0.5 && s.y - R <= p.y + 0.1 && s.y > p.y - 1.4 && s.vy <= 0.5) {
       const sp2 = Math.hypot(s.vx, s.vy);
-      s.mode = 'perch'; s.crouch = 0; s.vx = 0; s.vy = 0; s.omega = 0; s.angle = 0; s.y = p.y + R;
-      tg.state = 'idle'; tg.tip = 0; s.checkpoint = i;
+      s.mode = 'perch';
+      s.crouch = 0;
+      s.vx = 0;
+      s.vy = 0;
+      s.omega = 0;
+      s.angle = 0;
+      s.y = p.y + R;
+      tg.state = 'idle';
+      tg.tip = 0;
+      s.checkpoint = i;
       s.events.push({ type: 'pad', i, x: s.x, y: s.y, speed: sp2 });
       return;
     }
   }
   const g = lv.goal;
   if (s.x > g.wall - R && s.y < 22) {
-    s.x = g.wall - R; if (s.vx > 0) { s.vx = -s.vx * 0.35; s.events.push({ type: 'wall', x: s.x, y: s.y }); }
+    s.x = g.wall - R;
+    if (s.vx > 0) {
+      s.vx = -s.vx * 0.35;
+      s.events.push({ type: 'wall', x: s.x, y: s.y });
+    }
     if (tg.state === 'stuck') detach(s);
   }
   if (Math.abs(s.x - g.x) < g.w * 0.5 && s.y - R <= g.y + 0.1 && s.y > g.y - 1.4 && s.vy <= 0.5) {
-    s.mode = 'won'; s.y = g.y + R;
+    s.mode = 'won';
+    s.y = g.y + R;
     if (tg.state !== 'idle') tg.state = 'retract';
     s.events.push({ type: 'win', x: s.x, y: s.y, vx: s.vx, vy: s.vy });
     return;

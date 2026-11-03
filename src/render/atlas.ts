@@ -8,8 +8,23 @@ const META_URLS = import.meta.glob('../art/atlas-*.json', { query: '?url', impor
 const urlOf = (name: string) => URLS[`../art/atlas-${name}.webp`];
 const metaUrlOf = (name: string) => META_URLS[`../art/atlas-${name}.json`];
 
-export interface Raw { x: number; y: number; w: number; h: number; ax: number; ay: number; u: number; px?: number; py?: number; d?: number }
-export interface AtlasMeta { w: number; h: number; frames: Record<string, Raw> }
+export interface Raw {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  ax: number;
+  ay: number;
+  u: number;
+  px?: number;
+  py?: number;
+  d?: number;
+}
+export interface AtlasMeta {
+  w: number;
+  h: number;
+  frames: Record<string, Raw>;
+}
 const RAW: Record<string, Raw> = {}; // 已載入圖集的原始座標（頭像合成用）
 const metas = new Map<string, Promise<AtlasMeta>>();
 const fetchMeta = (name: string) => fetch(metaUrlOf(name)).then((r) => r.json() as Promise<AtlasMeta>);
@@ -18,7 +33,10 @@ function loadMeta(name: string): Promise<AtlasMeta> {
   if (!p) {
     const pre = window.__preMeta?.[name]?.catch(() => fetchMeta(name));
     if (window.__preMeta) delete window.__preMeta[name];
-    p = (pre ?? fetchMeta(name)).then((m) => { Object.assign(RAW, m.frames); return m; });
+    p = (pre ?? fetchMeta(name)).then((m) => {
+      Object.assign(RAW, m.frames);
+      return m;
+    });
     metas.set(name, p);
   }
   return p;
@@ -31,19 +49,33 @@ export async function decode(url: string): Promise<ImageBitmap> {
 
 // 開機時提早開始的下載＋解碼，跟主程式下載、WebGL 初始化同時進行：
 // window.__pre／__preMeta＝index.html 的內嵌腳本（建置時注入），prefetch()＝main.ts 依存檔。第一個用到的拿走，不常駐
-declare global { interface Window { __pre?: Record<string, Promise<ImageBitmap>>; __preMeta?: Record<string, Promise<AtlasMeta>> } }
+declare global {
+  interface Window {
+    __pre?: Record<string, Promise<ImageBitmap>>;
+    __preMeta?: Record<string, Promise<AtlasMeta>>;
+  }
+}
 const early = new Map<string, Promise<ImageBitmap>>();
-export function prefetch(name: string): void { void loadMeta(name); if (!early.has(name) && !window.__pre?.[name]) early.set(name, decode(urlOf(name))); }
+export function prefetch(name: string): void {
+  void loadMeta(name);
+  if (!early.has(name) && !window.__pre?.[name]) early.set(name, decode(urlOf(name)));
+}
 function take(name: string): Promise<ImageBitmap> {
-  const pre = window.__pre?.[name]?.catch(() => decode(urlOf(name))), p = pre ?? early.get(name) ?? decode(urlOf(name));
+  const pre = window.__pre?.[name]?.catch(() => decode(urlOf(name))),
+    p = pre ?? early.get(name) ?? decode(urlOf(name));
   if (window.__pre) delete window.__pre[name];
   early.delete(name);
   return p;
 }
 /** 開機猜錯、沒用到的提早解碼：放掉 */
 export function dropPrefetch(): void {
-  for (const p of [...early.values(), ...Object.values(window.__pre ?? {})]) p.then((b) => b.close(), () => {});
-  early.clear(); window.__pre = {};
+  for (const p of [...early.values(), ...Object.values(window.__pre ?? {})])
+    p.then(
+      (b) => b.close(),
+      () => {},
+    );
+  early.clear();
+  window.__pre = {};
 }
 
 /** 只解碼一張烘焙圖集（商店頭像用，不上傳 GPU）；座標表一併載好，rawFrame／rawKeys 才查得到 */
@@ -60,7 +92,8 @@ export async function loadAtlas(R: GL, name: string, pre?: Promise<ImageBitmap>)
   measure(`atlas:${name}:upload`, t1);
   const { w: W, h: H } = m;
   const frames: Record<string, Frame> = {};
-  for (const [key, r] of Object.entries(m.frames)) frames[key] = { tex, u0: r.x / W, v0: r.y / H, u1: (r.x + r.w) / W, v1: (r.y + r.h) / H, w: r.w, h: r.h, ax: r.ax, ay: r.ay, unit: r.u, px: r.px, py: r.py, d: r.d };
+  for (const [key, r] of Object.entries(m.frames))
+    frames[key] = { tex, u0: r.x / W, v0: r.y / H, u1: (r.x + r.w) / W, v1: (r.y + r.h) / H, w: r.w, h: r.h, ax: r.ax, ay: r.ay, unit: r.u, px: r.px, py: r.py, d: r.d };
   return { tex, frames, bitmap };
 }
 /** 頭像合成用：某張（已載入的）圖集的原始座標（像素） */

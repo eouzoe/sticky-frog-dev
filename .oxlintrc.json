@@ -14,5 +14,5 @@
     "oxc/no-map-spread": "off",
     "eslint/no-shadow": "off"
   },
-  "ignorePatterns": ["dist/**", "node_modules/**", "src/art/**", "tools/bake/artkit.js"]
+  "ignorePatterns": ["dist/**", "node_modules/**", "src/art/**", "tools/bake/artkit.js", "server/telemetry/migrations/**", "server/telemetry/worker-configuration.d.ts"]
 }

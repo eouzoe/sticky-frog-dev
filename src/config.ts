@@ -67,49 +67,162 @@ export const TUNE = {
 
 /** 世界：每 15 關換一個（色盤、背景、障礙外觀）。props＝背景件的種類；waterEm＝水面自發光（岩漿、霓虹運河） */
 export interface World {
-  name: string; sky: readonly [string, string]; fog: string; water: string; waterEm: string;
-  petal: string; bud: string; vine: string; cap: string; capSpot: string; stem: string;
-  hazard: string; hazardTip: string; saw: string; wood: string; pad: string;
-  props: 'jungle' | 'candy' | 'city' | 'volcano' | 'frost' | 'dunes'; die: string; bgHill: string; bgHill2: string;
-  aurora?: readonly [string, string, string]; sand?: readonly [string, string, string, string];
+  name: string;
+  sky: readonly [string, string];
+  fog: string;
+  water: string;
+  waterEm: string;
+  petal: string;
+  bud: string;
+  vine: string;
+  cap: string;
+  capSpot: string;
+  stem: string;
+  hazard: string;
+  hazardTip: string;
+  saw: string;
+  wood: string;
+  pad: string;
+  props: 'jungle' | 'candy' | 'city' | 'volcano' | 'frost' | 'dunes';
+  die: string;
+  bgHill: string;
+  bgHill2: string;
+  aurora?: readonly [string, string, string];
+  sand?: readonly [string, string, string, string];
 }
 export const WORLDS: readonly World[] = [
   {
-    name: 'JUNGLE', sky: ['#a8e6ff', '#fff3b0'], fog: '#d6f2d8', water: '#2ec4c4', waterEm: '#000000',
-    petal: '#ff6fb5', bud: '#ffd23f', vine: '#27ae60', cap: '#ff4757', capSpot: '#ffffff', stem: '#f5e6c8',
-    hazard: '#6b4f3a', hazardTip: '#e8e8e8', saw: '#c0c8d0', wood: '#8b5a2b', pad: '#2ecc71',
-    props: 'jungle', die: 'SPLASH!', bgHill: '#7fcf9a', bgHill2: '#a7dfb4',
+    name: 'JUNGLE',
+    sky: ['#a8e6ff', '#fff3b0'],
+    fog: '#d6f2d8',
+    water: '#2ec4c4',
+    waterEm: '#000000',
+    petal: '#ff6fb5',
+    bud: '#ffd23f',
+    vine: '#27ae60',
+    cap: '#ff4757',
+    capSpot: '#ffffff',
+    stem: '#f5e6c8',
+    hazard: '#6b4f3a',
+    hazardTip: '#e8e8e8',
+    saw: '#c0c8d0',
+    wood: '#8b5a2b',
+    pad: '#2ecc71',
+    props: 'jungle',
+    die: 'SPLASH!',
+    bgHill: '#7fcf9a',
+    bgHill2: '#a7dfb4',
   },
   {
-    name: 'CANDY', sky: ['#ffc6ec', '#fff1d6'], fog: '#ffe0f0', water: '#ff9fd4', waterEm: '#000000',
-    petal: '#7be0ff', bud: '#ffffff', vine: '#ff7eb6', cap: '#9b5de5', capSpot: '#ffe066', stem: '#fff7fb',
-    hazard: '#ffffff', hazardTip: '#ff3b6b', saw: '#ff3b6b', wood: '#c97b4a', pad: '#7ee0a8',
-    props: 'candy', die: 'SPLAT!', bgHill: '#ffb3d9', bgHill2: '#ffd6ea',
+    name: 'CANDY',
+    sky: ['#ffc6ec', '#fff1d6'],
+    fog: '#ffe0f0',
+    water: '#ff9fd4',
+    waterEm: '#000000',
+    petal: '#7be0ff',
+    bud: '#ffffff',
+    vine: '#ff7eb6',
+    cap: '#9b5de5',
+    capSpot: '#ffe066',
+    stem: '#fff7fb',
+    hazard: '#ffffff',
+    hazardTip: '#ff3b6b',
+    saw: '#ff3b6b',
+    wood: '#c97b4a',
+    pad: '#7ee0a8',
+    props: 'candy',
+    die: 'SPLAT!',
+    bgHill: '#ffb3d9',
+    bgHill2: '#ffd6ea',
   },
   {
-    name: 'NEON CITY', sky: ['#1a0b3d', '#ff3d8b'], fog: '#3a1450', water: '#123c5c', waterEm: '#0a5070',
-    petal: '#00f0ff', bud: '#ff2bd6', vine: '#7a5cff', cap: '#00e0a0', capSpot: '#eaffff', stem: '#3a2a66',
-    hazard: '#2a2440', hazardTip: '#ff2bd6', saw: '#ffe600', wood: '#3a2a66', pad: '#00e0a0',
-    props: 'city', die: 'ZAP!', bgHill: '#2a1458', bgHill2: '#3d1d6e',
+    name: 'NEON CITY',
+    sky: ['#1a0b3d', '#ff3d8b'],
+    fog: '#3a1450',
+    water: '#123c5c',
+    waterEm: '#0a5070',
+    petal: '#00f0ff',
+    bud: '#ff2bd6',
+    vine: '#7a5cff',
+    cap: '#00e0a0',
+    capSpot: '#eaffff',
+    stem: '#3a2a66',
+    hazard: '#2a2440',
+    hazardTip: '#ff2bd6',
+    saw: '#ffe600',
+    wood: '#3a2a66',
+    pad: '#00e0a0',
+    props: 'city',
+    die: 'ZAP!',
+    bgHill: '#2a1458',
+    bgHill2: '#3d1d6e',
   },
   {
-    name: 'VOLCANO', sky: ['#5a1a1a', '#ff9a3c'], fog: '#7a2e1e', water: '#ff5a1f', waterEm: '#ff3a00',
-    petal: '#ffb020', bud: '#2b2020', vine: '#3b2b2b', cap: '#ff7a00', capSpot: '#2b2020', stem: '#5a4040',
-    hazard: '#2b2020', hazardTip: '#ff5a1f', saw: '#ffcf40', wood: '#4a3030', pad: '#56b870',
-    props: 'volcano', die: 'SIZZLE!', bgHill: '#5a2a24', bgHill2: '#7a3a2a',
+    name: 'VOLCANO',
+    sky: ['#5a1a1a', '#ff9a3c'],
+    fog: '#7a2e1e',
+    water: '#ff5a1f',
+    waterEm: '#ff3a00',
+    petal: '#ffb020',
+    bud: '#2b2020',
+    vine: '#3b2b2b',
+    cap: '#ff7a00',
+    capSpot: '#2b2020',
+    stem: '#5a4040',
+    hazard: '#2b2020',
+    hazardTip: '#ff5a1f',
+    saw: '#ffcf40',
+    wood: '#4a3030',
+    pad: '#56b870',
+    props: 'volcano',
+    die: 'SIZZLE!',
+    bgHill: '#5a2a24',
+    bgHill2: '#7a3a2a',
   },
   {
-    name: 'FROSTBITE PEAKS', sky: ['#3f8ddc', '#dcefff'], fog: '#e3f2fc', water: '#6fe0e4', waterEm: '#0d5663',
-    petal: '#ff4d94', bud: '#ffd21f', vine: '#3d86c4', cap: '#8a5cff', capSpot: '#ffffff', stem: '#eaf6ff',
-    hazard: '#17233f', hazardTip: '#ff9a14', saw: '#dfeaf5', wood: '#4d6f9a', pad: '#8ee6e6',
-    props: 'frost', die: 'BRRR!', bgHill: '#8fbbe6', bgHill2: '#c4def5',
+    name: 'FROSTBITE PEAKS',
+    sky: ['#3f8ddc', '#dcefff'],
+    fog: '#e3f2fc',
+    water: '#6fe0e4',
+    waterEm: '#0d5663',
+    petal: '#ff4d94',
+    bud: '#ffd21f',
+    vine: '#3d86c4',
+    cap: '#8a5cff',
+    capSpot: '#ffffff',
+    stem: '#eaf6ff',
+    hazard: '#17233f',
+    hazardTip: '#ff9a14',
+    saw: '#dfeaf5',
+    wood: '#4d6f9a',
+    pad: '#8ee6e6',
+    props: 'frost',
+    die: 'BRRR!',
+    bgHill: '#8fbbe6',
+    bgHill2: '#c4def5',
     aurora: ['#3dffa8', '#38d8ff', '#b46cff'],
   },
   {
-    name: 'SUNSET DUNES', sky: ['#5a2a86', '#ffb06a'], fog: '#ffb88c', water: '#4e2233', waterEm: '#220812',
-    petal: '#0fb3ae', bud: '#fff3b0', vine: '#1fa59a', cap: '#ff5aa5', capSpot: '#fff3b0', stem: '#fff1d6',
-    hazard: '#2a1346', hazardTip: '#ff2e63', saw: '#dfe8ff', wood: '#8a4b2a', pad: '#46dc9a',
-    props: 'dunes', die: 'GULP!', bgHill: '#a8467e', bgHill2: '#d4628a',
+    name: 'SUNSET DUNES',
+    sky: ['#5a2a86', '#ffb06a'],
+    fog: '#ffb88c',
+    water: '#4e2233',
+    waterEm: '#220812',
+    petal: '#0fb3ae',
+    bud: '#fff3b0',
+    vine: '#1fa59a',
+    cap: '#ff5aa5',
+    capSpot: '#fff3b0',
+    stem: '#fff1d6',
+    hazard: '#2a1346',
+    hazardTip: '#ff2e63',
+    saw: '#dfe8ff',
+    wood: '#8a4b2a',
+    pad: '#46dc9a',
+    props: 'dunes',
+    die: 'GULP!',
+    bgHill: '#a8467e',
+    bgHill2: '#d4628a',
     // 沙丘表面：谷底、坡面、頂緣高光、側面
     sand: ['#f0a14a', '#ffd070', '#fff0b8', '#c9722f'],
   },
@@ -117,9 +230,23 @@ export const WORLDS: readonly World[] = [
 
 /** 角色。kind＝外形（frog／cat／ape）；tongue＝買角色送的招牌舌頭；其餘是配色與配件 */
 export interface Skin {
-  id: string; kind?: 'frog' | 'cat' | 'ape'; name: string; price: number; featured?: boolean; tongue?: string;
-  body: string; belly: string; eye: string; cheek: string; spots?: string; pupil?: string;
-  glass?: boolean; shiny?: boolean; band?: string; helmet?: boolean; crown?: boolean;
+  id: string;
+  kind?: 'frog' | 'cat' | 'ape';
+  name: string;
+  price: number;
+  featured?: boolean;
+  tongue?: string;
+  body: string;
+  belly: string;
+  eye: string;
+  cheek: string;
+  spots?: string;
+  pupil?: string;
+  glass?: boolean;
+  shiny?: boolean;
+  band?: string;
+  helmet?: boolean;
+  crown?: boolean;
 }
 // 旋轉貓咪是看板角色（致敬 oiia cat：灰虎斑、白口鼻、會在空中原地轉圈）：商店置頂、價格約 6–8 關的金幣
 export const SKINS: readonly Skin[] = [
@@ -139,8 +266,17 @@ export const SKINS: readonly Skin[] = [
 
 /** 舌頭：顏色、粗細倍率、靜態捲曲、材質貼圖、舌尖、黏上時的粒子 */
 export interface TongueSpec {
-  id: string; name: string; price: number; color: string; tip: string; width: number; wave: number;
-  tex: 'yarn' | 'vine' | 'silk' | null; tipScale: number; fx: readonly string[]; fxShape: number;
+  id: string;
+  name: string;
+  price: number;
+  color: string;
+  tip: string;
+  width: number;
+  wave: number;
+  tex: 'yarn' | 'vine' | 'silk' | null;
+  tipScale: number;
+  fx: readonly string[];
+  fxShape: number;
 }
 export const TONGUES: readonly TongueSpec[] = [
   { id: 'tongue', name: 'Frog Tongue', price: 0, color: '#ff4f7a', tip: '#ff3d6e', width: 1, wave: 0, tex: null, tipScale: 1, fx: ['#ff6fb5', '#ffffff'], fxShape: 0 },
@@ -149,7 +285,12 @@ export const TONGUES: readonly TongueSpec[] = [
   { id: 'silk', name: 'Silk Thread', price: 140, color: '#ffffff', tip: '#ffffff', width: 0.3, wave: 0, tex: 'silk', tipScale: 0.75, fx: ['#ffffff', '#e6e9ff'], fxShape: 3 },
 ];
 
-export interface TrailSpec { id: string; name: string; price: number; colors: readonly string[] }
+export interface TrailSpec {
+  id: string;
+  name: string;
+  price: number;
+  colors: readonly string[];
+}
 export const TRAILS: readonly TrailSpec[] = [
   { id: 'none', name: 'Breeze', price: 0, colors: ['#ffffff', '#ffffff'] },
   { id: 'rainbow', name: 'Rainbow', price: 60, colors: ['#ff4757', '#ffa502', '#ffd23f', '#2ed573', '#1e90ff', '#9b5de5'] },
@@ -162,10 +303,14 @@ export const TRAILS: readonly TrailSpec[] = [
 // ---------- 主題資料包：一整套（角色、舌頭、拖尾、道具替換、音效替換、系列關卡）打包賣；引擎不認識任何特定主題 ----------
 export const THEME_LEVELS = 10; // 每個主題的系列關卡數；關卡號從 LEVEL_COUNT+1 起、依主題順序排
 export interface Theme {
-  id: string; skin: string; tongue: string; trail: string;
+  id: string;
+  skin: string;
+  tongue: string;
+  trail: string;
   props: Record<string, string>; // 道具替換表：關卡畫面的 key（fly、stump、goal……）→ 圖集格名
   sfx: Record<string, string>; // 音效替換表：play(name) 的 name → 主題音效名
-  price: number; sale?: { price: number; hours: number }; // 組合包價；限時特價（玩家第一次開商店起算幾小時，先用本機時間）
+  price: number;
+  sale?: { price: number; hours: number }; // 組合包價；限時特價（玩家第一次開商店起算幾小時，先用本機時間）
 }
 export const THEMES: readonly Theme[] = [
   { id: 'cat', skin: 'cat', tongue: 'yarn', trail: 'wool', props: { fly: 'fish', stump: 'catTower', goal: 'cushion' }, sfx: {}, price: 220, sale: { price: 160, hours: 48 } }, // 音效不另做（使用者定）
