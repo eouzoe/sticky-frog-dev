@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/cover.jpg" alt="STICKY FROG" width="100%">
+  <img src=".github/media/cover.jpg" alt="STICKY FROG" width="100%">
 </p>
 
 <h3 align="center">按住，舌頭黏上去；放開，飛出去。</h3>
@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/demo.gif" alt="遊戲畫面：擺盪、穿圈、空中翻滾" width="560">
+  <img src=".github/media/demo.gif" alt="遊戲畫面：擺盪、穿圈、空中翻滾" width="560">
 </p>
 
 ---
@@ -32,44 +32,45 @@
 
 ## 內容
 
-| | |
-|---|---|
-| 關卡 | 90 關，每 15 關一個世界：Jungle、Candy、Neon City、Volcano、Frostbite Peaks、Sunset Dunes（76 關起有滑沙：落在沙丘上不會死，沿坡面往前滑、從尾端坡頂被拋起；沙面上有一排金圈引路，拿掉沙丘也過得了）。另有主題系列關卡：擁有整套主題後開啟，每個主題 10 關 |
-| 評星 | 過關 1 顆；吃到七成以上的蒼蠅加 1 顆；在標準時間內過關再加 1 顆 |
-| 無盡模式 | 破第 5 關解鎖。越遠越難，每跑一段換一個世界 |
-| 成就 | 打出漂亮的操作時當場跳出來稱讚：SPIN DOCTOR（一次滯空轉 7 圈）、FROGNADO（10 圈）、NONSTOP、SPEED DEMON、WAVE KISSER、CLOSE SHAVE |
-| 商店 | 12 個角色（看板角色 Spinny Cat、9 隻青蛙、Vine Ape、Silk Frog）、4 種舌頭、6 種拖尾；旋轉貓主題組合包（角色、舌頭、拖尾、關卡道具整套換） |
-| 語言 | English、Español、Português、Français、Deutsch、Türkçe、Русский、日本語、한국어、Indonesia、繁體中文、简体中文 |
-| 存檔 | 在 CrazyGames 上用 SDK 的雲端存檔，其他環境存在 localStorage |
+|          |                                                                                                                                                                                                                                                            |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 關卡     | 90 關，每 15 關一個世界：Jungle、Candy、Neon City、Volcano、Frostbite Peaks、Sunset Dunes（76 關起有滑沙：落在沙丘上不會死，沿坡面往前滑、從尾端坡頂被拋起；沙面上有一排金圈引路，拿掉沙丘也過得了）。另有主題系列關卡：擁有整套主題後開啟，每個主題 10 關 |
+| 評星     | 過關 1 顆；吃到七成以上的蒼蠅加 1 顆；在標準時間內過關再加 1 顆                                                                                                                                                                                            |
+| 無盡模式 | 破第 5 關解鎖。越遠越難，每跑一段換一個世界                                                                                                                                                                                                                |
+| 成就     | 打出漂亮的操作時當場跳出來稱讚：SPIN DOCTOR（一次滯空轉 7 圈）、FROGNADO（10 圈）、NONSTOP、SPEED DEMON、WAVE KISSER、CLOSE SHAVE                                                                                                                          |
+| 商店     | 12 個角色（看板角色 Spinny Cat、9 隻青蛙、Vine Ape、Silk Frog）、4 種舌頭、6 種拖尾；旋轉貓主題組合包（角色、舌頭、拖尾、關卡道具整套換）                                                                                                                  |
+| 語言     | English、Español、Português、Français、Deutsch、Türkçe、Русский、日本語、한국어、Indonesia、繁體中文、简体中文                                                                                                                                             |
+| 存檔     | 在 CrazyGames 上用 SDK 的雲端存檔，其他環境存在 localStorage                                                                                                                                                                                               |
 
 <table>
   <tr>
-    <td><img src="docs/shot-menu.jpg" alt="選單"></td>
-    <td><img src="docs/shot-swing.jpg" alt="擺盪"></td>
+    <td><img src=".github/media/shot-menu.jpg" alt="選單"></td>
+    <td><img src=".github/media/shot-swing.jpg" alt="擺盪"></td>
   </tr>
   <tr>
-    <td><img src="docs/shot-clear.jpg" alt="過關浮層"></td>
-    <td><img src="docs/shot-shop.jpg" alt="商店"></td>
+    <td><img src=".github/media/shot-clear.jpg" alt="過關浮層"></td>
+    <td><img src=".github/media/shot-shop.jpg" alt="商店"></td>
   </tr>
 </table>
 
 ## 操作
 
-| 平台 | 擺盪 | 其他 |
-|---|---|---|
+| 平台 | 擺盪                                      | 其他                |
+| ---- | ----------------------------------------- | ------------------- |
 | 桌機 | 按住滑鼠左鍵或 Space（↑、W、→、D 也可以） | Esc／P 暫停，R 重來 |
-| 手機 | 按住螢幕任何位置 | 右上角暫停鈕 |
+| 手機 | 按住螢幕任何位置                          | 右上角暫停鈕        |
 
 ## 快速開始
 
-需要 [Bun](https://bun.sh)（有 `devenv.nix`，用 devenv 的話 `devenv shell` 就有）。
+工具鏈由 [devenv](https://devenv.sh) 提供（Bun、ffmpeg、yt-dlp）；不用 Nix 的話自己裝 Bun 1.4.4 也行。
 
 ```bash
+devenv shell       # 或：直接用機器上的 bun
 bun install
 bun run dev        # 開發伺服器（5173）
 bun run build      # 輸出到 dist/，這份就是上傳 CrazyGames 的版本
 bun run preview    # 在本機跑 dist/
-bun run check      # 型別、oxlint、tests/*-check.mjs
+devenv test        # 全部檢查：型別、oxlint、遊戲規則、建置、收資料端（CI 跑的就是這個）
 ```
 
 `tools/bake/` 用 playwright-core 開無頭 Chromium 烘焙圖集，第一次要先裝：`bun x playwright-core install chromium`。
@@ -106,8 +107,9 @@ public/
 tools/
 ├── bake/            離線烘焙：原版 GLB → 精靈圖集（無頭 Chrome）、小形狀光柵
 └── cat/             旋轉貓素材（yt-dlp＋ffmpeg）
-server/telemetry/    遙測收資料端（Worker＋D1）與報告腳本
-tests/               bun run check 跑的檢查（*-check.mjs）
+server/telemetry/    遙測收資料端：Cloudflare Worker＋D1（Drizzle 定義資料表）、測試、報告腳本
+tests/               遊戲規則檢查（*-check.mjs），devenv test 的 check:rules
+.github/media/       README 的圖
 ```
 
 ### 架構
@@ -132,34 +134,29 @@ flowchart LR
 
 ## 調參
 
-| 想改什麼 | 去哪裡 |
-|---|---|
-| 重力、舌頭、翻滾、分數、鏡頭、慢動作 | `src/config.ts` 的 `TUNE` |
-| 世界色盤、天空、水 | `src/config.ts` 的 `WORLDS` |
-| 角色、舌頭、拖尾、價格 | `src/config.ts` 的 `SKINS`、`TONGUES`、`TRAILS` |
-| 關卡段落與難度曲線 | `src/level.ts` |
-| 成就門檻 | `src/feats.ts` 的 `FEAT_T` |
-| 無盡模式解鎖關 | `src/save.ts` 的 `ENDLESS_UNLOCK` |
+| 想改什麼                             | 去哪裡                                          |
+| ------------------------------------ | ----------------------------------------------- |
+| 重力、舌頭、翻滾、分數、鏡頭、慢動作 | `src/config.ts` 的 `TUNE`                       |
+| 世界色盤、天空、水                   | `src/config.ts` 的 `WORLDS`                     |
+| 角色、舌頭、拖尾、價格               | `src/config.ts` 的 `SKINS`、`TONGUES`、`TRAILS` |
+| 關卡段落與難度曲線                   | `src/level.ts`                                  |
+| 成就門檻                             | `src/feats.ts` 的 `FEAT_T`                      |
+| 無盡模式解鎖關                       | `src/save.ts` 的 `ENDLESS_UNLOCK`               |
 
 ## 測試
 
-不需要瀏覽器的檢查（CI 也跑這些）：
+全部檢查都不需要瀏覽器，`devenv test` 一次跑完；單跑一類：`devenv tasks run check:rules`（其他：typecheck、lint、build、telemetry）。遊戲規則檢查：
 
-```bash
-bun run check
-```
-
-| 檢查 | 內容 |
-|---|---|
-| `sim-check.mjs` | 自動玩家用 12 組參數跑全部關卡，每一關都要破得了 |
-| `endless-check.mjs` | 無盡模式用 12 個種子接力跑完 |
-| `feats-check.mjs` | 每種成就「達成」與「差一點」都判對 |
-| `save-check.mjs` | 舊存檔相容、本機與雲端合併、主題擁有與套用、下一步推薦、本機排行 |
-| `flow-check.mjs`、`beat-check.mjs` | 一局之內的流程狀態機、一局結束的節拍表 |
-| `i18n-check.mjs` | 12 種語言的字串齊全 |
-| `telemetry-check.mjs` | 遙測：沒設網址不送、事件欄位、排隊分批、不送的情況 |
-| `unlock-check.mjs`、`pad-check.mjs`、`boost-check.mjs`、`burst-check.mjs` | 解鎖順序、中途荷葉、加速圈、特效數量上限 |
-
+| 檢查                                                                      | 內容                                                             |
+| ------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `sim-check.mjs`                                                           | 自動玩家用 12 組參數跑全部關卡，每一關都要破得了                 |
+| `endless-check.mjs`                                                       | 無盡模式用 12 個種子接力跑完                                     |
+| `feats-check.mjs`                                                         | 每種成就「達成」與「差一點」都判對                               |
+| `save-check.mjs`                                                          | 舊存檔相容、本機與雲端合併、主題擁有與套用、下一步推薦、本機排行 |
+| `flow-check.mjs`、`beat-check.mjs`                                        | 一局之內的流程狀態機、一局結束的節拍表                           |
+| `i18n-check.mjs`                                                          | 12 種語言的字串齊全                                              |
+| `telemetry-check.mjs`                                                     | 遙測：沒設網址不送、事件欄位、排隊分批、不送的情況               |
+| `unlock-check.mjs`、`pad-check.mjs`、`boost-check.mjs`、`burst-check.mjs` | 解鎖順序、中途荷葉、加速圈、特效數量上限                         |
 
 開發用的掛鉤在 `window.__game`（開發伺服器一定有；正式建置要在網址加 `?debug=1`），例如 `__game.start(12)` 直接開第 12 關、`__game.autoplay = [0.25, -10]` 讓自動玩家接手、`__game.look('cat')` 換角色。
 
@@ -172,14 +169,15 @@ bun run check
 VITE_TELEMETRY_URL=https://<你的 worker>.workers.dev/e VITE_BUILD=$(git rev-parse --short HEAD) bun run build
 ```
 
-- 事件：`session_start`、`level_start`、`death`、`level_clear`、`level_abandon`、`endless_over`、`shop_want`、`shop_buy`（欄位見 `server/telemetry/src/index.js` 的 `EVENTS`）。
+- 事件：`session_start`、`level_start`、`death`、`level_clear`、`level_abandon`、`endless_over`、`shop_want`、`shop_buy`（欄位見 `server/telemetry/src/index.ts` 的 `EVENTS`）。
 - 存：隨機匿名 ID（localStorage）、每次載入的 session ID、版本、關卡、位置、進度、死因、秒數、星數、語言、裝置類別（桌機／手機）、視窗大小、畫質、開機到選單的毫秒、國家（Cloudflare 提供）。
 - 不存：個資、IP、user agent、cookie。
 - 不送：`?notelemetry`、`__game.autoplay` 開著的局、localhost 開發（遙測網址本身也是 localhost 的本機測試除外）。
 - 新玩家第一次看到選單會有一行小字通知，連到 `public/privacy.html`（英文＋繁中）。
-- 收資料端在 `server/telemetry/`（Cloudflare Worker＋D1）。部署：複製 `wrangler.toml` 成 gitignored 的 `wrangler.local.toml` 並填入自己的 D1 `database_id`，`npx wrangler d1 execute sticky-frog-telemetry -c wrangler.local.toml --remote --file schema.sql`，再 `npx wrangler deploy -c wrangler.local.toml`。在加入商店欄位之前就建好的資料庫，另外跑一次 `--file migrate-0001-shop.sql`。
-- 看報告：`node server/telemetry/report.mjs`（查線上 D1，輸出 markdown：每關通關率、死亡／放棄位置、關卡漏斗、開機時間；異常樣本篩除規則寫在報告開頭）。`--local` 查本機 D1、`--out 檔名` 寫檔。
-- 驗證：`bun tests/telemetry-check.mjs`（遊戲端）；`cd server/telemetry && npm ci && npm test`（收資料端，在 workerd 裡跑、用全新的本機 D1）；部署後用 `node server/telemetry/test-worker.mjs <端點> --remote` 檢查線上端點。
+- 收資料端在 `server/telemetry/`（Cloudflare Worker＋D1）。資料表定義在 `src/schema.ts`（Drizzle），SQL 遷移檔在 `migrations/`（改 schema 後 `bun run generate` 重新產生）。
+- 部署：複製 `wrangler.jsonc` 成 gitignored 的 `wrangler.local.jsonc` 並填入自己的 D1 `database_id`，`bun run migrate:remote` 建表，再 `bun run deploy`（都在 `server/telemetry/` 下）。
+- 看報告：`bun run report`（查線上 D1，輸出 markdown：每關通關率、死亡／放棄位置、關卡漏斗、開機時間；異常樣本篩除規則寫在報告開頭）。`--local` 查本機 D1、`--out 檔名` 寫檔。
+- 驗證：`bun tests/telemetry-check.mjs`（遊戲端）；`bun run test`（收資料端，在 workerd 裡跑、用套過遷移的全新本機 D1）。
 
 ## 目前狀態
 
