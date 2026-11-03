@@ -1,6 +1,6 @@
-// 自動玩家（tests/sim-check.mjs 驗關卡用；__game.autoplay 給截圖巡覽用）。
+// 自動玩家（tests/sim.test.ts 驗關卡用；__game.autoplay 給截圖巡覽用）。
 // makeBot＝一般 bot：看到鉤點就出舌、在沙丘上也不會等。
-// makeSurfBot＝滑沙 bot：追沙丘上的拾取物軌跡、在沙丘片區上方不出舌；只用在 tests/dune-check.mjs。
+// makeSurfBot＝滑沙 bot：追沙丘上的拾取物軌跡、在沙丘片區上方不出舌；只用在 tests/dune.test.ts。
 // rel：擺過鉤點多遠（佔舌長比例）才放開；grabVy：下墜速度小於這個值才伸舌頭。
 import { movePos } from './sim.ts';
 import { TUNE as T } from './config.ts';

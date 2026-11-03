@@ -1,7 +1,7 @@
 # STICKY FROG 介面語言
 
 模組從 BONK BEANS 搬來（`src/i18n.js`、`src/i18n.css`）。這一輪只有 `en`（來源語言）；其他 11 種（`es` `pt` `fr` `de` `tr` `ru` `ja` `ko` `id` `zh-Hant` `zh-Hans`）由翻譯線補。
-檢查：`node tests/i18n-check.mjs`（index.html／src/ui.js 不准有寫死的英文玩家字串、key 對得上、插值一致）。
+檢查：`bun run test tests/i18n.test.ts`（index.html／src/ui.js 不准有寫死的英文玩家字串、key 對得上、插值一致）。
 
 ## 寫法規則
 
@@ -33,4 +33,4 @@ Baloo 2 ExtraBold 只打包 Basic Latin（10.6 KB）。`i18n.css` 依 `<html lan
 
 1. 複製 `en.js` 成 `<code>.js` 翻譯，再補 `it.*`、`world.*`、`die.*`、`feat.*`、`featLine.*`（英文原文見 config.js、feats.js；`i18n-check` 會列出缺的）。
 2. `src/i18n.js`：`import`、`DICTS`、`LANGS`（選單上的母語名稱）。
-3. 需要的話在 `src/i18n.css` 調字型堆疊，重跑 `node tests/i18n-check.mjs` 與 `game-shots.mjs`。
+3. 需要的話在 `src/i18n.css` 調字型堆疊，重跑 `bun run test tests/i18n.test.ts`。

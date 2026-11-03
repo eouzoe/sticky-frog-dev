@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "types": "wrangler types",
-    "typecheck": "wrangler types && tsc --noEmit -p . && tsc --noEmit -p tsconfig.tools.json",
+    "typecheck": "wrangler types && bun check -p . && bun check -p tsconfig.tools.json",
     "test": "vitest run",
     "generate": "drizzle-kit generate",
     "migrate:local": "wrangler d1 migrations apply sticky-frog-telemetry --local",

@@ -175,7 +175,7 @@ const ensureJuice = () =>
   }));
 const canvas = document.getElementById('c') as HTMLCanvasElement;
 
-// ---------- 測試／截圖用掛鉤（tests/*.json 冒煙步驟用） ----------
+// ---------- 測試／截圖用掛鉤（給瀏覽器裡的手動檢查用） ----------
 const hooks = {
   get state() {
     return G.state;

@@ -22,7 +22,7 @@ function mulberry32(a: number): () => number {
 // 基本元素的解鎖關卡（第一次可能出現的關）；開場「NEW」字卡就看這張表
 export const UNLOCK = { mush: 3, swarm: 4, ring: 5, move: 6, spikeLow: 8, mushChain: 9, ringArc: 12, fan: 18, saw: 22, spikeHigh: 25, tunnel: 33, pad: 63, boost: 69, dune: 76 };
 export type ElementId = keyof typeof UNLOCK;
-// NEW 字卡出現的關卡＝元素「實際第一次出現」的關（tests/unlock-check.mjs 驗證）
+// NEW 字卡出現的關卡＝元素「實際第一次出現」的關（tests/unlock.test.ts 驗證）
 export const NEW_AT: Record<ElementId, number> = { ...UNLOCK, move: 7, spikeLow: 9 };
 // 這一關要顯示 NEW 字卡的元素 id 清單（沒有＝[]）
 export const newElements = (n: number) => (Object.keys(NEW_AT) as ElementId[]).filter((k) => NEW_AT[k] === n);
@@ -76,7 +76,7 @@ export const BOOST_REACH = 19,
   BOOST_Y = 14;
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 
-// 部分關卡換種子（tests/sim-check.mjs 的自動玩家破不了或太難的）
+// 部分關卡換種子（tests/sim.test.ts 的自動玩家破不了或太難的）
 export const SALT: Record<number, number> = {
   12: 7,
   19: 3,
@@ -231,7 +231,7 @@ export function burstZoneClear(L: Level, f: Fan): boolean {
   const hit = (x: number, y: number, r: number, ax = 0, ay = 0) => x + ax + r > x0 && x - ax - r < x1 && y + ay + r > y0 && y - ay - r < y1;
   return !L.spikes.some((s) => hit(s.x, s.y, s.r)) && !L.saws.some((s) => hit(s.x, s.y, s.r, s.move.ax, s.move.ay));
 }
-// 相位微調（tests/burst-check.mjs 掃出來的）
+// 相位微調（tests/burst.test.ts 掃出來的）
 export const BURST_SHIFT: Record<number, number> = { 49: 1 };
 function addBursts(L: Level): void {
   L.fans.forEach((f, i) => {

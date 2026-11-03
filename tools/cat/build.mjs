@@ -1,4 +1,4 @@
-// 旋轉貓素材：從 oiia 迷因的綠幕範本與原音做出遊戲用的檔案（手動執行，輸出檔提交進 src/art/）
+// 旋轉貓素材：從 oiia 迷因的綠幕範本與原音做出遊戲用的檔案（手動執行，輸出檔提交進 src/art/）。需要 PATH 上有 ffmpeg 與 yt-dlp；它們不在 devenv 裡，因為遊戲、建置、測試都用不到。
 //   src/art/cat-spin.webp  揣手手 9 個角度一列（原動畫的播放順序，從正面開始）
 //   src/art/cat-spin.json  格子尺寸、跟站姿照片（src/art/cat.webp）對齊用的錨點與高度比例
 //   src/art/oiia.mp3       原音一句：起音淡入、削刺耳頻段、壓縮音節尖峰、一點短空間感、響度 -20 LUFS

@@ -9,6 +9,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/eouzoe/sticky-frog-dev/actions/workflows/check.yml"><img alt="check" src="https://github.com/eouzoe/sticky-frog-dev/actions/workflows/check.yml/badge.svg?branch=main"></a>
   <img alt="Vite" src="https://img.shields.io/badge/Vite-8.3.5-646CFF?logo=vite&logoColor=white">
   <img alt="CrazyGames SDK" src="https://img.shields.io/badge/CrazyGames%20SDK-v3-6C2BD9">
   <img alt="i18n" src="https://img.shields.io/badge/i18n-12%20languages-2EA44F">
@@ -108,7 +109,7 @@ tools/
 ├── bake/            離線烘焙：原版 GLB → 精靈圖集（無頭 Chrome）、小形狀光柵
 └── cat/             旋轉貓素材（yt-dlp＋ffmpeg）
 server/telemetry/    遙測收資料端：Cloudflare Worker＋D1（Drizzle 定義資料表）、測試、報告腳本
-tests/               遊戲規則檢查（*-check.mjs），devenv test 的 check:rules
+tests/               遊戲規則測試（Vitest，*.test.ts），devenv test 的 check:rules
 .github/media/       README 的圖
 ```
 
@@ -149,14 +150,14 @@ flowchart LR
 
 | 檢查                                                                      | 內容                                                             |
 | ------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `sim-check.mjs`                                                           | 自動玩家用 12 組參數跑全部關卡，每一關都要破得了                 |
-| `endless-check.mjs`                                                       | 無盡模式用 12 個種子接力跑完                                     |
-| `feats-check.mjs`                                                         | 每種成就「達成」與「差一點」都判對                               |
-| `save-check.mjs`                                                          | 舊存檔相容、本機與雲端合併、主題擁有與套用、下一步推薦、本機排行 |
-| `flow-check.mjs`、`beat-check.mjs`                                        | 一局之內的流程狀態機、一局結束的節拍表                           |
-| `i18n-check.mjs`                                                          | 12 種語言的字串齊全                                              |
-| `telemetry-check.mjs`                                                     | 遙測：沒設網址不送、事件欄位、排隊分批、不送的情況               |
-| `unlock-check.mjs`、`pad-check.mjs`、`boost-check.mjs`、`burst-check.mjs` | 解鎖順序、中途荷葉、加速圈、特效數量上限                         |
+| `sim.test.ts`                                                             | 自動玩家用 12 組參數跑全部關卡，每一關都要破得了                 |
+| `endless.test.ts`                                                         | 無盡模式用 12 個種子接力跑完                                     |
+| `feats.test.ts`                                                           | 每種成就「達成」與「差一點」都判對                               |
+| `save.test.ts`                                                            | 舊存檔相容、本機與雲端合併、主題擁有與套用、下一步推薦、本機排行 |
+| `flow.test.ts`、`beat.test.ts`                                            | 一局之內的流程狀態機、一局結束的節拍表                           |
+| `i18n.test.ts`                                                            | 12 種語言的字串齊全                                              |
+| `telemetry.test.ts`                                                       | 遙測：沒設網址不送、事件欄位、排隊分批、不送的情況               |
+| `unlock.test.ts`、`pad.test.ts`、`boost.test.ts`、`burst.test.ts`、`dune.test.ts`、`ring-score.test.ts`、`quality.test.ts` | 解鎖順序、中途荷葉、加速圈、噴泉、滑沙、金圈分數、畫質分級 |
 
 開發用的掛鉤在 `window.__game`（開發伺服器一定有；正式建置要在網址加 `?debug=1`），例如 `__game.start(12)` 直接開第 12 關、`__game.autoplay = [0.25, -10]` 讓自動玩家接手、`__game.look('cat')` 換角色。
 
@@ -177,7 +178,7 @@ VITE_TELEMETRY_URL=https://<你的 worker>.workers.dev/e VITE_BUILD=$(git rev-pa
 - 收資料端在 `server/telemetry/`（Cloudflare Worker＋D1）。資料表定義在 `src/schema.ts`（Drizzle），SQL 遷移檔在 `migrations/`（改 schema 後 `bun run generate` 重新產生）。
 - 部署：複製 `wrangler.jsonc` 成 gitignored 的 `wrangler.local.jsonc` 並填入自己的 D1 `database_id`，`bun run migrate:remote` 建表，再 `bun run deploy`（都在 `server/telemetry/` 下）。
 - 看報告：`bun run report`（查線上 D1，輸出 markdown：每關通關率、死亡／放棄位置、關卡漏斗、開機時間；異常樣本篩除規則寫在報告開頭）。`--local` 查本機 D1、`--out 檔名` 寫檔。
-- 驗證：`bun tests/telemetry-check.mjs`（遊戲端）；`bun run test`（收資料端，在 workerd 裡跑、用套過遷移的全新本機 D1）。
+- 驗證：`bun run test tests/telemetry.test.ts`（遊戲端）；`bun run test`（收資料端，在 workerd 裡跑、用套過遷移的全新本機 D1）。
 
 ## 目前狀態
 
