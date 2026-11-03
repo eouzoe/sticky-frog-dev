@@ -1,6 +1,6 @@
-// The string pipeline is closed: no hard-coded English player text left in index.html / src/ui.js
-// (and no raw literals handed to the pop-up / hint / banner calls in src/main.js), every key used exists in src/lang/en.js,
-// every en.js key is used, every language in DICTS has the same keys / {vars}, plus detection + lookup cases.
+// The string pipeline is closed: no hard-coded English player text left in index.html / src/ui.ts
+// (and no raw literals handed to the pop-up / hint / banner calls in src/main.ts), every key used exists in src/lang/en.ts,
+// every en.ts key is used, every language in DICTS has the same keys / {vars}, plus detection + lookup cases.
 // 原腳本用 node:fs 讀原始碼；這裡改用 Vite 的 ?raw 匯入（內容相同，型別由 vite/client 提供，不用裝 @types/node）。
 import { beforeAll, describe, expect, it } from 'vitest';
 import html from '../index.html?raw';
